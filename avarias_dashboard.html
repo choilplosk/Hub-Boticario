@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avarias — HUB Boticário Niterói</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --border: #e2e4e9;
+    --text: #1a1d23;
+    --text-muted: #6b7280;
+    --accent: #1a1a2e;
+    --accent-light: #e8e8f0;
+    --danger: #dc2626;
+    --danger-light: #fef2f2;
+    --warning: #d97706;
+    --warning-light: #fffbeb;
+    --success: #16a34a;
+    --success-light: #f0fdf4;
+    --info: #2563eb;
+    --info-light: #eff6ff;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--accent);
+    color: #fff;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; letter-spacing: -0.5px;
+  }
+  .header-title { font-size: 15px; font-weight: 600; }
+  .header-sub { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+  .header-badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 11px; letter-spacing: 0.3px;
+  }
+
+  /* ── Layout ── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  @media (max-width: 780px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .card-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; }
+  .card-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .card-body { padding: 20px; }
+
+  /* ── Formulário ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+  input, select, textarea {
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s;
+    font-family: inherit;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26,26,46,0.08);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+
+  .valor-total-display {
+    background: var(--accent-light);
+    border: 1px solid #c7c7e0;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    min-height: 36px;
+    display: flex; align-items: center;
+  }
+
+  /* Badges de tipo */
+  .tipo-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tipo-vazamento { background: var(--info-light); color: var(--info); }
+  .tipo-embalagem { background: var(--warning-light); color: var(--warning); }
+  .tipo-quebra    { background: var(--danger-light); color: var(--danger); }
+
+  /* ── Botão Submit ── */
+  .btn-submit {
+    width: 100%; margin-top: 16px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 8px;
+    padding: 11px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-submit:hover { opacity: 0.88; }
+  .btn-submit:active { transform: scale(0.99); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 12px 16px; border-radius: 9px;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s ease; z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); color: #fff; }
+  .toast.error   { background: var(--danger); color: #fff; }
+
+  /* ── KPI Cards ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .kpi-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .kpi-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Filtros ── */
+  .filter-row {
+    display: flex; gap: 10px; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .filter-row select, .filter-row input {
+    width: auto; min-width: 140px;
+    padding: 6px 10px; font-size: 12px;
+  }
+  .filter-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+  /* ── Tabela ── */
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th {
+    background: #f8f9fb; padding: 9px 12px;
+    text-align: left; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--text-muted); border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid #f1f3f6; transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafbfd; }
+  tbody td { padding: 9px 12px; color: var(--text); }
+  .td-right { text-align: right; }
+  .td-center { text-align: center; }
+
+  /* Resumo por ciclo */
+  .ciclo-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0; }
+  .ciclo-cell { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ciclo-head { background: #f8f9fb; font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.4px; }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-muted); font-size: 13px;
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
+
+  /* Config URL */
+  .config-banner {
+    background: #fffbeb; border: 1px solid #fcd34d;
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
+    font-size: 12px; color: #92400e;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .config-banner strong { display: block; margin-bottom: 3px; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-logo">HB</div>
+    <div>
+      <div class="header-title">HUB Boticário Niterói</div>
+      <div class="header-sub">Módulo de Avarias</div>
+    </div>
+  </div>
+  <span class="header-badge">Qualidade</span>
+</header>
+
+<main class="main">
+
+  <!-- Banner de configuração -->
+  <div class="config-banner" id="configBanner">
+    <span>⚙️</span>
+    <div>
+      <strong>Configure a URL do Apps Script</strong>
+      Cole a URL gerada após publicar o Apps Script na variável <code>APPS_SCRIPT_URL</code> no início do código JavaScript desta página.
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <!-- ── FORMULÁRIO ── -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fee2e2">🚨</div>
+        <div>
+          <div class="card-title">Registrar Avaria</div>
+          <div class="card-sub">Preenchimento pelo operador</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="f-data">
+          </div>
+
+          <div class="form-group">
+            <label>Ciclo</label>
+            <input type="text" id="f-ciclo" placeholder="Ex: C01/2026">
+          </div>
+
+          <div class="form-group">
+            <label>Código do Produto</label>
+            <input type="text" id="f-codigo" placeholder="Ex: 12345">
+          </div>
+
+          <div class="form-group">
+            <label>Quantidade</label>
+            <input type="number" id="f-quantidade" min="1" placeholder="0" oninput="calcTotal()">
+          </div>
+
+          <div class="form-group">
+            <label>Valor Unitário (R$)</label>
+            <input type="number" id="f-valorunit" step="0.01" min="0" placeholder="0,00" oninput="calcTotal()">
+          </div>
+
+          <div class="form-group">
+            <label>Valor Total</label>
+            <div class="valor-total-display" id="display-total">R$ 0,00</div>
+          </div>
+
+          <div class="form-group full">
+            <label>Tipo de Avaria</label>
+            <select id="f-tipo">
+              <option value="">Selecione...</option>
+              <option value="Vazamento">Vazamento</option>
+              <option value="Embalagem">Embalagem</option>
+              <option value="Quebra">Quebra</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>Responsável pela verificação</label>
+            <input type="text" id="f-responsavel" placeholder="Nome do responsável">
+          </div>
+
+          <div class="form-group full">
+            <label>Observações</label>
+            <textarea id="f-obs" placeholder="Informações adicionais (opcional)"></textarea>
+          </div>
+
+        </div>
+
+        <button class="btn-submit" id="btnSubmit" onclick="registrarAvaria()">
+          ✅ Registrar Avaria
+        </button>
+      </div>
+    </div>
+
+    <!-- ── PAINEL INDICADORES ── -->
+    <div>
+
+      <!-- KPIs globais -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Total de Peças</div>
+          <div class="kpi-value" id="kpi-pecas">—</div>
+          <div class="kpi-sub">todos os ciclos</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Valor Total</div>
+          <div class="kpi-value" id="kpi-valor">—</div>
+          <div class="kpi-sub">todos os ciclos</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Registros</div>
+          <div class="kpi-value" id="kpi-registros">—</div>
+          <div class="kpi-sub">ocorrências</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filter-row">
+        <span class="filter-label">Filtrar:</span>
+        <select id="fil-ciclo" onchange="renderPainel()">
+          <option value="">Todos os ciclos</option>
+        </select>
+        <select id="fil-tipo" onchange="renderPainel()">
+          <option value="">Todos os tipos</option>
+          <option value="Vazamento">Vazamento</option>
+          <option value="Embalagem">Embalagem</option>
+          <option value="Quebra">Quebra</option>
+        </select>
+      </div>
+
+      <!-- Resumo por ciclo -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div class="card-icon" style="background:#ede9fe">📊</div>
+          <div>
+            <div class="card-title">Resumo por Ciclo</div>
+            <div class="card-sub">Agrupado e filtrado</div>
+          </div>
+        </div>
+        <div id="tabela-ciclos">
+          <div class="empty">
+            <div class="empty-icon">📋</div>
+            Carregando dados...
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico detalhado -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:#fef9c3">📝</div>
+          <div>
+            <div class="card-title">Histórico de Ocorrências</div>
+            <div class="card-sub">Registros individuais</div>
+          </div>
+        </div>
+        <div id="tabela-historico">
+          <div class="empty">
+            <div class="empty-icon">📋</div>
+            Carregando dados...
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Toast de feedback -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// ⚙️  CONFIGURE AQUI após publicar o Apps Script
+// ============================================================
+const APPS_SCRIPT_URL = "const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpHmfJq0kElHi8HKswOKLdvrahCun7i4xWNf0uXbxFvm1TO-tRDqBO04ct-WhpjSZnUw/exec";
+// ============================================================
+
+let registros = [];
+
+// ── Inicialização ──────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  // Data padrão = hoje
+  const hoje = new Date().toISOString().split("T")[0];
+  document.getElementById("f-data").value = hoje;
+
+  // Verifica se URL foi configurada
+  if (APPS_SCRIPT_URL !== "COLE_SUA_URL_AQUI") {
+    document.getElementById("configBanner").style.display = "none";
+    carregarDados();
+  } else {
+    renderPainelVazio();
+  }
+});
+
+// ── Calcula valor total ao digitar ────────────────────────
+function calcTotal() {
+  const qtd = parseFloat(document.getElementById("f-quantidade").value) || 0;
+  const unit = parseFloat(document.getElementById("f-valorunit").value) || 0;
+  const total = qtd * unit;
+  document.getElementById("display-total").textContent =
+    total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+// ── Validação do formulário ────────────────────────────────
+function validarForm() {
+  const campos = [
+    { id: "f-data",        nome: "Data" },
+    { id: "f-ciclo",       nome: "Ciclo" },
+    { id: "f-codigo",      nome: "Código do Produto" },
+    { id: "f-quantidade",  nome: "Quantidade" },
+    { id: "f-valorunit",   nome: "Valor Unitário" },
+    { id: "f-tipo",        nome: "Tipo de Avaria" },
+    { id: "f-responsavel", nome: "Responsável" },
+  ];
+  for (const c of campos) {
+    const v = document.getElementById(c.id).value.trim();
+    if (!v || v === "") {
+      mostrarToast(`Preencha o campo: ${c.nome}`, "error");
+      document.getElementById(c.id).focus();
+      return false;
+    }
+  }
+  return true;
+}
+
+// ── Registrar Avaria ──────────────────────────────────────
+async function registrarAvaria() {
+  if (APPS_SCRIPT_URL === "COLE_SUA_URL_AQUI") {
+    mostrarToast("Configure a URL do Apps Script primeiro.", "error");
+    return;
+  }
+  if (!validarForm()) return;
+
+  const btn = document.getElementById("btnSubmit");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Registrando...';
+
+  const payload = {
+    data:          document.getElementById("f-data").value,
+    ciclo:         document.getElementById("f-ciclo").value.trim(),
+    codigo:        document.getElementById("f-codigo").value.trim(),
+    quantidade:    document.getElementById("f-quantidade").value,
+    valorUnitario: document.getElementById("f-valorunit").value,
+    tipoAvaria:    document.getElementById("f-tipo").value,
+    responsavel:   document.getElementById("f-responsavel").value.trim(),
+    observacoes:   document.getElementById("f-obs").value.trim(),
+  };
+
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const json = await resp.json();
+
+    if (json.sucesso) {
+      mostrarToast("✅ Avaria registrada com sucesso!", "success");
+      limparForm();
+      carregarDados();
+    } else {
+      mostrarToast("Erro ao gravar: " + json.erro, "error");
+    }
+  } catch (err) {
+    mostrarToast("Falha na conexão com o servidor.", "error");
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "✅ Registrar Avaria";
+  }
+}
+
+// ── Limpar formulário após envio ──────────────────────────
+function limparForm() {
+  const hoje = new Date().toISOString().split("T")[0];
+  document.getElementById("f-data").value = hoje;
+  ["f-ciclo","f-codigo","f-quantidade","f-valorunit","f-tipo","f-responsavel","f-obs"]
+    .forEach(id => document.getElementById(id).value = "");
+  document.getElementById("display-total").textContent = "R$ 0,00";
+}
+
+// ── Carregar dados do Sheets ──────────────────────────────
+async function carregarDados() {
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL);
+    const json = await resp.json();
+    if (json.sucesso) {
+      registros = json.registros;
+      popularFiltroCiclo();
+      renderPainel();
+    }
+  } catch (err) {
+    console.error("Erro ao carregar dados:", err);
+  }
+}
+
+// ── Popular filtro de ciclos ──────────────────────────────
+function popularFiltroCiclo() {
+  const ciclos = [...new Set(registros.map(r => r.ciclo))].sort().reverse();
+  const sel = document.getElementById("fil-ciclo");
+  sel.innerHTML = '<option value="">Todos os ciclos</option>';
+  ciclos.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Filtra registros conforme seleção ─────────────────────
+function filtrarRegistros() {
+  const ciclo = document.getElementById("fil-ciclo").value;
+  const tipo  = document.getElementById("fil-tipo").value;
+  return registros.filter(r =>
+    (!ciclo || r.ciclo === ciclo) &&
+    (!tipo  || r.tipoAvaria === tipo)
+  );
+}
+
+// ── Renderiza painel de indicadores ──────────────────────
+function renderPainel() {
+  const dados = filtrarRegistros();
+
+  // KPIs globais (sem filtro)
+  const totalPecas  = registros.reduce((s, r) => s + Number(r.quantidade), 0);
+  const totalValor  = registros.reduce((s, r) => s + Number(r.valorTotal), 0);
+  document.getElementById("kpi-pecas").textContent = totalPecas.toLocaleString("pt-BR");
+  document.getElementById("kpi-valor").textContent = totalValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  document.getElementById("kpi-registros").textContent = registros.length;
+
+  renderTabelaCiclos(dados);
+  renderHistorico(dados);
+}
+
+function renderPainelVazio() {
+  ["tabela-ciclos","tabela-historico"].forEach(id => {
+    document.getElementById(id).innerHTML =
+      `<div class="empty"><div class="empty-icon">⚙️</div>Configure a URL do Apps Script para ver os dados.</div>`;
+  });
+  ["kpi-pecas","kpi-valor","kpi-registros"].forEach(id => {
+    document.getElementById(id).textContent = "—";
+  });
+}
+
+// ── Tabela resumo por ciclo ───────────────────────────────
+function renderTabelaCiclos(dados) {
+  if (!dados.length) {
+    document.getElementById("tabela-ciclos").innerHTML =
+      `<div class="empty"><div class="empty-icon">📋</div>Nenhum registro encontrado.</div>`;
+    return;
+  }
+
+  // Agrupa por ciclo
+  const mapa = {};
+  dados.forEach(r => {
+    if (!mapa[r.ciclo]) mapa[r.ciclo] = { pecas: 0, valor: 0 };
+    mapa[r.ciclo].pecas += Number(r.quantidade);
+    mapa[r.ciclo].valor += Number(r.valorTotal);
+  });
+
+  const ciclos = Object.keys(mapa).sort().reverse();
+
+  let html = `
+    <div style="border-bottom:1px solid var(--border)">
+      <div class="ciclo-row">
+        <div class="ciclo-cell ciclo-head">Ciclo</div>
+        <div class="ciclo-cell ciclo-head" style="text-align:right">Total de Peças</div>
+        <div class="ciclo-cell ciclo-head" style="text-align:right">Valor Total</div>
+        <div class="ciclo-cell ciclo-head" style="text-align:right">Ocorrências</div>
+      </div>
+    </div>
+  `;
+
+  const ocorrencias = {};
+  dados.forEach(r => { ocorrencias[r.ciclo] = (ocorrencias[r.ciclo] || 0) + 1; });
+
+  ciclos.forEach(ciclo => {
+    html += `
+      <div class="ciclo-row">
+        <div class="ciclo-cell" style="font-weight:600">${ciclo}</div>
+        <div class="ciclo-cell" style="text-align:right">${mapa[ciclo].pecas.toLocaleString("pt-BR")}</div>
+        <div class="ciclo-cell" style="text-align:right">${mapa[ciclo].valor.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</div>
+        <div class="ciclo-cell" style="text-align:right;color:var(--text-muted)">${ocorrencias[ciclo]}</div>
+      </div>
+    `;
+  });
+
+  document.getElementById("tabela-ciclos").innerHTML = html;
+}
+
+// ── Histórico detalhado ───────────────────────────────────
+function renderHistorico(dados) {
+  if (!dados.length) {
+    document.getElementById("tabela-historico").innerHTML =
+      `<div class="empty"><div class="empty-icon">📋</div>Nenhum registro encontrado.</div>`;
+    return;
+  }
+
+  const tipoClass = { Vazamento: "tipo-vazamento", Embalagem: "tipo-embalagem", Quebra: "tipo-quebra" };
+
+  const linhas = [...dados].reverse().map(r => `
+    <tr>
+      <td>${formatarData(r.data)}</td>
+      <td style="font-weight:600">${r.ciclo}</td>
+      <td>${r.codigo}</td>
+      <td class="td-right">${Number(r.quantidade).toLocaleString("pt-BR")}</td>
+      <td class="td-right">${Number(r.valorTotal).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+      <td><span class="tipo-badge ${tipoClass[r.tipoAvaria] || ''}">${r.tipoAvaria}</span></td>
+    </tr>
+  `).join("");
+
+  document.getElementById("tabela-historico").innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th><th>Ciclo</th><th>Código</th>
+            <th class="td-right">Qtd</th><th class="td-right">Valor</th><th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function formatarData(data) {
+  if (!data) return "—";
+  try {
+    const [ano, mes, dia] = String(data).split("-");
+    return `${dia}/${mes}/${ano}`;
+  } catch { return data; }
+}
+
+function mostrarToast(msg, tipo = "success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = `toast ${tipo} show`;
+  setTimeout(() => { t.className = "toast"; }, 3500);
+}
+</script>
+</body>
+</html>
