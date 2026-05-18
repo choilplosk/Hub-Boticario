@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUB Boticário Niterói — Dashboard Logístico</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:             #f0ede8;
+  --surface:        #ffffff;
+  --surface-2:      #f7f5f2;
+  --border:         #e6e2dc;
+  --border-strong:  #cdc9c2;
+  --text-1:         #17150f;
+  --text-2:         #5c5850;
+  --text-3:         #9c9890;
+  --accent:         #c13520;
+  --accent-bg:      #fdf1ef;
+  --accent-mid:     #edada4;
+  --green:          #1e6e42;
+  --green-bg:       #edf7f2;
+  --yellow:         #a06800;
+  --yellow-bg:      #fdf7e8;
+  --blue:           #1750a0;
+  --blue-bg:        #edf2fc;
+  --purple:         #6040a8;
+  --purple-bg:      #f2eefb;
+  --nav-h:          58px;
+  --r:              8px;
+  --r-sm:           5px;
+  --shadow-sm:      0 1px 2px rgba(0,0,0,.05), 0 2px 8px rgba(0,0,0,.04);
+  --shadow:         0 1px 3px rgba(0,0,0,.07), 0 6px 20px rgba(0,0,0,.05);
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text-1); font-size:14px; line-height:1.5; }
+
+/* NAV */
+nav {
+  position:fixed; inset:0 0 auto 0; height:var(--nav-h);
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 20px; z-index:200;
+  box-shadow:var(--shadow-sm);
+}
+.brand { display:flex; align-items:center; gap:10px; margin-right:28px; flex-shrink:0; }
+.brand-logo {
+  width:30px; height:30px; border-radius:7px; background:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:#fff; letter-spacing:-.5px;
+}
+.brand-text { line-height:1.2; }
+.brand-text strong { font-size:13px; font-weight:700; display:block; }
+.brand-text span   { font-size:11px; color:var(--text-3); }
+.nav-tabs { display:flex; height:100%; }
+.nav-tab {
+  height:var(--nav-h); padding:0 14px;
+  display:flex; align-items:center; gap:6px;
+  font-size:13px; font-weight:500; color:var(--text-2);
+  cursor:pointer; border:none; background:none;
+  border-bottom:2px solid transparent;
+  transition:color .15s, border-color .15s; white-space:nowrap;
+}
+.nav-tab:hover { color:var(--text-1); }
+.nav-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tag-wms {
+  font-size:9px; font-weight:700; letter-spacing:.4px; text-transform:uppercase;
+  padding:2px 5px; border-radius:3px; background:var(--border); color:var(--text-3);
+}
+.nav-right { margin-left:auto; }
+.nav-clock { font-family:'DM Mono',monospace; font-size:11.5px; color:var(--text-3); }
+
+/* MAIN */
+main { padding-top:var(--nav-h); min-height:100vh; }
+.page { display:none; padding:26px 24px; animation:fadeUp .18s ease both; }
+.page.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+/* PAGE HEADER */
+.ph { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; gap:12px; }
+.ph h1 { font-size:20px; font-weight:700; letter-spacing:-.4px; }
+.ph p  { font-size:12.5px; color:var(--text-2); margin-top:2px; }
+
+/* UPLOAD */
+.upload-zone {
+  border:2px dashed var(--border-strong); border-radius:var(--r);
+  padding:36px 24px; text-align:center; cursor:pointer;
+  background:var(--surface); transition:all .2s; position:relative; margin-bottom:20px;
+}
+.upload-zone:hover,.upload-zone.over { border-color:var(--accent); background:var(--accent-bg); }
+.upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-ico { font-size:34px; margin-bottom:8px; }
+.upload-zone h3 { font-size:15px; font-weight:600; margin-bottom:4px; }
+.upload-zone p  { font-size:12.5px; color:var(--text-2); }
+.upload-cta {
+  display:inline-block; margin-top:14px; padding:9px 22px;
+  background:var(--accent); color:#fff; border-radius:var(--r-sm);
+  font-size:13px; font-weight:600; pointer-events:none;
+}
+
+/* ALERT */
+.alert {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:13px 16px; border-radius:var(--r-sm);
+  font-size:13px; line-height:1.55; margin-bottom:18px;
+}
+.alert-ico { flex-shrink:0; font-size:15px; margin-top:1px; }
+.alert-error   { background:var(--accent-bg); border:1px solid var(--accent-mid); color:#7a1a0e; }
+.alert-warning { background:var(--yellow-bg); border:1px solid #f0d070; color:#7a5000; }
+.alert-success { background:var(--green-bg);  border:1px solid #9fd4b8; color:#145230; }
+
+/* KPIs */
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:12px; margin-bottom:20px; }
+.kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; box-shadow:var(--shadow-sm); }
+.kpi-lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-3); margin-bottom:7px; }
+.kpi-val { font-size:26px; font-weight:700; letter-spacing:-1px; line-height:1; font-family:'DM Mono',monospace; }
+.kpi-sub { font-size:11px; color:var(--text-2); margin-top:5px; }
+.kpi.c-red    { border-left:3px solid var(--accent); }
+.kpi.c-green  { border-left:3px solid var(--green); }
+.kpi.c-yellow { border-left:3px solid var(--yellow); }
+.kpi.c-blue   { border-left:3px solid var(--blue); }
+.kpi.c-purple { border-left:3px solid var(--purple); }
+
+/* FILTER BAR */
+.fbar {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
+  padding:12px 16px; display:flex; align-items:center; flex-wrap:wrap; gap:10px;
+  margin-bottom:14px; box-shadow:var(--shadow-sm);
+}
+.fbar-lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); white-space:nowrap; }
+.fsel,.finput {
+  padding:6px 10px; border:1px solid var(--border-strong); border-radius:var(--r-sm);
+  font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text-1);
+  background:var(--surface-2); outline:none; cursor:pointer; transition:border-color .15s;
+}
+.fsel:focus,.finput:focus { border-color:var(--accent); }
+.finput { width:210px; }
+.btn {
+  display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:var(--r-sm);
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s;
+}
+.btn-ghost { background:var(--surface-2); border:1px solid var(--border-strong); color:var(--text-2); }
+.btn-ghost:hover { background:var(--border); color:var(--text-1); }
+.btn-mad { background:var(--accent-bg); border:1px solid var(--accent-mid); color:var(--accent); }
+.btn-mad:hover,.btn-mad.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+.btn-clear { background:none; border:none; color:var(--text-3); font-size:12px; cursor:pointer; padding:4px 8px; border-radius:var(--r-sm); font-family:'DM Sans',sans-serif; }
+.btn-clear:hover { color:var(--accent); background:var(--accent-bg); }
+
+/* MODULE TABS */
+.mtabs { display:flex; gap:4px; margin-bottom:14px; }
+.mtab { padding:7px 16px; border-radius:var(--r-sm); font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-2); transition:all .15s; }
+.mtab:hover { color:var(--text-1); }
+.mtab.active { background:var(--text-1); color:#fff; border-color:var(--text-1); }
+
+/* TABLE */
+.tcard { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; }
+.tcard-head { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.tcard-title { font-size:13px; font-weight:600; }
+.tcard-count { font-size:12px; color:var(--text-3); font-family:'DM Mono',monospace; }
+.tscroll { overflow-x:auto; max-height:500px; overflow-y:auto; }
+table { width:100%; border-collapse:collapse; font-size:12.5px; }
+thead { position:sticky; top:0; z-index:10; background:var(--surface-2); }
+th { padding:9px 13px; text-align:left; font-size:10.5px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--border); white-space:nowrap; cursor:pointer; user-select:none; }
+th:hover { color:var(--text-1); }
+td { padding:8px 13px; border-bottom:1px solid var(--border); color:var(--text-1); white-space:nowrap; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:var(--surface-2); }
+.mono { font-family:'DM Mono',monospace; font-size:12px; }
+.trunc { max-width:170px; overflow:hidden; text-overflow:ellipsis; }
+
+/* BADGES */
+.badge { display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+.badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.b-entregue   { background:var(--green-bg);  color:var(--green); }
+.b-transporte { background:var(--blue-bg);   color:var(--blue); }
+.b-aprovado   { background:var(--purple-bg); color:var(--purple); }
+.b-separacao  { background:var(--yellow-bg); color:var(--yellow); }
+.b-outros     { background:var(--border);    color:var(--text-2); }
+.b-mad        { background:var(--accent-bg); color:var(--accent); font-size:10px; padding:1px 6px; margin-left:4px; }
+
+/* PAGINATION */
+.pag { padding:10px 16px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--text-2); }
+.pag-btns { display:flex; gap:3px; }
+.pbtn { width:28px; height:28px; border-radius:var(--r-sm); border:1px solid var(--border-strong); background:var(--surface); cursor:pointer; font-size:12px; color:var(--text-2); display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.pbtn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+.pbtn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+.pbtn:disabled { opacity:.3; cursor:not-allowed; }
+
+/* EMPTY */
+.empty { padding:52px 24px; text-align:center; }
+.empty-ico { font-size:36px; margin-bottom:10px; }
+.empty h3 { font-size:15px; font-weight:600; color:var(--text-2); }
+.empty p  { font-size:12.5px; color:var(--text-3); margin-top:4px; }
+
+/* PLACEHOLDER */
+.placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:420px; text-align:center; gap:10px; }
+.ph-ico { width:68px; height:68px; border-radius:16px; background:var(--surface); border:2px dashed var(--border-strong); display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:4px; }
+.placeholder h2 { font-size:17px; font-weight:700; color:var(--text-2); }
+.placeholder p  { font-size:13px; color:var(--text-3); max-width:300px; line-height:1.6; }
+.ptag { display:inline-block; padding:3px 10px; border-radius:20px; background:var(--surface); border:1px solid var(--border-strong); font-size:10.5px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
+
+/* OVERVIEW */
+.ov-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+.ov-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:22px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:6px; }
+.ov-card-ico { font-size:22px; }
+.ov-card-title { font-size:14px; font-weight:700; }
+.ov-card-desc { font-size:12.5px; color:var(--text-3); line-height:1.55; }
+.dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--green); margin-right:4px; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* ── QUALIDADE / AVARIAS ── */
+.qual-layout { display:grid; grid-template-columns:380px 1fr; gap:20px; align-items:start; }
+@media(max-width:900px){ .qual-layout { grid-template-columns:1fr; } }
+
+.qcard { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden; }
+.qcard-header { padding:14px 18px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.qcard-ico { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.qcard-title { font-size:13px; font-weight:700; }
+.qcard-sub   { font-size:11px; color:var(--text-3); margin-top:1px; }
+.qcard-body  { padding:18px; }
+
+.form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.fg-full { grid-column:1/-1; }
+.flabel { display:block; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); margin-bottom:4px; }
+.finput-q, .fsel-q, .ftarea-q {
+  width:100%; padding:7px 10px;
+  border:1px solid var(--border-strong); border-radius:var(--r-sm);
+  font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text-1);
+  background:var(--surface-2); outline:none; transition:border-color .15s;
+}
+.finput-q:focus, .fsel-q:focus, .ftarea-q:focus { border-color:var(--accent); }
+.ftarea-q { resize:vertical; min-height:56px; }
+
+.vtotal {
+  width:100%; padding:7px 10px;
+  border:1px solid #cdc9c2; border-radius:var(--r-sm);
+  background:var(--accent-bg); color:var(--accent);
+  font-family:'DM Mono',monospace; font-size:14px; font-weight:700;
+  min-height:34px; display:flex; align-items:center;
+}
+
+.btn-registrar {
+  width:100%; margin-top:14px; padding:10px;
+  background:var(--accent); color:#fff; border:none;
+  border-radius:var(--r-sm); font-family:'DM Sans',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer;
+  transition:opacity .15s, transform .1s;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn-registrar:hover { opacity:.88; }
+.btn-registrar:active { transform:scale(.99); }
+.btn-registrar:disabled { opacity:.45; cursor:not-allowed; }
+
+.config-warn {
+  background:var(--yellow-bg); border:1px solid #f0d070;
+  border-radius:var(--r-sm); padding:11px 14px; margin-bottom:16px;
+  font-size:12px; color:#7a5000; display:flex; gap:8px; align-items:flex-start;
+}
+
+/* KPIs qualidade */
+.qual-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+
+/* Tabela ciclos */
+.ciclo-grid { display:grid; grid-template-columns:1fr 1fr 1fr 80px; }
+.ciclo-cell { padding:9px 14px; border-bottom:1px solid var(--border); font-size:12.5px; }
+.ciclo-cell-h { background:var(--surface-2); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-3); padding:8px 14px; border-bottom:1px solid var(--border); }
+.ciclo-right { text-align:right; }
+
+/* Badges tipo avaria — inclui Omni */
+.b-vazamento { background:var(--blue-bg);   color:var(--blue); }
+.b-embalagem { background:var(--yellow-bg); color:var(--yellow); }
+.b-quebra    { background:var(--accent-bg); color:var(--accent); }
+.b-omni      { background:var(--purple-bg); color:var(--purple); }
+
+/* Filtros qualidade */
+.qfbar {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
+  padding:10px 14px; display:flex; align-items:center; flex-wrap:wrap; gap:10px;
+  margin-bottom:12px; box-shadow:var(--shadow-sm);
+}
+
+/* Toast */
+.toast {
+  position:fixed; bottom:22px; right:22px;
+  padding:11px 16px; border-radius:var(--r);
+  font-size:13px; font-weight:500;
+  display:flex; align-items:center; gap:8px;
+  box-shadow:0 4px 14px rgba(0,0,0,.14);
+  transform:translateY(80px); opacity:0;
+  transition:all .28s ease; z-index:999;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast-ok  { background:#1e6e42; color:#fff; }
+.toast-err { background:#c13520; color:#fff; }
+
+/* Spinner */
+.spin {
+  width:13px; height:13px;
+  border:2px solid rgba(255,255,255,.4); border-top-color:#fff;
+  border-radius:50%; animation:spinning .6s linear infinite; display:inline-block;
+}
+@keyframes spinning { to{transform:rotate(360deg)} }
+
+/* ═══════════════════════════════════════════════
+   ARMAZENAGEM — card visão geral
+   ═══════════════════════════════════════════════ */
+.arm-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden; grid-column:1/-1;
+}
+.arm-card-head {
+  padding:14px 18px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.arm-card-title { font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.arm-card-body  { padding:18px; }
+.arm-gauge-wrap { display:flex; align-items:center; gap:28px; flex-wrap:wrap; }
+.arm-gauge { position:relative; width:110px; height:110px; flex-shrink:0; }
+.arm-gauge svg { width:110px; height:110px; transform:rotate(-90deg); }
+.arm-gauge-track { fill:none; stroke:var(--border); stroke-width:10; }
+.arm-gauge-fill  { fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset .6s ease, stroke .3s; }
+.arm-gauge-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.arm-gauge-pct  { font-size:22px; font-weight:700; font-family:'DM Mono',monospace; letter-spacing:-1px; line-height:1; }
+.arm-gauge-lbl  { font-size:10px; color:var(--text-3); margin-top:2px; text-transform:uppercase; letter-spacing:.4px; }
+.arm-stats { display:flex; gap:22px; flex-wrap:wrap; }
+.arm-stat  { display:flex; flex-direction:column; gap:2px; }
+.arm-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); }
+.arm-stat-val { font-size:18px; font-weight:700; font-family:'DM Mono',monospace; letter-spacing:-.5px; }
+.arm-stat-sub { font-size:11px; color:var(--text-2); }
+.arm-status-ok   { color:var(--green); }
+.arm-status-warn { color:var(--yellow); }
+.arm-status-risk { color:var(--accent); }
+.arm-freshbar-wrap { margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
+.arm-freshbar-lbl  { font-size:11px; color:var(--text-2); margin-bottom:5px; display:flex; justify-content:space-between; }
+.arm-freshbar-bg   { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
+.arm-freshbar-fill { height:100%; border-radius:3px; transition:width .6s ease; }
+.arm-upload-zone {
+  border:2px dashed var(--border-strong); border-radius:var(--r-sm);
+  padding:20px 18px; text-align:center; cursor:pointer;
+  background:var(--surface-2); transition:all .2s; position:relative;
+}
+.arm-upload-zone:hover,.arm-upload-zone.over { border-color:var(--accent); background:var(--accent-bg); }
+.arm-upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.arm-upload-zone p { font-size:12.5px; color:var(--text-2); margin-top:4px; }
+.arm-expired {
+  background:var(--yellow-bg); border:1px solid #f0d070; border-radius:var(--r-sm);
+  padding:14px 16px; display:flex; align-items:center; gap:12px;
+}
+.arm-expired-ico { font-size:24px; flex-shrink:0; }
+.arm-expired-text strong { display:block; font-size:13px; font-weight:700; color:var(--yellow); }
+.arm-expired-text span   { font-size:12px; color:#7a5000; }
+
+/* ═══════════════════════════════════════════════
+   FRETES ESPECIAIS — estilos exclusivos
+   ═══════════════════════════════════════════════ */
+
+/* Layout principal 2 colunas */
+.fr-layout { display:grid; grid-template-columns:420px 1fr; gap:20px; align-items:start; }
+@media(max-width:960px){ .fr-layout { grid-template-columns:1fr; } }
+
+/* Card genérico reutiliza .qcard */
+
+/* Lista de pedidos pendentes com checkboxes */
+.fr-pedidos-list {
+  max-height:340px; overflow-y:auto;
+  border:1px solid var(--border); border-radius:var(--r-sm);
+  background:var(--surface-2);
+}
+.fr-ped-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 13px; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background .12s; user-select:none;
+}
+.fr-ped-item:last-child { border-bottom:none; }
+.fr-ped-item:hover { background:var(--border); }
+.fr-ped-item.selected { background:var(--accent-bg); }
+.fr-ped-item input[type=checkbox] { accent-color:var(--accent); width:15px; height:15px; flex-shrink:0; cursor:pointer; }
+.fr-ped-info { flex:1; min-width:0; }
+.fr-ped-nome { font-size:12px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fr-ped-detail { font-size:11px; color:var(--text-3); font-family:'DM Mono',monospace; margin-top:1px; }
+.fr-ped-empty { padding:28px 16px; text-align:center; color:var(--text-3); font-size:12.5px; }
+
+/* Seleção resumida */
+.fr-sel-resumo {
+  background:var(--accent-bg); border:1px solid var(--accent-mid);
+  border-radius:var(--r-sm); padding:9px 13px; margin-bottom:12px;
+  font-size:12px; color:var(--accent); display:none;
+}
+.fr-sel-resumo.visible { display:block; }
+
+/* Botão confirmar frete */
+.btn-conf-frete {
+  width:100%; margin-top:14px; padding:10px;
+  background:var(--blue); color:#fff; border:none;
+  border-radius:var(--r-sm); font-family:'DM Sans',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer;
+  transition:opacity .15s, transform .1s;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn-conf-frete:hover { opacity:.88; }
+.btn-conf-frete:active { transform:scale(.99); }
+.btn-conf-frete:disabled { opacity:.45; cursor:not-allowed; }
+
+/* KPIs fretes */
+.fr-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
+@media(max-width:700px){ .fr-kpis { grid-template-columns:repeat(2,1fr); } }
+
+/* Tabela ciclos fretes — 5 colunas */
+.fr-ciclo-grid { display:grid; grid-template-columns:1fr 60px 80px 1fr 80px; }
+
+/* Badge tipo frete */
+.b-particular { background:var(--purple-bg); color:var(--purple); }
+.b-euentrego  { background:var(--green-bg);  color:var(--green); }
+
+/* Aviso sem upload */
+.fr-sem-upload {
+  background:var(--yellow-bg); border:1px solid #f0d070;
+  border-radius:var(--r-sm); padding:13px 16px; margin-bottom:18px;
+  font-size:13px; color:#7a5000; display:flex; gap:10px; align-items:center;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">
+    <div class="brand-logo">HB</div>
+    <div class="brand-text">
+      <strong>HUB Boticário</strong>
+      <span>Niterói — Logística</span>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab" onclick="goPage('visao-geral',this)">◈ Visão Geral</button>
+    <button class="nav-tab active" onclick="goPage('expedicao',this)">📦 Expedição</button>
+    <button class="nav-tab" onclick="goPage('producao',this)">⚙️ Produção <span class="tag-wms">WMS</span></button>
+
+    <button class="nav-tab" onclick="goPage('qualidade',this)">🔍 Qualidade</button>
+    <button class="nav-tab" onclick="goPage('ciclos',this)">🔄 Ciclos</button>
+    <button class="nav-tab" onclick="goPage('fretes',this)">🚚 Fretes Especiais</button>
+  </div>
+  <div class="nav-right"><span class="nav-clock" id="clock"></span></div>
+</nav>
+
+<main>
+
+<!-- VISÃO GERAL -->
+<div class="page" id="page-visao-geral">
+  <div class="ph"><div><h1>Visão Geral</h1><p>Resumo consolidado de todos os módulos</p></div></div>
+  <div class="ov-grid">
+    <div class="ov-card"><div class="ov-card-ico">📦</div><div class="ov-card-title">Expedição</div><div class="ov-card-desc"><span class="dot"></span>Ativo — carregue a planilha na aba Expedição.</div></div>
+    <div class="ov-card"><div class="ov-card-ico">⚙️</div><div class="ov-card-title">Produção</div><div class="ov-card-desc">Aguardando integração com WMS.</div></div>
+    <div class="ov-card"><div class="ov-card-ico">🔍</div><div class="ov-card-title">Qualidade</div><div class="ov-card-desc"><span class="dot"></span>Ativo — Registro de avarias.</div></div>
+    <div class="ov-card"><div class="ov-card-ico">🔄</div><div class="ov-card-title">Ciclos</div><div class="ov-card-desc">Em construção — Parte 3.</div></div>
+    <div class="ov-card"><div class="ov-card-ico">🚚</div><div class="ov-card-title">Fretes Especiais</div><div class="ov-card-desc"><span class="dot"></span>Ativo — Controle de fretes Madalena.</div></div>
+
+    <!-- ── CARD ARMAZENAGEM ── -->
+    <div class="arm-card">
+      <div class="arm-card-head">
+        <div class="arm-card-title">
+          🏭 Taxa de Ocupação do Estoque
+          <span id="arm-status-badge" style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--border);color:var(--text-3)">—</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="arm-ultima-data" style="font-size:11px;color:var(--text-3)"></span>
+          <button id="arm-btn-atualizar" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;display:none" onclick="document.getElementById('arm-file-input').click()">↩ Atualizar planilha</button>
+        </div>
+      </div>
+      <div class="arm-card-body">
+
+        <!-- Estado: expirado (>30 dias) -->
+        <div id="arm-expirado" class="arm-expired" style="display:none">
+          <div class="arm-expired-ico">⚠️</div>
+          <div class="arm-expired-text">
+            <strong>Dados desatualizados — última importação há mais de 30 dias</strong>
+            <span>Importe a planilha <strong>PosicaoEstoque</strong> do VD+ para atualizar o indicador.</span>
+          </div>
+        </div>
+
+        <!-- Estado: sem dados ainda -->
+        <div id="arm-vazio" style="display:none">
+          <p style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">
+            Importe a planilha <strong>PosicaoEstoque</strong> exportada do VD+ para calcular a taxa de ocupação.
+          </p>
+        </div>
+
+        <!-- Upload (aparece quando sem dados ou expirado) -->
+        <div class="arm-upload-zone" id="arm-upload-zone" style="display:none"
+             ondragover="armDragOver(event)" ondragleave="armDragLeave(event)" ondrop="armDrop(event)">
+          <input type="file" id="arm-file-input" accept=".xlsx,.xls" onchange="armOnFileChange(event)">
+          <div style="font-size:26px;margin-bottom:6px">📂</div>
+          <strong style="font-size:13px">Carregar PosicaoEstoque</strong>
+          <p>Arraste o arquivo ou clique para selecionar</p>
+        </div>
+
+        <!-- Estado: dados válidos -->
+        <div id="arm-dados" style="display:none">
+          <div class="arm-gauge-wrap">
+            <!-- Gauge SVG circular -->
+            <div class="arm-gauge">
+              <svg viewBox="0 0 110 110">
+                <circle class="arm-gauge-track" cx="55" cy="55" r="45"/>
+                <circle class="arm-gauge-fill" id="arm-gauge-fill" cx="55" cy="55" r="45"
+                  stroke-dasharray="282.7" stroke-dashoffset="282.7"/>
+              </svg>
+              <div class="arm-gauge-center">
+                <span class="arm-gauge-pct" id="arm-gauge-pct">0%</span>
+                <span class="arm-gauge-lbl">ocupação</span>
+              </div>
+            </div>
+            <!-- Stats -->
+            <div class="arm-stats">
+              <div class="arm-stat">
+                <span class="arm-stat-lbl">Peças no estoque</span>
+                <span class="arm-stat-val" id="arm-stat-pecas">—</span>
+                <span class="arm-stat-sub">canal 23002 · sem embalagens</span>
+              </div>
+              <div class="arm-stat">
+                <span class="arm-stat-lbl">Caixas estimadas</span>
+                <span class="arm-stat-val" id="arm-stat-caixas">—</span>
+                <span class="arm-stat-sub">÷ fator 35</span>
+              </div>
+              <div class="arm-stat">
+                <span class="arm-stat-lbl">Capacidade</span>
+                <span class="arm-stat-val">6.000</span>
+                <span class="arm-stat-sub">caixas total</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de frescor -->
+          <div class="arm-freshbar-wrap">
+            <div class="arm-freshbar-lbl">
+              <span id="arm-fresh-txt">Atualidade da informação</span>
+              <span id="arm-fresh-dias" style="font-weight:600"></span>
+            </div>
+            <div class="arm-freshbar-bg">
+              <div class="arm-freshbar-fill" id="arm-freshbar-fill" style="width:100%;background:var(--green)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spinner durante processamento -->
+        <div id="arm-loading" style="display:none;text-align:center;padding:28px;color:var(--text-3);font-size:13px">
+          <span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--accent);width:18px;height:18px"></span>
+          <span style="margin-left:8px">Processando planilha...</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EXPEDIÇÃO -->
+<div class="page active" id="page-expedicao">
+  <div class="ph">
+    <div><h1>Expedição</h1><p>Carregue o arquivo <strong>ConsultaPedidos</strong> exportado do ERP VD+</p></div>
+    <button class="btn btn-ghost" id="btn-reload" style="display:none" onclick="resetUpload()">↩ Nova planilha</button>
+  </div>
+
+  <div id="exp-alert"></div>
+
+  <div class="upload-zone" id="upload-zone"
+       ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+    <input type="file" id="file-input" accept=".xlsx,.xls" onchange="onFileChange(event)">
+    <div class="upload-ico">📂</div>
+    <h3>Carregar exportação do ERP</h3>
+    <p>Arraste o arquivo <strong>ConsultaPedidos</strong> ou clique para selecionar</p>
+    <div class="upload-cta">Selecionar arquivo .xlsx</div>
+  </div>
+
+  <div id="exp-content" style="display:none">
+    <div class="mtabs">
+      <button class="mtab active" onclick="switchTab('vd',this)">VD+ / APP / Portal</button>
+      <button class="mtab" onclick="switchTab('omni',this)">Omnichannel</button>
+    </div>
+
+    <div class="kpi-row" id="exp-kpis"></div>
+
+    <div class="fbar">
+      <span class="fbar-lbl">Filtros</span>
+      <input class="finput" id="f-search" placeholder="🔍  Nome, pedido, NF, bairro..." oninput="applyFilters()">
+      <select class="fsel" id="f-lote"    onchange="applyFilters()"><option value="">Todos os lotes</option></select>
+      <select class="fsel" id="f-estrt"   onchange="applyFilters()"><option value="">Todas as estruturas</option></select>
+      <select class="fsel" id="f-status"  onchange="applyFilters()"><option value="">Todos os status</option></select>
+      <select class="fsel" id="f-entrega" onchange="applyFilters()"><option value="">Tipo de entrega</option></select>
+      <button class="btn btn-mad" id="btn-mad" onclick="toggleMad()">⭐ Madalena</button>
+      <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
+    </div>
+
+    <!-- VD -->
+    <div id="tab-vd">
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">Pedidos VD+ / APP Revendedor / Portal</span>
+          <span class="tcard-count" id="vd-count">—</span>
+        </div>
+        <div class="tscroll">
+          <table>
+            <thead><tr>
+              <th onclick="doSort('vd','CodigoPedido')">Nº Pedido ↕</th>
+              <th>NF</th>
+              <th onclick="doSort('vd','NomePessoa')">Revendedor ↕</th>
+              <th>Código</th>
+              <th onclick="doSort('vd','SituaçãoComercial')">Status ↕</th>
+              <th>Previsão Entrega</th>
+              <th>Data Entrega</th>
+              <th>Lote Sep.</th>
+              <th>Ciclo</th>
+              <th>Bairro</th>
+              <th>Estrutura</th>
+              <th>Pagamento</th>
+              <th>Tipo Entrega</th>
+            </tr></thead>
+            <tbody id="vd-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pag" id="vd-pag"></div>
+      </div>
+    </div>
+
+    <!-- OMNI -->
+    <div id="tab-omni" style="display:none">
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">Pedidos Omnichannel</span>
+          <span class="tcard-count" id="omni-count">—</span>
+        </div>
+        <div class="tscroll">
+          <table>
+            <thead><tr>
+              <th onclick="doSort('omni','CodigoPedido')">Nº Pedido ↕</th>
+              <th>Cód. Externo</th>
+              <th>NF</th>
+              <th onclick="doSort('omni','NomePessoa')">Cliente ↕</th>
+              <th onclick="doSort('omni','SituaçãoComercial')">Status ↕</th>
+              <th>Previsão Entrega</th>
+              <th>Data Entrega</th>
+              <th>Lote Sep.</th>
+              <th>Ciclo</th>
+              <th>Bairro Entrega</th>
+              <th>Pagamento</th>
+              <th>Recebedor</th>
+            </tr></thead>
+            <tbody id="omni-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pag" id="omni-pag"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUÇÃO -->
+<div class="page" id="page-producao">
+  <div class="placeholder">
+    <div class="ph-ico">⚙️</div><span class="ptag">Aguardando WMS</span>
+    <h2>Módulo de Produção</h2>
+    <p>Picking, packing e produtividade por operador. Disponível após integração com WMS.</p>
+  </div>
+</div>
+
+<!-- ARMAZENAGEM -->
+
+<!-- QUALIDADE -->
+<div class="page" id="page-qualidade">
+  <div class="ph">
+    <div><h1>Qualidade</h1><p>Registro e acompanhamento de avarias por ciclo</p></div>
+  </div>
+
+  <div id="qual-config-warn" class="config-warn" style="display:none">
+    <span>⚙️</span>
+    <span>Configure a variável <strong>AVARIAS_URL</strong> no código JavaScript com a URL do seu Apps Script.</span>
+  </div>
+
+  <div class="qual-layout">
+
+    <!-- FORMULÁRIO -->
+    <div class="qcard">
+      <div class="qcard-header">
+        <div class="qcard-ico" style="background:var(--accent-bg)">🚨</div>
+        <div>
+          <div class="qcard-title">Registrar Avaria</div>
+          <div class="qcard-sub">Preenchimento pelo operador</div>
+        </div>
+      </div>
+      <div class="qcard-body">
+        <div class="form-grid-2">
+
+          <div>
+            <label class="flabel">Data</label>
+            <input class="finput-q" type="date" id="q-data">
+          </div>
+          <div>
+            <label class="flabel">Ciclo</label>
+            <input class="finput-q" type="text" id="q-ciclo" placeholder="Ex: C01/2026">
+          </div>
+          <div>
+            <label class="flabel">Código do Produto</label>
+            <input class="finput-q" type="text" id="q-codigo" placeholder="Ex: 12345">
+          </div>
+          <div>
+            <label class="flabel">Quantidade</label>
+            <input class="finput-q" type="number" id="q-qtd" min="1" placeholder="0" oninput="qCalcTotal()">
+          </div>
+          <div>
+            <label class="flabel">Valor Unitário (R$)</label>
+            <input class="finput-q" type="number" id="q-vunit" step="0.01" min="0" placeholder="0,00" oninput="qCalcTotal()">
+          </div>
+          <div>
+            <label class="flabel">Valor Total</label>
+            <div class="vtotal" id="q-vtotal">R$ 0,00</div>
+          </div>
+          <div class="fg-full">
+            <label class="flabel">Tipo de Avaria</label>
+            <select class="fsel-q" id="q-tipo">
+              <option value="">Selecione...</option>
+              <option value="Vazamento">Vazamento</option>
+              <option value="Embalagem">Embalagem</option>
+              <option value="Quebra">Quebra</option>
+              <option value="Omni">Omni</option>
+            </select>
+          </div>
+          <div class="fg-full">
+            <label class="flabel">Responsável pela verificação</label>
+            <input class="finput-q" type="text" id="q-resp" placeholder="Nome do responsável">
+          </div>
+          <div class="fg-full">
+            <label class="flabel">Observações</label>
+            <textarea class="ftarea-q" id="q-obs" placeholder="Informações adicionais (opcional)"></textarea>
+          </div>
+
+        </div>
+        <button class="btn-registrar" id="q-btn" onclick="qRegistrar()">
+          ✅ Registrar Avaria
+        </button>
+      </div>
+    </div>
+
+    <!-- PAINEL INDICADORES -->
+    <div>
+
+      <!-- KPIs -->
+      <div class="qual-kpis">
+        <div class="kpi c-red">
+          <div class="kpi-lbl">Total Peças</div>
+          <div class="kpi-val" id="q-kpi-pecas">—</div>
+          <div class="kpi-sub">todos os ciclos</div>
+        </div>
+        <div class="kpi c-yellow">
+          <div class="kpi-lbl">Valor Total</div>
+          <div class="kpi-val" id="q-kpi-valor">—</div>
+          <div class="kpi-sub">todos os ciclos</div>
+        </div>
+        <div class="kpi c-purple">
+          <div class="kpi-lbl">Ocorrências</div>
+          <div class="kpi-val" id="q-kpi-oc">—</div>
+          <div class="kpi-sub">registros</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="qfbar">
+        <span class="fbar-lbl">Filtrar</span>
+        <select class="fsel" id="q-fil-ciclo" onchange="qRender()">
+          <option value="">Todos os ciclos</option>
+        </select>
+        <select class="fsel" id="q-fil-tipo" onchange="qRender()">
+          <option value="">Todos os tipos</option>
+          <option value="Vazamento">Vazamento</option>
+          <option value="Embalagem">Embalagem</option>
+          <option value="Quebra">Quebra</option>
+          <option value="Omni">Omni</option>
+        </select>
+        <button class="btn-clear" onclick="qLimparFiltros()">✕ Limpar</button>
+      </div>
+
+      <!-- Resumo por ciclo -->
+      <div class="qcard" style="margin-bottom:14px">
+        <div class="qcard-header">
+          <div class="qcard-ico" style="background:var(--purple-bg)">📊</div>
+          <div>
+            <div class="qcard-title">Resumo por Ciclo</div>
+            <div class="qcard-sub">Peças e valor agrupados</div>
+          </div>
+        </div>
+        <div id="q-tabela-ciclos">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+
+      <!-- Histórico -->
+      <div class="qcard">
+        <div class="qcard-header">
+          <div class="qcard-ico" style="background:var(--yellow-bg)">📝</div>
+          <div>
+            <div class="qcard-title">Histórico de Ocorrências</div>
+            <div class="qcard-sub">Registros individuais</div>
+          </div>
+        </div>
+        <div id="q-tabela-hist">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CICLOS -->
+<div class="page" id="page-ciclos">
+  <div class="placeholder">
+    <div class="ph-ico">🔄</div><span class="ptag">Em construção — Parte 3</span>
+    <h2>Módulo de Ciclos</h2>
+    <p>Comparativo de pedidos e itens por ciclo de campanha (2025 vs 2026).</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     FRETES ESPECIAIS
+     ════════════════════════════════════════════════════ -->
+<div class="page" id="page-fretes">
+  <div class="ph">
+    <div>
+      <h1>Fretes Especiais</h1>
+      <p>Controle de fretes da Madalena — pedidos detectados automaticamente após upload do ERP</p>
+    </div>
+  </div>
+
+  <div id="fr-config-warn" class="config-warn" style="display:none">
+    <span>⚙️</span>
+    <span>Configure a variável <strong>FRETES_URL</strong> no código JavaScript com a URL do seu Apps Script.</span>
+  </div>
+
+  <!-- Aviso sem upload -->
+  <div id="fr-sem-upload" class="fr-sem-upload" style="display:none">
+    <span>📂</span>
+    <span>Carregue o arquivo <strong>ConsultaPedidos</strong> na aba <strong>Expedição</strong> para visualizar os pedidos pendentes da Madalena.</span>
+  </div>
+
+  <div class="fr-layout">
+
+    <!-- ── COLUNA ESQUERDA: Formulário ── -->
+    <div>
+      <div class="qcard" style="margin-bottom:16px">
+        <div class="qcard-header">
+          <div class="qcard-ico" style="background:var(--blue-bg)">🚚</div>
+          <div>
+            <div class="qcard-title">Registrar Frete</div>
+            <div class="qcard-sub">Selecione os pedidos e preencha os dados do envio</div>
+          </div>
+        </div>
+        <div class="qcard-body">
+
+          <!-- Lista de pedidos pendentes -->
+          <label class="flabel" style="margin-bottom:6px">Pedidos Madalena — Pendentes de Frete</label>
+          <div class="fr-pedidos-list" id="fr-lista-pedidos">
+            <div class="fr-ped-empty">Carregue a planilha na aba Expedição para ver os pedidos.</div>
+          </div>
+
+          <!-- Resumo da seleção -->
+          <div class="fr-sel-resumo" id="fr-sel-resumo"></div>
+
+          <!-- Campos do frete -->
+          <div class="form-grid-2" style="margin-top:14px">
+            <div>
+              <label class="flabel">Data de Envio</label>
+              <input class="finput-q" type="date" id="fr-data">
+            </div>
+            <div>
+              <label class="flabel">Nº de Fretes (viagens)</label>
+              <input class="finput-q" type="number" id="fr-nfretes" min="1" value="1" placeholder="1">
+            </div>
+            <div>
+              <label class="flabel">Valor do Frete (R$)</label>
+              <input class="finput-q" type="number" id="fr-valor" step="0.01" min="0" placeholder="0,00">
+            </div>
+            <div>
+              <label class="flabel">Tipo</label>
+              <select class="fsel-q" id="fr-tipo">
+                <option value="PARTICULAR">PARTICULAR</option>
+                <option value="EU ENTREGO">EU ENTREGO</option>
+              </select>
+            </div>
+            <div class="fg-full">
+              <label class="flabel">Observações</label>
+              <textarea class="ftarea-q" id="fr-obs" placeholder="Ex: Duas viagens, horário combinado..." style="min-height:44px"></textarea>
+            </div>
+          </div>
+
+          <button class="btn-conf-frete" id="fr-btn" onclick="frRegistrar()">
+            ✅ Confirmar Frete
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COLUNA DIREITA: Painel ── -->
+    <div>
+
+      <!-- KPIs -->
+      <div class="fr-kpis">
+        <div class="kpi c-blue">
+          <div class="kpi-lbl">Total Fretes</div>
+          <div class="kpi-val" id="fr-kpi-tot">—</div>
+          <div class="kpi-sub">registros gravados</div>
+        </div>
+        <div class="kpi c-yellow">
+          <div class="kpi-lbl">Custo Total</div>
+          <div class="kpi-val" id="fr-kpi-val">—</div>
+          <div class="kpi-sub">todos os ciclos</div>
+        </div>
+        <div class="kpi c-purple">
+          <div class="kpi-lbl">Pedidos</div>
+          <div class="kpi-val" id="fr-kpi-ped">—</div>
+          <div class="kpi-sub">pedidos despachados</div>
+        </div>
+        <div class="kpi c-green">
+          <div class="kpi-lbl">Custo Médio</div>
+          <div class="kpi-val" id="fr-kpi-med">—</div>
+          <div class="kpi-sub">por pedido</div>
+        </div>
+      </div>
+
+      <!-- Filtros painel -->
+      <div class="qfbar">
+        <span class="fbar-lbl">Filtrar</span>
+        <select class="fsel" id="fr-fil-ciclo" onchange="frRender()">
+          <option value="">Todos os ciclos</option>
+        </select>
+        <select class="fsel" id="fr-fil-tipo" onchange="frRender()">
+          <option value="">Todos os tipos</option>
+          <option value="PARTICULAR">PARTICULAR</option>
+          <option value="EU ENTREGO">EU ENTREGO</option>
+        </select>
+        <button class="btn-clear" onclick="frLimparFiltros()">✕ Limpar</button>
+      </div>
+
+      <!-- Resumo por ciclo -->
+      <div class="qcard" style="margin-bottom:14px">
+        <div class="qcard-header">
+          <div class="qcard-ico" style="background:var(--blue-bg)">📊</div>
+          <div>
+            <div class="qcard-title">Custo por Ciclo</div>
+            <div class="qcard-sub">Valor total e nº de viagens agrupados</div>
+          </div>
+        </div>
+        <div id="fr-tabela-ciclos">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+
+      <!-- Histórico completo -->
+      <div class="qcard">
+        <div class="qcard-header">
+          <div class="qcard-ico" style="background:var(--yellow-bg)">📝</div>
+          <div>
+            <div class="qcard-title">Histórico de Fretes</div>
+            <div class="qcard-sub">Registros gravados — imutáveis após confirmação</div>
+          </div>
+        </div>
+        <div id="fr-tabela-hist">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// ⚙️  URLs dos Apps Script — configure com suas URLs
+// ============================================================
+const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbwpHmfJq0kElHi8HKswOKLdvrahCun7i4xWNf0uXbxFvm1TO-tRDqBO04ct-WhpjSZnUw/exec";
+// Todos os módulos usam a mesma URL — o roteamento é feito pelo campo "modulo" no payload
+const AVARIAS_URL     = SCRIPT_URL;
+const FRETES_URL      = SCRIPT_URL;
+const ARMAZENAGEM_URL = SCRIPT_URL;
+// ============================================================
+
+/* ── Estado global ─────────────────────────────────────── */
+const S = {
+  vdRaw:[], omniRaw:[], vdF:[], omniF:[],
+  tab:'vd', madOn:false,
+  sortCol:null, sortDir:1,
+  vdPage:1, omniPage:1, PAGE_SIZE:100,
+};
+
+// Estado do módulo Fretes
+const FR = {
+  registros: [],
+  iniciado: false,
+  selecionados: new Set(),   // Set de CodigoPedido selecionados
+};
+
+const REQUIRED = [
+  'CodigoPedido','NomePessoa','Pessoa','SituaçãoComercial','MeioCaptacao',
+  'NotaFiscal','PrevisãoEntrega','DataEntrega','Lote de separação',
+  'Ciclo Captação','Bairro','BairroEntregaRetirada','Estrutura',
+  'PlanoPagamento','Tipo de Entrega','Cód Externo Pedido','Nome do Recebedor'
+];
+
+const MADALENA = new Set(['349129','731858']);
+
+/* ── Navegação ─────────────────────────────────────────── */
+function goPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'qualidade') qIniciar();
+  if (id === 'fretes')    frIniciar();
+  if (id === 'visao-geral') armIniciar();
+}
+
+/* ── Relógio ───────────────────────────────────────────── */
+(function(){
+  const el = document.getElementById('clock');
+  function t(){ const n=new Date(); el.textContent=n.toLocaleDateString('pt-BR')+' · '+n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+  t(); setInterval(t, 30000);
+})();
+
+// Inicializa armazenagem imediatamente (card fica na Visão Geral que pode ser a primeira aba acessada)
+window.addEventListener('DOMContentLoaded', () => { armIniciar(); });
+
+/* ── Drag & Drop upload ────────────────────────────────── */
+function onDragOver(e){ e.preventDefault(); document.getElementById('upload-zone').classList.add('over'); }
+function onDragLeave(){ document.getElementById('upload-zone').classList.remove('over'); }
+function onDrop(e){ e.preventDefault(); onDragLeave(); const f=e.dataTransfer.files[0]; if(f)processFile(f); }
+function onFileChange(e){ const f=e.target.files[0]; if(f)processFile(f); }
+
+function resetUpload(){
+  S.vdRaw=[];S.omniRaw=[];S.vdF=[];S.omniF=[];
+  document.getElementById('upload-zone').style.display='';
+  document.getElementById('exp-content').style.display='none';
+  document.getElementById('btn-reload').style.display='none';
+  document.getElementById('file-input').value='';
+  setAlert('','');
+  // Atualiza lista de pendentes de fretes
+  frRenderPendentes();
+}
+
+/* ── Processo principal de leitura do xlsx ─────────────── */
+function processFile(file){
+  setAlert('','');
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+      if(raw.length < 2){ setAlert('error','⚠️ Arquivo vazio. Verifique a exportação do ERP.'); return; }
+
+      const headers = raw[0].map(h => String(h).trim());
+      const missing = REQUIRED.filter(c => !headers.includes(c));
+      if(missing.length > 0){
+        setAlert('error',`⚠️ Formato não reconhecido. Colunas ausentes: <strong>${missing.join(', ')}</strong>.`);
+        return;
+      }
+
+      const idx = {};
+      headers.forEach((h,i) => idx[h] = i);
+
+      const all = [];
+      for(let i=1; i<raw.length; i++){
+        const r = raw[i];
+        if(!r || r.every(c => c===''||c===null||c===undefined)) continue;
+        all.push({
+          CodigoPedido:      r[idx['CodigoPedido']],
+          CodExterno:        r[idx['Cód Externo Pedido']],
+          NomePessoa:        r[idx['NomePessoa']],
+          Pessoa:            String(r[idx['Pessoa']]||'').trim(),
+          SituaçãoComercial: r[idx['SituaçãoComercial']],
+          MeioCaptacao:      r[idx['MeioCaptacao']],
+          NotaFiscal:        r[idx['NotaFiscal']],
+          PrevisaoEntrega:   fmtDate(r[idx['PrevisãoEntrega']]),
+          DataEntrega:       fmtDate(r[idx['DataEntrega']]),
+          Lote:              r[idx['Lote de separação']],
+          Ciclo:             r[idx['Ciclo Captação']],
+          Bairro:            r[idx['BairroEntregaRetirada']]||r[idx['Bairro']],
+          Estrutura:         r[idx['Estrutura']],
+          Pagamento:         r[idx['PlanoPagamento']],
+          TipoEntrega:       r[idx['Tipo de Entrega']],
+          Recebedor:         r[idx['Nome do Recebedor']],
+          isMad:             MADALENA.has(String(r[idx['Pessoa']]||'').trim()),
+        });
+      }
+
+      const ativos = all.filter(r => r.SituaçãoComercial !== 'Cancelado');
+      const canc = all.length - ativos.length;
+      S.vdRaw   = ativos.filter(r => r.MeioCaptacao !== 'Pedido Omnichannel');
+      S.omniRaw = ativos.filter(r => r.MeioCaptacao === 'Pedido Omnichannel');
+
+      setAlert('success',`✅ Planilha carregada — <strong>${ativos.length.toLocaleString('pt-BR')} pedidos ativos</strong> (${canc.toLocaleString('pt-BR')} cancelados removidos). VD+/APP: ${S.vdRaw.length.toLocaleString('pt-BR')} · Omni: ${S.omniRaw.length.toLocaleString('pt-BR')}.`);
+
+      document.getElementById('upload-zone').style.display = 'none';
+      document.getElementById('exp-content').style.display = 'block';
+      document.getElementById('btn-reload').style.display = '';
+
+      populateFilters();
+      applyFilters();
+
+      // Atualiza lista pendentes de fretes com dados reais
+      frRenderPendentes();
+
+    } catch(err){
+      setAlert('error','⚠️ Erro ao ler o arquivo. Verifique se é um .xlsx válido exportado do VD+.');
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function fmtDate(v){
+  if(!v) return '';
+  if(v instanceof Date) return v.toLocaleDateString('pt-BR');
+  const s = String(v);
+  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s.slice(0,10);
+  if(s.includes('-')||s.includes('T')){ const d=new Date(s); if(!isNaN(d)) return d.toLocaleDateString('pt-BR'); }
+  return s;
+}
+
+/* ── Filtros Expedição ─────────────────────────────────── */
+function populateFilters(){
+  const all = [...S.vdRaw, ...S.omniRaw];
+  fill('f-lote',    uniq(all.map(r=>r.Lote).filter(Boolean)).sort(), 'Todos os lotes');
+  fill('f-estrt',   uniq(all.map(r=>r.Estrutura).filter(Boolean)).sort(), 'Todas as estruturas');
+  fill('f-status',  uniq(all.map(r=>r.SituaçãoComercial).filter(Boolean)).sort(), 'Todos os status');
+  fill('f-entrega', uniq(all.map(r=>r.TipoEntrega).filter(Boolean)).sort(), 'Tipo de entrega');
+}
+function uniq(a){ return [...new Set(a)]; }
+function fill(id, opts, ph){
+  const s = document.getElementById(id);
+  s.innerHTML = `<option value="">${ph}</option>`;
+  opts.forEach(o => { const op=document.createElement('option'); op.value=o; op.textContent=o; s.appendChild(op); });
+}
+
+function applyFilters(){
+  const q     = document.getElementById('f-search').value.toLowerCase().trim();
+  const lote  = document.getElementById('f-lote').value;
+  const estrt = document.getElementById('f-estrt').value;
+  const stat  = document.getElementById('f-status').value;
+  const ent   = document.getElementById('f-entrega').value;
+
+  function match(r){
+    if(lote  && String(r.Lote||'') !== lote) return false;
+    if(estrt && r.Estrutura !== estrt) return false;
+    if(stat  && r.SituaçãoComercial !== stat) return false;
+    if(ent   && r.TipoEntrega !== ent) return false;
+    if(S.madOn && !r.isMad) return false;
+    if(q){
+      const hay = [r.NomePessoa,r.CodigoPedido,r.NotaFiscal,r.Bairro,r.Pessoa,r.CodExterno]
+                   .map(x=>String(x||'').toLowerCase()).join(' ');
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  }
+
+  S.vdF = S.vdRaw.filter(match);
+  S.omniF = S.omniRaw.filter(match);
+  S.vdPage = 1; S.omniPage = 1;
+  renderKPIs(); renderVD(); renderOmni();
+}
+
+function clearFilters(){
+  document.getElementById('f-search').value = '';
+  ['f-lote','f-estrt','f-status','f-entrega'].forEach(id => document.getElementById(id).value = '');
+  S.madOn = false; document.getElementById('btn-mad').classList.remove('on');
+  applyFilters();
+}
+function toggleMad(){ S.madOn = !S.madOn; document.getElementById('btn-mad').classList.toggle('on', S.madOn); applyFilters(); }
+
+/* ── KPIs Expedição ────────────────────────────────────── */
+function renderKPIs(){
+  const all = [...S.vdF, ...S.omniF];
+  const tot  = all.length;
+  const entg = all.filter(r=>r.SituaçãoComercial==='Entregue').length;
+  const trans= all.filter(r=>r.SituaçãoComercial==='Transporte').length;
+  const pend = all.filter(r=>r.SituaçãoComercial!=='Entregue').length;
+  const lotes= uniq(all.map(r=>r.Lote).filter(Boolean)).length;
+  const mad  = all.filter(r=>r.isMad).length;
+
+  document.getElementById('exp-kpis').innerHTML=`
+    <div class="kpi c-red">
+      <div class="kpi-lbl">Total Ativo</div>
+      <div class="kpi-val">${tot.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">VD+: ${S.vdF.length.toLocaleString('pt-BR')} · Omni: ${S.omniF.length.toLocaleString('pt-BR')}</div>
+    </div>
+    <div class="kpi c-green">
+      <div class="kpi-lbl">Entregues</div>
+      <div class="kpi-val">${entg.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">${tot?((entg/tot)*100).toFixed(1):0}% do total</div>
+    </div>
+    <div class="kpi c-blue">
+      <div class="kpi-lbl">Em Transporte</div>
+      <div class="kpi-val">${trans.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">${tot?((trans/tot)*100).toFixed(1):0}% do total</div>
+    </div>
+    <div class="kpi c-yellow">
+      <div class="kpi-lbl">Pendentes</div>
+      <div class="kpi-val">${pend.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">Aprovado · Separação · Captação</div>
+    </div>
+    <div class="kpi c-purple">
+      <div class="kpi-lbl">Lotes Sep.</div>
+      <div class="kpi-val">${lotes.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">Lotes no período filtrado</div>
+    </div>
+    ${mad>0?`<div class="kpi c-red">
+      <div class="kpi-lbl">⭐ Madalena</div>
+      <div class="kpi-val">${mad.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">Cód. 349129 / 731858</div>
+    </div>`:''}
+  `;
+}
+
+/* ── Tabelas Expedição ─────────────────────────────────── */
+function renderVD(){
+  const data = S.vdF;
+  document.getElementById('vd-count').textContent = data.length.toLocaleString('pt-BR') + ' registros';
+  const tb = document.getElementById('vd-tbody');
+  if(!data.length){
+    tb.innerHTML=`<tr><td colspan="13"><div class="empty"><div class="empty-ico">🔍</div><h3>Nenhum pedido encontrado</h3><p>Ajuste os filtros.</p></div></td></tr>`;
+    document.getElementById('vd-pag').innerHTML=''; return;
+  }
+  const slice = pagSlice(data, S.vdPage, S.PAGE_SIZE);
+  tb.innerHTML = slice.map(r=>`<tr>
+    <td class="mono">${r.CodigoPedido||'—'}${r.isMad?'<span class="badge b-mad">MAD</span>':''}</td>
+    <td class="mono">${r.NotaFiscal||'—'}</td>
+    <td class="trunc" title="${esc(r.NomePessoa)}">${r.NomePessoa||'—'}</td>
+    <td class="mono">${r.Pessoa||'—'}</td>
+    <td>${sBadge(r.SituaçãoComercial)}</td>
+    <td class="mono">${r.PrevisaoEntrega||'—'}</td>
+    <td class="mono">${r.DataEntrega||'—'}</td>
+    <td class="mono">${r.Lote||'—'}</td>
+    <td>${r.Ciclo||'—'}</td>
+    <td>${r.Bairro||'—'}</td>
+    <td class="trunc" title="${esc(r.Estrutura)}">${r.Estrutura||'—'}</td>
+    <td class="trunc" title="${esc(r.Pagamento)}">${r.Pagamento||'—'}</td>
+    <td>${r.TipoEntrega||'—'}</td>
+  </tr>`).join('');
+  renderPag('vd-pag', data.length, S.vdPage, S.PAGE_SIZE, p=>{S.vdPage=p;renderVD();});
+}
+
+function renderOmni(){
+  const data = S.omniF;
+  document.getElementById('omni-count').textContent = data.length.toLocaleString('pt-BR') + ' registros';
+  const tb = document.getElementById('omni-tbody');
+  if(!data.length){
+    tb.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="empty-ico">🔍</div><h3>Nenhum pedido encontrado</h3><p>Ajuste os filtros.</p></div></td></tr>`;
+    document.getElementById('omni-pag').innerHTML=''; return;
+  }
+  const slice = pagSlice(data, S.omniPage, S.PAGE_SIZE);
+  tb.innerHTML = slice.map(r=>`<tr>
+    <td class="mono">${r.CodigoPedido||'—'}</td>
+    <td class="mono">${r.CodExterno||'—'}</td>
+    <td class="mono">${r.NotaFiscal||'—'}</td>
+    <td class="trunc" title="${esc(r.NomePessoa)}">${r.NomePessoa||'—'}</td>
+    <td>${sBadge(r.SituaçãoComercial)}</td>
+    <td class="mono">${r.PrevisaoEntrega||'—'}</td>
+    <td class="mono">${r.DataEntrega||'—'}</td>
+    <td class="mono">${r.Lote||'—'}</td>
+    <td>${r.Ciclo||'—'}</td>
+    <td>${r.Bairro||'—'}</td>
+    <td class="trunc" title="${esc(r.Pagamento)}">${r.Pagamento||'—'}</td>
+    <td class="trunc" title="${esc(r.Recebedor)}">${r.Recebedor||'—'}</td>
+  </tr>`).join('');
+  renderPag('omni-pag', data.length, S.omniPage, S.PAGE_SIZE, p=>{S.omniPage=p;renderOmni();});
+}
+
+function esc(s){ return String(s||'').replace(/"/g,'&quot;'); }
+
+function sBadge(s){
+  const m={'Entregue':'b-entregue','Transporte':'b-transporte','Aprovado':'b-aprovado','Separação':'b-separacao'};
+  return `<span class="badge ${m[s]||'b-outros'}">${s||'—'}</span>`;
+}
+
+function doSort(tab, col){
+  if(S.sortCol===col) S.sortDir*=-1; else{S.sortCol=col; S.sortDir=1;}
+  const arr = tab==='vd' ? S.vdF : S.omniF;
+  arr.sort((a,b)=>{ const va=String(a[col]||'').toLowerCase(),vb=String(b[col]||'').toLowerCase(); return va<vb?-S.sortDir:va>vb?S.sortDir:0; });
+  if(tab==='vd') renderVD(); else renderOmni();
+}
+
+function switchTab(tab, btn){
+  S.tab = tab;
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-vd').style.display   = tab==='vd'   ? 'block':'none';
+  document.getElementById('tab-omni').style.display = tab==='omni' ? 'block':'none';
+}
+
+/* ── Paginação ─────────────────────────────────────────── */
+function pagSlice(arr, page, size){ return arr.slice((page-1)*size, page*size); }
+
+function renderPag(cid, total, cur, size, cb){
+  const pages = Math.ceil(total/size);
+  if(pages<=1){document.getElementById(cid).innerHTML=''; return;}
+  const s=(cur-1)*size+1, e=Math.min(cur*size,total);
+  let nums=[];
+  if(pages<=7){for(let i=1;i<=pages;i++)nums.push(i);}
+  else{
+    nums=[1];
+    if(cur>3)nums.push('…');
+    for(let i=Math.max(2,cur-1);i<=Math.min(pages-1,cur+1);i++)nums.push(i);
+    if(cur<pages-2)nums.push('…');
+    nums.push(pages);
+  }
+  const btns=nums.map(n=>n==='…'
+    ?`<span style="padding:0 3px;color:var(--text-3)">…</span>`
+    :`<button class="pbtn${n===cur?' on':''}" onclick="(${cb.toString()})(${n})">${n}</button>`
+  ).join('');
+  document.getElementById(cid).innerHTML=`
+    <span>${s.toLocaleString('pt-BR')}–${e.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')}</span>
+    <div class="pag-btns">
+      <button class="pbtn" onclick="(${cb.toString()})(${cur-1})" ${cur===1?'disabled':''}>‹</button>
+      ${btns}
+      <button class="pbtn" onclick="(${cb.toString()})(${cur+1})" ${cur===pages?'disabled':''}>›</button>
+    </div>`;
+}
+
+/* ── Alert Expedição ───────────────────────────────────── */
+function setAlert(type, msg){
+  const el = document.getElementById('exp-alert');
+  if(!type){el.innerHTML=''; return;}
+  const ico = {error:'⚠️',warning:'⚡',success:'✅'}[type]||'ℹ️';
+  el.innerHTML=`<div class="alert alert-${type}"><span class="alert-ico">${ico}</span><span>${msg}</span></div>`;
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO QUALIDADE — AVARIAS
+   ════════════════════════════════════════════════════════ */
+
+let qRegistros = [];
+let qIniciado  = false;
+
+function qIniciar(){
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('q-data').value = hoje;
+
+  if(AVARIAS_URL === 'COLE_SUA_URL_AQUI'){
+    document.getElementById('qual-config-warn').style.display = 'flex';
+    qRenderVazio();
+    return;
+  }
+
+  if(!qIniciado){
+    qIniciado = true;
+    qCarregar();
+  }
+}
+
+function qCalcTotal(){
+  const qtd  = parseFloat(document.getElementById('q-qtd').value)   || 0;
+  const unit = parseFloat(document.getElementById('q-vunit').value)  || 0;
+  document.getElementById('q-vtotal').textContent =
+    (qtd * unit).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+
+function qValidar(){
+  const campos = [
+    {id:'q-data',  nome:'Data'},
+    {id:'q-ciclo', nome:'Ciclo'},
+    {id:'q-codigo',nome:'Código'},
+    {id:'q-qtd',   nome:'Quantidade'},
+    {id:'q-vunit', nome:'Valor Unitário'},
+    {id:'q-tipo',  nome:'Tipo de Avaria'},
+    {id:'q-resp',  nome:'Responsável'},
+  ];
+  for(const c of campos){
+    const v = document.getElementById(c.id).value.trim();
+    if(!v){ mostrarToast('Preencha: ' + c.nome, 'err'); document.getElementById(c.id).focus(); return false; }
+  }
+  return true;
+}
+
+async function qRegistrar(){
+  if(AVARIAS_URL === 'COLE_SUA_URL_AQUI'){ mostrarToast('Configure a URL do Apps Script.','err'); return; }
+  if(!qValidar()) return;
+
+  const btn = document.getElementById('q-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Registrando...';
+
+  const payload = {
+    data:          document.getElementById('q-data').value,
+    ciclo:         document.getElementById('q-ciclo').value.trim(),
+    codigo:        document.getElementById('q-codigo').value.trim(),
+    quantidade:    document.getElementById('q-qtd').value,
+    valorUnitario: document.getElementById('q-vunit').value,
+    tipoAvaria:    document.getElementById('q-tipo').value,
+    responsavel:   document.getElementById('q-resp').value.trim(),
+    observacoes:   document.getElementById('q-obs').value.trim(),
+  };
+
+  try {
+    const resp = await fetch(AVARIAS_URL, { method:'POST', body:JSON.stringify(payload) });
+    const json = await resp.json();
+    if(json.sucesso){
+      mostrarToast('✅ Avaria registrada!', 'ok');
+      qLimparForm();
+      qCarregar();
+    } else {
+      mostrarToast('Erro: ' + json.erro, 'err');
+    }
+  } catch(err){
+    mostrarToast('Falha na conexão.', 'err');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Registrar Avaria';
+  }
+}
+
+function qLimparForm(){
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('q-data').value = hoje;
+  ['q-ciclo','q-codigo','q-qtd','q-vunit','q-tipo','q-resp','q-obs']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('q-vtotal').textContent = 'R$ 0,00';
+}
+
+async function qCarregar(){
+  try {
+    const resp = await fetch(AVARIAS_URL);
+    const json = await resp.json();
+    if(json.sucesso){
+      qRegistros = json.registros;
+      qPopularCiclos();
+      qRender();
+    }
+  } catch(err){ console.error('Erro ao carregar avarias:', err); }
+}
+
+function qPopularCiclos(){
+  const ciclos = [...new Set(qRegistros.map(r=>r.ciclo))].sort().reverse();
+  const sel = document.getElementById('q-fil-ciclo');
+  sel.innerHTML = '<option value="">Todos os ciclos</option>';
+  ciclos.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+}
+
+function qFiltrar(){
+  const ciclo = document.getElementById('q-fil-ciclo').value;
+  const tipo  = document.getElementById('q-fil-tipo').value;
+  return qRegistros.filter(r =>
+    (!ciclo || r.ciclo === ciclo) &&
+    (!tipo  || r.tipoAvaria === tipo)
+  );
+}
+
+function qLimparFiltros(){
+  document.getElementById('q-fil-ciclo').value = '';
+  document.getElementById('q-fil-tipo').value  = '';
+  qRender();
+}
+
+function qRender(){
+  const dados = qFiltrar();
+
+  const tPecas = qRegistros.reduce((s,r) => s + Number(r.quantidade), 0);
+  const tValor = qRegistros.reduce((s,r) => s + Number(r.valorTotal), 0);
+  document.getElementById('q-kpi-pecas').textContent  = tPecas.toLocaleString('pt-BR');
+  document.getElementById('q-kpi-valor').textContent  = tValor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  document.getElementById('q-kpi-oc').textContent     = qRegistros.length;
+
+  qRenderCiclos(dados);
+  qRenderHist(dados);
+}
+
+function qRenderVazio(){
+  const msg = `<div class="empty"><div class="empty-ico">⚙️</div><h3>Configure a URL do Apps Script</h3><p>Edite a variável AVARIAS_URL no código.</p></div>`;
+  document.getElementById('q-tabela-ciclos').innerHTML = msg;
+  document.getElementById('q-tabela-hist').innerHTML   = msg;
+  ['q-kpi-pecas','q-kpi-valor','q-kpi-oc'].forEach(id => document.getElementById(id).textContent = '—');
+}
+
+function qRenderCiclos(dados){
+  if(!dados.length){
+    document.getElementById('q-tabela-ciclos').innerHTML =
+      `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`;
+    return;
+  }
+
+  const mapa = {};
+  dados.forEach(r=>{
+    if(!mapa[r.ciclo]) mapa[r.ciclo]={pecas:0,valor:0,oc:0};
+    mapa[r.ciclo].pecas += Number(r.quantidade);
+    mapa[r.ciclo].valor += Number(r.valorTotal);
+    mapa[r.ciclo].oc++;
+  });
+
+  const ciclos = Object.keys(mapa).sort().reverse();
+
+  let html = `
+    <div class="ciclo-grid" style="border-bottom:1px solid var(--border)">
+      <div class="ciclo-cell-h">Ciclo</div>
+      <div class="ciclo-cell-h ciclo-right">Peças</div>
+      <div class="ciclo-cell-h ciclo-right">Valor Total</div>
+      <div class="ciclo-cell-h ciclo-right">Oc.</div>
+    </div>
+  `;
+
+  ciclos.forEach(c=>{
+    html += `
+      <div class="ciclo-grid">
+        <div class="ciclo-cell" style="font-weight:600">${c}</div>
+        <div class="ciclo-cell ciclo-right">${mapa[c].pecas.toLocaleString('pt-BR')}</div>
+        <div class="ciclo-cell ciclo-right">${mapa[c].valor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
+        <div class="ciclo-cell ciclo-right" style="color:var(--text-3)">${mapa[c].oc}</div>
+      </div>
+    `;
+  });
+
+  document.getElementById('q-tabela-ciclos').innerHTML = html;
+}
+
+function qRenderHist(dados){
+  if(!dados.length){
+    document.getElementById('q-tabela-hist').innerHTML =
+      `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`;
+    return;
+  }
+
+  // Badge inclui Omni
+  const tClass = { Vazamento:'b-vazamento', Embalagem:'b-embalagem', Quebra:'b-quebra', Omni:'b-omni' };
+
+  const linhas = [...dados].reverse().map(r=>`<tr>
+    <td class="mono">${qFmtData(r.data)}</td>
+    <td style="font-weight:600">${r.ciclo}</td>
+    <td class="mono">${r.codigo}</td>
+    <td style="text-align:right">${Number(r.quantidade).toLocaleString('pt-BR')}</td>
+    <td style="text-align:right" class="mono">${Number(r.valorTotal).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
+    <td><span class="badge ${tClass[r.tipoAvaria]||'b-outros'}">${r.tipoAvaria}</span></td>
+  </tr>`).join('');
+
+  document.getElementById('q-tabela-hist').innerHTML = `
+    <div class="tscroll">
+      <table>
+        <thead><tr>
+          <th>Data</th><th>Ciclo</th><th>Código</th>
+          <th style="text-align:right">Qtd</th>
+          <th style="text-align:right">Valor</th>
+          <th>Tipo</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function qFmtData(v){
+  if(!v) return '—';
+  try{ const [a,m,d]=String(v).split('-'); return `${d}/${m}/${a}`; } catch{ return v; }
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO FRETES ESPECIAIS — MADALENA
+   ════════════════════════════════════════════════════════
+
+   LÓGICA:
+   - Pedidos da Madalena são detectados automaticamente ao fazer upload
+     do ERP (S.vdRaw filtrado por isMad === true).
+   - O operador seleciona quais pedidos compõem UM frete (podem ser vários
+     pedidos em uma ou mais viagens do mesmo envio).
+   - Ao confirmar, os dados são gravados via Apps Script na aba
+     "FretesMadalena" do Google Sheets. Registro é imutável.
+   - O painel exibe histórico, custo por ciclo e KPIs.
+
+   SCHEMA do registro gravado no Sheets:
+     timestamp | dataEnvio | ciclo | pedidos (JSON) | nfs (JSON) |
+     nFretes | valorFrete | tipo | observacoes | totalPedidos
+*/
+
+function frIniciar(){
+  // Data padrão
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('fr-data').value = hoje;
+
+  if(FRETES_URL === 'COLE_URL_FRETES_AQUI'){
+    document.getElementById('fr-config-warn').style.display = 'flex';
+  }
+
+  // Atualiza lista de pendentes
+  frRenderPendentes();
+
+  // Carrega histórico do Sheets (se URL configurada)
+  if(!FR.iniciado && FRETES_URL !== 'COLE_URL_FRETES_AQUI'){
+    FR.iniciado = true;
+    frCarregar();
+  } else if(FR.registros.length > 0){
+    frRender();
+  } else {
+    frRenderKPIsVazio();
+    frRenderCiclosVazio();
+    frRenderHistVazio();
+  }
+}
+
+/* ── Lista de pedidos pendentes (detectados do upload) ── */
+function frRenderPendentes(){
+  const el = document.getElementById('fr-lista-pedidos');
+  const semUpload = document.getElementById('fr-sem-upload');
+
+  // Todos os pedidos da Madalena no upload atual
+  const madPedidos = S.vdRaw.filter(r => r.isMad);
+
+  if(S.vdRaw.length === 0){
+    // Nenhum upload feito ainda
+    semUpload.style.display = 'flex';
+    el.innerHTML = `<div class="fr-ped-empty">Carregue a planilha na aba Expedição primeiro.</div>`;
+    FR.selecionados.clear();
+    frAtualizarResumo();
+    return;
+  }
+
+  semUpload.style.display = 'none';
+
+  if(madPedidos.length === 0){
+    el.innerHTML = `<div class="fr-ped-empty">Nenhum pedido da Madalena encontrado nesta planilha.</div>`;
+    FR.selecionados.clear();
+    frAtualizarResumo();
+    return;
+  }
+
+  // Limpa seleções que não existem mais
+  const codigos = new Set(madPedidos.map(r => String(r.CodigoPedido)));
+  for(const c of FR.selecionados){ if(!codigos.has(c)) FR.selecionados.delete(c); }
+
+  el.innerHTML = madPedidos.map(r => {
+    const cod = String(r.CodigoPedido);
+    const sel = FR.selecionados.has(cod);
+    return `
+      <div class="fr-ped-item${sel?' selected':''}" onclick="frTogglePedido('${cod}',this)">
+        <input type="checkbox" ${sel?'checked':''} onclick="event.stopPropagation();frTogglePedido('${cod}',this.closest('.fr-ped-item'))">
+        <div class="fr-ped-info">
+          <div class="fr-ped-nome">${r.NomePessoa||'—'}</div>
+          <div class="fr-ped-detail">
+            Ped: ${cod} &nbsp;·&nbsp; NF: ${r.NotaFiscal||'—'}
+            &nbsp;·&nbsp; ${r.Bairro||'—'} &nbsp;·&nbsp; ${r.SituaçãoComercial||'—'}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  frAtualizarResumo();
+}
+
+function frTogglePedido(cod, itemEl){
+  if(FR.selecionados.has(cod)){
+    FR.selecionados.delete(cod);
+    itemEl.classList.remove('selected');
+    const cb = itemEl.querySelector('input[type=checkbox]');
+    if(cb) cb.checked = false;
+  } else {
+    FR.selecionados.add(cod);
+    itemEl.classList.add('selected');
+    const cb = itemEl.querySelector('input[type=checkbox]');
+    if(cb) cb.checked = true;
+  }
+  frAtualizarResumo();
+}
+
+function frAtualizarResumo(){
+  const el = document.getElementById('fr-sel-resumo');
+  const n = FR.selecionados.size;
+  if(n === 0){
+    el.classList.remove('visible');
+    return;
+  }
+  // Busca NFs dos selecionados
+  const nfs = S.vdRaw
+    .filter(r => FR.selecionados.has(String(r.CodigoPedido)))
+    .map(r => r.NotaFiscal)
+    .filter(Boolean)
+    .join(', ');
+  el.classList.add('visible');
+  el.innerHTML = `<strong>${n} pedido${n>1?'s':''} selecionado${n>1?'s':''}</strong> · NFs: ${nfs||'—'}`;
+}
+
+/* ── Validação e envio do frete ── */
+function frValidar(){
+  if(FR.selecionados.size === 0){
+    mostrarToast('Selecione ao menos 1 pedido.', 'err'); return false;
+  }
+  if(!document.getElementById('fr-data').value){
+    mostrarToast('Preencha a data de envio.', 'err'); return false;
+  }
+  const nf = parseInt(document.getElementById('fr-nfretes').value) || 0;
+  if(nf < 1){
+    mostrarToast('Informe o número de fretes (mínimo 1).', 'err'); return false;
+  }
+  const val = parseFloat(document.getElementById('fr-valor').value) || 0;
+  if(val <= 0){
+    mostrarToast('Informe o valor do frete.', 'err'); return false;
+  }
+  return true;
+}
+
+async function frRegistrar(){
+  if(FRETES_URL === 'COLE_URL_FRETES_AQUI'){ mostrarToast('Configure a URL do Apps Script para Fretes.','err'); return; }
+  if(!frValidar()) return;
+
+  // Monta dados dos pedidos selecionados
+  const pedidosSel = S.vdRaw.filter(r => FR.selecionados.has(String(r.CodigoPedido)));
+  const ciclos = uniq(pedidosSel.map(r=>r.Ciclo).filter(Boolean));
+
+  const payload = {
+    dataEnvio:    document.getElementById('fr-data').value,
+    ciclo:        ciclos.join(', ') || '—',
+    pedidos:      pedidosSel.map(r=>String(r.CodigoPedido)).join(', '),
+    nfs:          pedidosSel.map(r=>String(r.NotaFiscal||'')).filter(Boolean).join(', '),
+    totalPedidos: pedidosSel.length,
+    nFretes:      parseInt(document.getElementById('fr-nfretes').value),
+    valorFrete:   parseFloat(document.getElementById('fr-valor').value),
+    tipo:         document.getElementById('fr-tipo').value,
+    observacoes:  document.getElementById('fr-obs').value.trim(),
+  };
+
+  const btn = document.getElementById('fr-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Gravando...';
+
+  try {
+    const resp = await fetch(FRETES_URL, { method:'POST', body:JSON.stringify({modulo:'frete', ...payload}) });
+    const json = await resp.json();
+    if(json.sucesso){
+      mostrarToast('✅ Frete registrado!', 'ok');
+      // Limpa seleção e formulário
+      FR.selecionados.clear();
+      frRenderPendentes();
+      document.getElementById('fr-nfretes').value = '1';
+      document.getElementById('fr-valor').value   = '';
+      document.getElementById('fr-obs').value     = '';
+      document.getElementById('fr-data').value    = new Date().toISOString().split('T')[0];
+      // Recarrega histórico
+      frCarregar();
+    } else {
+      mostrarToast('Erro: ' + json.erro, 'err');
+    }
+  } catch(err){
+    mostrarToast('Falha na conexão.', 'err');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Confirmar Frete';
+  }
+}
+
+/* ── Carregar histórico do Sheets ── */
+async function frCarregar(){
+  try {
+    const resp = await fetch(FRETES_URL + '?modulo=frete');
+    const json = await resp.json();
+    if(json.sucesso){
+      FR.registros = json.registros || [];
+      frPopularCiclos();
+      frRender();
+    }
+  } catch(err){ console.error('Erro ao carregar fretes:', err); }
+}
+
+function frPopularCiclos(){
+  const ciclos = [...new Set(FR.registros.map(r=>r.ciclo))].sort().reverse();
+  const sel = document.getElementById('fr-fil-ciclo');
+  sel.innerHTML = '<option value="">Todos os ciclos</option>';
+  ciclos.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+}
+
+function frFiltrar(){
+  const ciclo = document.getElementById('fr-fil-ciclo').value;
+  const tipo  = document.getElementById('fr-fil-tipo').value;
+  return FR.registros.filter(r =>
+    (!ciclo || r.ciclo === ciclo) &&
+    (!tipo  || r.tipo === tipo)
+  );
+}
+
+function frLimparFiltros(){
+  document.getElementById('fr-fil-ciclo').value = '';
+  document.getElementById('fr-fil-tipo').value  = '';
+  frRender();
+}
+
+function frRender(){
+  const dados = frFiltrar();
+
+  // KPIs globais (sem filtro)
+  const totReg    = FR.registros.length;
+  const totValor  = FR.registros.reduce((s,r) => s + Number(r.valorFrete||0), 0);
+  const totPed    = FR.registros.reduce((s,r) => s + Number(r.totalPedidos||0), 0);
+  const medPed    = totPed > 0 ? totValor / totPed : 0;
+
+  document.getElementById('fr-kpi-tot').textContent = totReg.toLocaleString('pt-BR');
+  document.getElementById('fr-kpi-val').textContent = totValor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  document.getElementById('fr-kpi-ped').textContent = totPed.toLocaleString('pt-BR');
+  document.getElementById('fr-kpi-med').textContent = medPed.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+  frRenderCiclos(dados);
+  frRenderHist(dados);
+}
+
+function frRenderKPIsVazio(){
+  ['fr-kpi-tot','fr-kpi-val','fr-kpi-ped','fr-kpi-med'].forEach(id => document.getElementById(id).textContent = '—');
+}
+
+function frRenderCiclosVazio(){
+  document.getElementById('fr-tabela-ciclos').innerHTML =
+    `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum frete registrado</h3><p>Configure a URL e registre o primeiro frete.</p></div>`;
+}
+
+function frRenderHistVazio(){
+  document.getElementById('fr-tabela-hist').innerHTML =
+    `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`;
+}
+
+function frRenderCiclos(dados){
+  if(!dados.length){
+    frRenderCiclosVazio(); return;
+  }
+
+  const mapa = {};
+  dados.forEach(r=>{
+    const c = r.ciclo || '—';
+    if(!mapa[c]) mapa[c]={valor:0,viagens:0,pedidos:0,oc:0};
+    mapa[c].valor   += Number(r.valorFrete||0);
+    mapa[c].viagens += Number(r.nFretes||0);
+    mapa[c].pedidos += Number(r.totalPedidos||0);
+    mapa[c].oc++;
+  });
+
+  const ciclos = Object.keys(mapa).sort().reverse();
+
+  let html = `
+    <div class="fr-ciclo-grid" style="border-bottom:1px solid var(--border)">
+      <div class="ciclo-cell-h">Ciclo</div>
+      <div class="ciclo-cell-h ciclo-right">Pedidos</div>
+      <div class="ciclo-cell-h ciclo-right">Viagens</div>
+      <div class="ciclo-cell-h ciclo-right">Custo Total</div>
+      <div class="ciclo-cell-h ciclo-right">Oc.</div>
+    </div>
+  `;
+  ciclos.forEach(c=>{
+    html += `
+      <div class="fr-ciclo-grid">
+        <div class="ciclo-cell" style="font-weight:600">${c}</div>
+        <div class="ciclo-cell ciclo-right">${mapa[c].pedidos.toLocaleString('pt-BR')}</div>
+        <div class="ciclo-cell ciclo-right">${mapa[c].viagens.toLocaleString('pt-BR')}</div>
+        <div class="ciclo-cell ciclo-right">${mapa[c].valor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
+        <div class="ciclo-cell ciclo-right" style="color:var(--text-3)">${mapa[c].oc}</div>
+      </div>
+    `;
+  });
+
+  document.getElementById('fr-tabela-ciclos').innerHTML = html;
+}
+
+function frRenderHist(dados){
+  if(!dados.length){
+    frRenderHistVazio(); return;
+  }
+
+  const tBadge = { PARTICULAR:'b-particular', 'EU ENTREGO':'b-euentrego' };
+
+  const linhas = [...dados].reverse().map(r=>`<tr>
+    <td class="mono">${frFmtData(r.dataEnvio)}</td>
+    <td style="font-weight:600">${r.ciclo||'—'}</td>
+    <td class="mono" style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.pedidos)}">${r.pedidos||'—'}</td>
+    <td class="mono" style="max-width:160px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.nfs)}">${r.nfs||'—'}</td>
+    <td style="text-align:right">${Number(r.totalPedidos||0).toLocaleString('pt-BR')}</td>
+    <td style="text-align:right">${Number(r.nFretes||0).toLocaleString('pt-BR')}</td>
+    <td style="text-align:right" class="mono">${Number(r.valorFrete||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
+    <td><span class="badge ${tBadge[r.tipo]||'b-outros'}">${r.tipo||'—'}</span></td>
+  </tr>`).join('');
+
+  document.getElementById('fr-tabela-hist').innerHTML = `
+    <div class="tscroll">
+      <table>
+        <thead><tr>
+          <th>Data Envio</th>
+          <th>Ciclo</th>
+          <th>Pedidos</th>
+          <th>NFs</th>
+          <th style="text-align:right">Qtd Ped.</th>
+          <th style="text-align:right">Viagens</th>
+          <th style="text-align:right">Valor Frete</th>
+          <th>Tipo</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function frFmtData(v){
+  if(!v) return '—';
+  try{ const [a,m,d]=String(v).split('-'); return `${d}/${m}/${a}`; } catch{ return String(v); }
+}
+
+/* ════════════════════════════════════════════════════════
+   MÓDULO ARMAZENAGEM — Taxa de Ocupação
+   ════════════════════════════════════════════════════════
+
+   LÓGICA:
+   - Upload da planilha PosicaoEstoque do VD+
+   - Filtra canal 23002, exclui embalagens/catálogos/sacolas/bolsas/revistas
+   - Calcula: peças ÷ 35 = caixas; caixas ÷ 6000 = taxa
+   - Grava no Sheets via Apps Script (aba Armazenagem)
+   - Ao abrir o dash, carrega último registro do Sheets
+   - Se último registro > 30 dias → mostra aviso de atualização
+   - Barra de frescor mostra visualmente quantos dias restam
+*/
+
+const ARM_CAPACIDADE  = 6000;
+const ARM_FATOR       = 35;
+const ARM_DIAS_EXPIRA = 30;
+const ARM_EXCLUIR     = ['CATALOGO','REVISTA','EMBALAGEM','SACOLA','ENVELOPE','BOLSA','BRINDE'];
+
+let armState = { dados: null, iniciado: false };
+
+// Chamado ao abrir Visão Geral
+function armIniciar() {
+  if (armState.iniciado) { armRenderEstado(); return; }
+  armState.iniciado = true;
+  armCarregar();
+}
+
+// Carrega último registro do Sheets
+async function armCarregar() {
+  armMostrar('loading');
+  try {
+    const resp = await fetch(ARMAZENAGEM_URL + '?modulo=armazenagem');
+    const json = await resp.json();
+    if (json.sucesso && json.ultimo) {
+      armState.dados = json.ultimo;
+    } else {
+      armState.dados = null;
+    }
+  } catch(err) {
+    console.error('Erro ao carregar armazenagem:', err);
+    armState.dados = null;
+  }
+  armRenderEstado();
+}
+
+// Decide qual estado mostrar
+function armRenderEstado() {
+  if (!armState.dados) {
+    // Nunca importado
+    armMostrar('vazio');
+    return;
+  }
+
+  const dataImp = new Date(armState.dados.dataImportacao || armState.dados.registradoEm);
+  const diasAtras = Math.floor((Date.now() - dataImp.getTime()) / 86400000);
+
+  if (diasAtras > ARM_DIAS_EXPIRA) {
+    // Expirado
+    armMostrar('expirado');
+    return;
+  }
+
+  // Dados válidos
+  armRenderDados(armState.dados, diasAtras);
+  armMostrar('dados');
+}
+
+function armRenderDados(d, diasAtras) {
+  const pct    = Math.round(parseFloat(d.taxaOcupacao) * 100);
+  const pecas  = parseInt(d.totalPecas);
+  const caixas = Math.round(parseFloat(d.caixasEstimadas));
+  const status = d.status;
+
+  // Gauge SVG — circumferência = 2π×45 ≈ 282.7
+  const circum = 282.7;
+  const offset = circum - (circum * pct / 100);
+  const corGauge = pct > 90 ? 'var(--accent)' : pct > 80 ? 'var(--yellow)' : 'var(--green)';
+
+  const fill = document.getElementById('arm-gauge-fill');
+  if (fill) {
+    fill.style.strokeDashoffset = offset;
+    fill.style.stroke = corGauge;
+  }
+
+  document.getElementById('arm-gauge-pct').textContent  = pct + '%';
+  document.getElementById('arm-gauge-pct').style.color  = corGauge;
+  document.getElementById('arm-stat-pecas').textContent = pecas.toLocaleString('pt-BR');
+  document.getElementById('arm-stat-caixas').textContent = caixas.toLocaleString('pt-BR');
+
+  // Badge de status
+  const badge = document.getElementById('arm-status-badge');
+  const bConf = {
+    'Sem Risco':           { bg:'var(--green-bg)',  color:'var(--green)',  txt:'✅ Sem Risco' },
+    'Atenção':             { bg:'var(--yellow-bg)', color:'var(--yellow)', txt:'⚠️ Atenção' },
+    'Risco de falta de espaço': { bg:'var(--accent-bg)', color:'var(--accent)', txt:'🔴 Risco' },
+  };
+  const bc = bConf[status] || { bg:'var(--border)', color:'var(--text-3)', txt:status };
+  badge.style.background = bc.bg;
+  badge.style.color      = bc.color;
+  badge.textContent      = bc.txt;
+
+  // Data da última importação
+  const dataImp = new Date(d.dataImportacao || d.registradoEm);
+  document.getElementById('arm-ultima-data').textContent =
+    'Atualizado em ' + dataImp.toLocaleDateString('pt-BR');
+  document.getElementById('arm-btn-atualizar').style.display = '';
+
+  // Barra de frescor — inverte: 0 dias = 100% verde, 30 dias = 0%
+  const pctFrescor = Math.max(0, Math.round((1 - diasAtras / ARM_DIAS_EXPIRA) * 100));
+  const corFrescor = diasAtras > 20 ? 'var(--accent)' : diasAtras > 10 ? 'var(--yellow)' : 'var(--green)';
+  const diasRestam = ARM_DIAS_EXPIRA - diasAtras;
+
+  document.getElementById('arm-freshbar-fill').style.width      = pctFrescor + '%';
+  document.getElementById('arm-freshbar-fill').style.background = corFrescor;
+  document.getElementById('arm-fresh-txt').textContent =
+    `Última importação: há ${diasAtras} dia${diasAtras !== 1 ? 's' : ''}`;
+  document.getElementById('arm-fresh-dias').textContent =
+    diasRestam > 0 ? `Expira em ${diasRestam} dia${diasRestam !== 1 ? 's' : ''}` : 'Expirado';
+  document.getElementById('arm-fresh-dias').style.color = corFrescor;
+}
+
+function armMostrar(estado) {
+  // estados: 'loading' | 'vazio' | 'expirado' | 'dados'
+  document.getElementById('arm-loading').style.display  = estado === 'loading'  ? 'block' : 'none';
+  document.getElementById('arm-vazio').style.display    = estado === 'vazio'    ? 'block' : 'none';
+  document.getElementById('arm-expirado').style.display = estado === 'expirado' ? 'flex'  : 'none';
+  document.getElementById('arm-dados').style.display    = estado === 'dados'    ? 'block' : 'none';
+  // Upload aparece quando sem dados ou expirado
+  document.getElementById('arm-upload-zone').style.display =
+    (estado === 'vazio' || estado === 'expirado') ? 'block' : 'none';
+}
+
+// ── Drag & Drop upload armazenagem ──
+function armDragOver(e){ e.preventDefault(); document.getElementById('arm-upload-zone').classList.add('over'); }
+function armDragLeave(){ document.getElementById('arm-upload-zone').classList.remove('over'); }
+function armDrop(e){ e.preventDefault(); armDragLeave(); const f=e.dataTransfer.files[0]; if(f)armProcessar(f); }
+function armOnFileChange(e){ const f=e.target.files[0]; if(f)armProcessar(f); }
+
+// ── Processa planilha PosicaoEstoque ──
+function armProcessar(file) {
+  armMostrar('loading');
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const wb  = XLSX.read(e.target.result, {type:'array'});
+      const ws  = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:0});
+
+      if (raw.length < 2) { mostrarToast('Arquivo vazio.','err'); armMostrar('vazio'); return; }
+
+      const headers = raw[0].map(h => String(h).trim());
+
+      // Identifica coluna "23002 - ... - Físico"
+      const col23002 = headers.findIndex(h => h.includes('23002') && h.includes('Físico'));
+      const colNome  = headers.findIndex(h => h === 'Nome Material');
+
+      if (col23002 === -1 || colNome === -1) {
+        mostrarToast('Formato não reconhecido. Verifique se é a PosicaoEstoque.','err');
+        armMostrar('vazio'); return;
+      }
+
+      // Filtra e soma
+      let totalPecas = 0;
+      for (let i = 1; i < raw.length; i++) {
+        const row = raw[i];
+        if (!row || !Array.isArray(row)) continue;
+        const nome = String(row[colNome] == null ? '' : row[colNome]).toUpperCase();
+        const qtd  = Number(row[col23002] == null ? 0 : row[col23002]) || 0;
+        if (qtd <= 0) continue;
+        const excluir = ARM_EXCLUIR.some(kw => nome.includes(kw));
+        if (!excluir) totalPecas += qtd;
+      }
+
+      const caixasEstimadas = totalPecas / ARM_FATOR;
+      const taxaOcupacao    = caixasEstimadas / ARM_CAPACIDADE;
+      const status =
+        taxaOcupacao > 0.90 ? 'Risco de falta de espaço' :
+        taxaOcupacao > 0.80 ? 'Atenção' : 'Sem Risco';
+
+      const hoje = new Date().toISOString().split('T')[0];
+
+      // Grava no Sheets
+      const payload = {
+        modulo: 'armazenagem',
+        dataImportacao: hoje,
+        totalPecas, caixasEstimadas, taxaOcupacao, status
+      };
+
+      const resp = await fetch(ARMAZENAGEM_URL, { method:'POST', body: JSON.stringify(payload) });
+      const json = await resp.json();
+
+      if (json.sucesso) {
+        armState.dados = { dataImportacao: hoje, totalPecas, caixasEstimadas, taxaOcupacao, status };
+        armRenderDados(armState.dados, 0);
+        armMostrar('dados');
+        mostrarToast('✅ Estoque atualizado!', 'ok');
+        // Limpa input para permitir re-upload do mesmo arquivo
+        document.getElementById('arm-file-input').value = '';
+      } else {
+        mostrarToast('Erro ao gravar: ' + json.erro, 'err');
+        armRenderEstado();
+      }
+    } catch(err) {
+      console.error(err);
+      mostrarToast('Erro ao processar o arquivo.','err');
+      armRenderEstado();
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ── Toast global ──────────────────────────────────────── */
+function mostrarToast(msg, tipo='ok'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${tipo} show`;
+  setTimeout(()=>{ t.className='toast'; }, 3500);
+}
+</script>
+</body>
+</html>
