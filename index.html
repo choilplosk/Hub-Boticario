@@ -2082,6 +2082,8 @@ function renderVD(){
     <td>${r.TipoEntrega||'—'}</td>
   </tr>`).join('');
   renderPag('vd-pag', data.length, S.vdPage, S.PAGE_SIZE, p=>{S.vdPage=p;renderVD();});
+  // Aplica códigos de atenção após renderizar
+  setTimeout(aplicarCodigosAtencaoNaTabela, 50);
 }
 
 function renderOmni(){
@@ -3525,13 +3527,7 @@ async function carregarCodigosAtencaoInicial() {
   } catch(err) { console.warn('Códigos de atenção não disponíveis:', err.name); }
 }
 
-/* Hook: após renderVD, aplica os códigos de atenção */
-const _renderVDOriginal = renderVD;
-function renderVD() {
-  _renderVDOriginal();
-  // Aplica depois de um tick para o DOM estar pronto
-  setTimeout(aplicarCodigosAtencaoNaTabela, 50);
-}
+/* Códigos de atenção aplicados diretamente no renderVD abaixo */
 
 </script>
 </body>
