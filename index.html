@@ -725,6 +725,95 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 
 /* Sync expedição */
 .btn-sync-loading { opacity:.6; cursor:not-allowed; }
+
+/* ═══════════════════════════════════════════════
+   PENDÊNCIAS
+═══════════════════════════════════════════════ */
+
+/* Badge contador no nav */
+.pend-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:18px; height:18px; padding:0 5px;
+  background:var(--accent); color:#fff;
+  border-radius:9px; font-size:10px; font-weight:700;
+  margin-left:4px;
+}
+
+/* Layout pendências */
+.pend-layout { display:flex; flex-direction:column; gap:16px; }
+
+/* Seção de pendências */
+.pend-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden; }
+.pend-section-head {
+  padding:12px 18px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.pend-section-title { font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.pend-section-count { font-size:11px; color:var(--text-3); font-family:'DM Mono',monospace; }
+.pend-section-body  { padding:0; }
+
+/* Item de pendência */
+.pend-item {
+  padding:13px 18px; border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-start; gap:14px;
+}
+.pend-item:last-child { border-bottom:none; }
+.pend-item-ico  { font-size:18px; flex-shrink:0; margin-top:1px; }
+.pend-item-body { flex:1; min-width:0; }
+.pend-item-title { font-size:13px; font-weight:600; }
+.pend-item-meta  { font-size:11px; color:var(--text-3); margin-top:2px; font-family:'DM Mono',monospace; }
+.pend-item-obs   { font-size:12px; color:var(--text-2); margin-top:5px; padding:6px 10px; background:var(--surface-2); border-radius:var(--r-sm); border-left:3px solid var(--border-strong); }
+.pend-item-actions { display:flex; gap:6px; flex-shrink:0; margin-top:2px; }
+
+/* Botões de ação nas pendências */
+.btn-pend {
+  padding:5px 12px; border-radius:var(--r-sm); font-size:12px; font-weight:600;
+  cursor:pointer; border:1px solid var(--border-strong);
+  background:var(--surface-2); color:var(--text-2);
+  font-family:'DM Sans',sans-serif; transition:all .15s; white-space:nowrap;
+}
+.btn-pend:hover { background:var(--border); }
+.btn-pend.ok  { background:var(--green-bg);  color:var(--green);  border-color:#9fd4b8; }
+.btn-pend.ok:hover  { background:var(--green); color:#fff; }
+.btn-pend.nok { background:var(--accent-bg); color:var(--accent); border-color:var(--accent-mid); }
+.btn-pend.nok:hover { background:var(--accent); color:#fff; }
+.btn-pend.blue { background:var(--blue-bg); color:var(--blue); border-color:#a0b8e8; }
+.btn-pend.blue:hover { background:var(--blue); color:#fff; }
+
+/* Status badges */
+.pend-status {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600;
+}
+.ps-pendente   { background:var(--yellow-bg); color:var(--yellow); }
+.ps-aprovado   { background:var(--green-bg);  color:var(--green); }
+.ps-rejeitado  { background:var(--accent-bg); color:var(--accent); }
+.ps-autorizado { background:var(--green-bg);  color:var(--green); }
+
+/* Formulário resposta inline */
+.pend-resp-form {
+  margin-top:8px; padding:10px 12px;
+  background:var(--surface-2); border:1px solid var(--border);
+  border-radius:var(--r-sm); display:none; flex-direction:column; gap:8px;
+}
+.pend-resp-form.visible { display:flex; }
+
+/* Flags na tabela expedição */
+.flag-cartao-pend { 
+  display:inline-flex; align-items:center; gap:3px;
+  padding:1px 7px; border-radius:20px; font-size:10px; font-weight:700;
+  background:#ffe4e0; color:var(--accent); border:1px solid var(--accent-mid);
+  margin-left:4px; white-space:nowrap;
+}
+.flag-cartao-ok { 
+  display:inline-flex; align-items:center; gap:3px;
+  padding:1px 7px; border-radius:20px; font-size:10px; font-weight:700;
+  background:var(--green-bg); color:var(--green); border:1px solid #9fd4b8;
+  margin-left:4px; white-space:nowrap;
+}
+
+/* Modal resposta cancelamento/devolução */
+.resp-modal-body { padding:18px; display:flex; flex-direction:column; gap:12px; }
 </style>
 </head>
 <body>
@@ -775,6 +864,9 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
     <button class="nav-tab" data-perfis="admin,operador" onclick="goPage('avarias',this)">🚨 Avarias</button>
     <button class="nav-tab" data-perfis="admin,financeiro" onclick="goPage('financeiro',this)">💰 Financeiro</button>
     <button class="nav-tab" data-perfis="admin,operador" onclick="goPage('fretes',this)">🚚 Fretes Especiais</button>
+    <button class="nav-tab" id="nav-pendencias" data-perfis="admin,operador,financeiro,comercial_consultor,comercial_gerente" onclick="goPage('pendencias',this)">
+      🔔 Pendências <span class="pend-badge" id="nav-pend-badge" style="display:none">0</span>
+    </button>
   </div>
   <div class="nav-right" style="display:flex;align-items:center;gap:12px">
     <span class="nav-clock" id="clock"></span>
@@ -1206,6 +1298,7 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
               <th>Estrutura</th>
               <th>Pagamento</th>
               <th>Tipo Entrega</th>
+              <th>Ações</th>
             </tr></thead>
             <tbody id="vd-tbody"></tbody>
           </table>
@@ -1534,6 +1627,119 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════
+     PENDÊNCIAS
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-pendencias">
+  <div class="ph">
+    <div><h1>🔔 Pendências</h1><p id="pend-subtitulo">Solicitações e autorizações em aberto</p></div>
+    <button class="btn btn-ghost" style="font-size:12px" onclick="pendCarregar()">↺ Atualizar</button>
+  </div>
+
+  <div id="pend-loading" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px;display:none">
+    <span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--accent);width:20px;height:20px"></span>
+    <div style="margin-top:10px">Carregando pendências...</div>
+  </div>
+
+  <div class="pend-layout" id="pend-layout"></div>
+</div>
+
+<!-- Modal: resposta a cancelamento/devolução -->
+<div class="modal-overlay" id="modal-resposta">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="modal-resp-titulo">Responder solicitação</span>
+      <button class="config-close" onclick="fecharModalResposta()">✕</button>
+    </div>
+    <div class="resp-modal-body">
+      <div id="modal-resp-info" style="font-size:12.5px;color:var(--text-2);padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm)"></div>
+      <div>
+        <label class="flabel">Resposta / Observação</label>
+        <textarea class="finput-q" id="modal-resp-obs" rows="3" placeholder="Digite sua resposta..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalResposta()">Cancelar</button>
+      <button class="btn-config-save" id="modal-resp-btn-ok" onclick="confirmarResposta('aprovado')">✅ Aprovar</button>
+      <button class="btn-config-save" style="background:var(--accent)" id="modal-resp-btn-nok" onclick="confirmarResposta('rejeitado')">✕ Rejeitar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: autorização de cartão -->
+<div class="modal-overlay" id="modal-cartao">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>💳 Autorizar Pagamento</span>
+      <button class="config-close" onclick="fecharModalCartao()">✕</button>
+    </div>
+    <div class="resp-modal-body">
+      <div id="modal-cartao-info" style="font-size:12.5px;color:var(--text-2);padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm)"></div>
+      <div>
+        <label class="flabel">Código de autorização</label>
+        <input class="finput-q" type="text" id="modal-cartao-cod" placeholder="Ex: 123456" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:700">
+      </div>
+      <div style="font-size:11px;color:var(--text-3)">
+        Data/hora será gravada automaticamente no fuso de Brasília (UTC-3).
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalCartao()">Cancelar</button>
+      <button class="btn-config-save" style="background:var(--blue)" id="modal-cartao-btn" onclick="confirmarCartao()">💳 Confirmar autorização</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: solicitar cancelamento -->
+<div class="modal-overlay" id="modal-cancelamento">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>❌ Solicitar Cancelamento</span>
+      <button class="config-close" onclick="fecharModalCancelamento()">✕</button>
+    </div>
+    <div class="resp-modal-body">
+      <div id="modal-canc-info" style="font-size:12.5px;color:var(--text-2);padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm)"></div>
+      <div>
+        <label class="flabel">Motivo do cancelamento</label>
+        <textarea class="finput-q" id="modal-canc-motivo" rows="3" placeholder="Descreva o motivo..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalCancelamento()">Cancelar</button>
+      <button class="btn-config-save" style="background:var(--accent)" id="modal-canc-btn" onclick="confirmarSolicitacaoCancelamento()">Enviar solicitação</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: registrar devolução -->
+<div class="modal-overlay" id="modal-devolucao">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>↩ Registrar Devolução</span>
+      <button class="config-close" onclick="fecharModalDevolucao()">✕</button>
+    </div>
+    <div class="resp-modal-body">
+      <div>
+        <label class="flabel">Número do Pedido</label>
+        <input class="finput-q" type="text" id="modal-dev-pedido" placeholder="Ex: 507588234" style="font-family:'DM Mono',monospace">
+      </div>
+      <div>
+        <label class="flabel">Nome do Revendedor</label>
+        <input class="finput-q" type="text" id="modal-dev-nome" placeholder="Nome do revendedor">
+      </div>
+      <div>
+        <label class="flabel">Motivo da devolução</label>
+        <textarea class="finput-q" id="modal-dev-motivo" rows="3" placeholder="Descreva o motivo..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalDevolucao()">Cancelar</button>
+      <button class="btn-config-save" id="modal-dev-btn" onclick="confirmarDevolucao()">Registrar devolução</button>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <div class="toast" id="toast"></div>
@@ -1542,7 +1748,7 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 // ============================================================
 // URLs Apps Script
 // ============================================================
-const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbzAzZpDfw6igItDKFXa1r6vLD07_h2O9DT1Sq7r1Sd-KayZiCchqo_X0klyeAwO8lOlVQ/exec";
+const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbzc9R6oV1kdBxxXGrCOXcJhS623HGVsGQ8WLZMyTDkpgHEG3B8X8tSnpbGw3j4qlAgQ7w/exec";
 const AVARIAS_URL     = SCRIPT_URL;
 const FRETES_URL      = SCRIPT_URL;
 const ARMAZENAGEM_URL = SCRIPT_URL;
@@ -1571,6 +1777,10 @@ const REQUIRED = [
 ];
 
 const MADALENA = new Set(['349129','731858']);
+const CARTAO_CENTRAL = 'Cartão - Pagamento na Central';
+
+// Cache de autorizações de cartão: { CodigoPedido: { codigo, dataHora } }
+const CARTOES_AUTORIZADOS = {};
 
 /* Navegação */
 function goPage(id, btn) {
@@ -1588,6 +1798,7 @@ function goPage(id, btn) {
   if (id === 'fretes')     frIniciar();
   if (id === 'visao-geral') ovIniciar();
   if (id === 'expedicao')  expIniciar();
+  if (id === 'pendencias') pendIniciar();
 }
 
 /* Relógio */
@@ -1690,6 +1901,10 @@ function processFile(file){
       populateFilters();
       applyFilters();
       frRenderPendentes();
+      // Processa pedidos com cartão e envia ao Financeiro
+      if (['admin','operador'].includes(SESSAO.perfil)) {
+        processarCartoes(S.allRaw);
+      }
 
     } catch(err){
       setAlert('error','⚠️ Erro ao ler o arquivo. Verifique se é um .xlsx válido exportado do VD+.');
@@ -2100,7 +2315,7 @@ function renderVD(){
     <td class="mono">${r.NotaFiscal||'—'}</td>
     <td class="trunc" title="${esc(r.NomePessoa)}">${r.NomePessoa||'—'}</td>
     <td class="mono">${r.Pessoa||'—'}</td>
-    <td>${sBadge(r.SituaçãoComercial)}</td>
+    <td>${sBadge(r.SituaçãoComercial)}${r.Pagamento===CARTAO_CENTRAL?flagCartao(r.CodigoPedido):''}</td>
     <td class="mono">${r.PrevisaoEntrega||'—'}</td>
     <td class="mono">${r.DataEntrega||'—'}</td>
     <td class="mono">${r.Lote||'—'}</td>
@@ -2109,6 +2324,7 @@ function renderVD(){
     <td class="trunc" title="${esc(r.Estrutura)}">${r.Estrutura||'—'}</td>
     <td class="trunc" title="${esc(r.Pagamento)}">${r.Pagamento||'—'}</td>
     <td>${r.TipoEntrega||'—'}</td>
+    <td>${['comercial_gerente','admin'].includes(SESSAO.perfil)?`<button class="btn-pend blue" style="font-size:11px;padding:3px 8px" onclick="abrirModalCancelamento('${r.CodigoPedido}','${esc(r.NomePessoa)}')">✕ Cancelar</button>`:'—'}</td>
   </tr>`).join('');
   renderPag('vd-pag', data.length, S.vdPage, S.PAGE_SIZE, p=>{S.vdPage=p;renderVD();});
   // Aplica códigos de atenção após renderizar
@@ -2129,7 +2345,7 @@ function renderOmni(){
     <td class="mono">${r.CodExterno||'—'}</td>
     <td class="mono">${r.NotaFiscal||'—'}</td>
     <td class="trunc" title="${esc(r.NomePessoa)}">${r.NomePessoa||'—'}</td>
-    <td>${sBadge(r.SituaçãoComercial)}</td>
+    <td>${sBadge(r.SituaçãoComercial)}${r.Pagamento===CARTAO_CENTRAL?flagCartao(r.CodigoPedido):''}</td>
     <td class="mono">${r.PrevisaoEntrega||'—'}</td>
     <td class="mono">${r.DataEntrega||'—'}</td>
     <td class="mono">${r.Lote||'—'}</td>
@@ -2979,11 +3195,11 @@ const PERFIL_LABEL = {
 
 // Permissões por perfil: quais páginas pode acessar
 const PERFIL_PAGINAS = {
-  admin:               ['visao-geral','expedicao','producao','avarias','financeiro','fretes'],
-  operador:            ['visao-geral','expedicao','producao','avarias','fretes'],
-  financeiro:          ['visao-geral','expedicao','financeiro'],
-  comercial_consultor: ['visao-geral','expedicao'],
-  comercial_gerente:   ['visao-geral','expedicao'],
+  admin:               ['visao-geral','expedicao','producao','avarias','financeiro','fretes','pendencias'],
+  operador:            ['visao-geral','expedicao','producao','avarias','fretes','pendencias'],
+  financeiro:          ['visao-geral','expedicao','financeiro','pendencias'],
+  comercial_consultor: ['visao-geral','expedicao','pendencias'],
+  comercial_gerente:   ['visao-geral','expedicao','pendencias'],
 };
 
 // Páginas somente leitura por perfil (sem upload, sem botões de ação)
@@ -3092,6 +3308,16 @@ function entrarNoDashboard() {
 
   // Carrega códigos de atenção em background
   carregarCodigosAtencaoInicial();
+  // Carrega autorizações de cartão em background
+  carregarAutoriz();
+  // Atualiza badge de pendências
+  setTimeout(async () => {
+    try {
+      const r = await fetch(SCRIPT_URL + '?modulo=getPendencias');
+      const j = await r.json();
+      if (j.sucesso) { PEND.registros = j.pendencias || []; atualizarBadgePend(); }
+    } catch(e) {}
+  }, 2000);
 }
 
 /* ── Aplica visibilidade das abas por perfil ── */
@@ -3721,6 +3947,469 @@ async function sincronizarExpedicao() {
     btn.classList.remove('btn-sync-loading');
     btn.innerHTML = '☁️ Sincronizar com Sheets';
   }
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO PENDÊNCIAS
+═══════════════════════════════════════════════ */
+
+const PEND = {
+  registros: [],
+  iniciado:  false,
+};
+
+let _pendItemAtivo = null; // item em edição no modal
+
+/* Fuso Brasília */
+function agoraBrasilia() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+}
+function fmtDataHoraBrasilia(d) {
+  if (!d) return '—';
+  const dt = d instanceof Date ? d : new Date(d);
+  return dt.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo',
+    day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit' });
+}
+
+/* Flag de cartão na tabela expedição */
+function flagCartao(codigoPedido) {
+  const cod = String(codigoPedido);
+  const auth = CARTOES_AUTORIZADOS[cod];
+  if (auth) {
+    return `<span class="flag-cartao-ok" title="Autorizado em ${fmtDataHoraBrasilia(auth.dataHora)}">✅ ${auth.codigo}</span>`;
+  }
+  return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">🔴 Cartão</span>`;
+}
+
+/* Carrega autorizações de cartão do Sheets */
+async function carregarAutoriz() {
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getAutoriz');
+    const json = await resp.json();
+    if (json.sucesso && json.autoriz) {
+      json.autoriz.forEach(a => {
+        CARTOES_AUTORIZADOS[String(a.codigoPedido)] = {
+          codigo:  a.codigoAutoriz,
+          dataHora: a.dataHora,
+        };
+      });
+    }
+  } catch(err) { console.warn('Autorizações não disponíveis:', err.name); }
+}
+
+/* Detecta pedidos cartão ao processar planilha e envia para Sheets */
+async function processarCartoes(pedidos) {
+  const cartoes = pedidos.filter(p => p.Pagamento === CARTAO_CENTRAL);
+  if (!cartoes.length) return;
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        modulo: 'registrarCartoes',
+        pedidos: cartoes.map(p => ({
+          codigoPedido: String(p.CodigoPedido),
+          nomePessoa:   p.NomePessoa || '',
+          notaFiscal:   p.NotaFiscal || '',
+          ciclo:        p.Ciclo      || '',
+          bairro:       p.Bairro     || '',
+          registradoEm: agoraBrasilia().toISOString(),
+        })),
+      }),
+    });
+    mostrarToast(`💳 ${cartoes.length} pedido${cartoes.length>1?'s':''} com cartão enviado${cartoes.length>1?'s':''} ao Financeiro.`, 'ok');
+  } catch(err) { console.error('Erro ao registrar cartões:', err); }
+}
+
+/* Inicializa aba pendências */
+async function pendIniciar() {
+  if (!PEND.iniciado) {
+    PEND.iniciado = true;
+    await pendCarregar();
+  } else {
+    pendRender();
+  }
+}
+
+async function pendCarregar() {
+  document.getElementById('pend-loading').style.display = 'block';
+  document.getElementById('pend-layout').innerHTML = '';
+
+  try {
+    // Carrega pendências + autorizações em paralelo
+    const [rPend, rAutoriz] = await Promise.all([
+      fetch(SCRIPT_URL + '?modulo=getPendencias'),
+      fetch(SCRIPT_URL + '?modulo=getAutoriz'),
+    ]);
+    const [jPend, jAutoriz] = await Promise.all([rPend.json(), rAutoriz.json()]);
+
+    if (jPend.sucesso)   PEND.registros = jPend.pendencias || [];
+    if (jAutoriz.sucesso) {
+      jAutoriz.autoriz.forEach(a => {
+        CARTOES_AUTORIZADOS[String(a.codigoPedido)] = {
+          codigo: a.codigoAutoriz, dataHora: a.dataHora
+        };
+      });
+    }
+
+    pendRender();
+    atualizarBadgePend();
+  } catch(err) {
+    console.error('Erro ao carregar pendências:', err);
+    document.getElementById('pend-layout').innerHTML =
+      `<div class="empty"><div class="empty-ico">⚠️</div><h3>Erro ao carregar</h3><p>Verifique a conexão e tente novamente.</p></div>`;
+  } finally {
+    document.getElementById('pend-loading').style.display = 'none';
+  }
+}
+
+/* Render das pendências conforme perfil */
+function pendRender() {
+  const el = document.getElementById('pend-layout');
+  const perfil = SESSAO.perfil;
+  let html = '';
+
+  // ── Cartões aguardando autorização (Financeiro + Admin + Operador vê status) ──
+  if (['admin','financeiro','operador'].includes(perfil)) {
+    const cartoesNaoAutorizados = PEND.registros.filter(p =>
+      p.tipo === 'cartao' && p.status === 'pendente'
+    );
+    const cartoesAutorizados = PEND.registros.filter(p =>
+      p.tipo === 'cartao' && p.status === 'autorizado'
+    );
+
+    if (perfil === 'financeiro' || perfil === 'admin') {
+      html += renderSecaoPend(
+        '💳 Cartões — Aguardando Autorização',
+        cartoesNaoAutorizados,
+        'cartao_pend',
+        cartoesNaoAutorizados.length
+      );
+    }
+
+    html += renderSecaoPend(
+      '✅ Cartões — Autorizados',
+      cartoesAutorizados,
+      'cartao_ok',
+      null
+    );
+  }
+
+  // ── Cancelamentos (Operador atende / Gerente + Consultor vê status) ──
+  if (['admin','operador','comercial_gerente','comercial_consultor'].includes(perfil)) {
+    const cancPendentes = PEND.registros.filter(p =>
+      p.tipo === 'cancelamento' && p.status === 'pendente'
+    );
+    const cancRespondidos = PEND.registros.filter(p =>
+      p.tipo === 'cancelamento' && p.status !== 'pendente'
+    );
+    html += renderSecaoPend('❌ Cancelamentos — Pendentes', cancPendentes, 'cancelamento_pend', cancPendentes.length);
+    html += renderSecaoPend('📋 Cancelamentos — Respondidos', cancRespondidos, 'cancelamento_hist', null);
+  }
+
+  // ── Devoluções (Gerente responde / Operador vê status) ──
+  if (['admin','operador','comercial_gerente','comercial_consultor'].includes(perfil)) {
+    const devPendentes = PEND.registros.filter(p =>
+      p.tipo === 'devolucao' && p.status === 'pendente'
+    );
+    const devRespondidas = PEND.registros.filter(p =>
+      p.tipo === 'devolucao' && p.status !== 'pendente'
+    );
+
+    // Botão registrar devolução só para operador/admin
+    const btnDev = ['admin','operador'].includes(perfil)
+      ? `<button class="btn btn-ghost" style="font-size:12px" onclick="abrirModalDevolucao()">+ Registrar devolução</button>`
+      : '';
+
+    html += renderSecaoPendComBotao('↩ Devoluções — Pendentes', devPendentes, 'devolucao_pend', devPendentes.length, btnDev);
+    html += renderSecaoPend('📋 Devoluções — Respondidas', devRespondidas, 'devolucao_hist', null);
+  }
+
+  if (!html) {
+    html = `<div class="empty"><div class="empty-ico">✅</div><h3>Nenhuma pendência</h3><p>Tudo em dia.</p></div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+function renderSecaoPend(titulo, itens, tipo, badge) {
+  return renderSecaoPendComBotao(titulo, itens, tipo, badge, '');
+}
+
+function renderSecaoPendComBotao(titulo, itens, tipo, badge, extraBtn) {
+  const badgeHtml = badge > 0
+    ? `<span class="pend-badge">${badge}</span>`
+    : '';
+  const itensHtml = itens.length
+    ? itens.map(i => renderItemPend(i, tipo)).join('')
+    : `<div style="padding:16px 18px;text-align:center;color:var(--text-3);font-size:12.5px">Nenhum registro</div>`;
+
+  return `
+    <div class="pend-section">
+      <div class="pend-section-head">
+        <div class="pend-section-title">${titulo} ${badgeHtml}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="pend-section-count">${itens.length} registro${itens.length!==1?'s':''}</span>
+          ${extraBtn}
+        </div>
+      </div>
+      <div class="pend-section-body">${itensHtml}</div>
+    </div>`;
+}
+
+function renderItemPend(item, tipo) {
+  const perfil = SESSAO.perfil;
+  let ico = '📋', acoes = '';
+
+  if (tipo === 'cartao_pend') {
+    ico = '💳';
+    if (['financeiro','admin'].includes(perfil)) {
+      acoes = `<button class="btn-pend blue" onclick="abrirModalCartao('${item.id}','${esc2(item.codigoPedido)}','${esc2(item.nomePessoa)}','${esc2(item.notaFiscal)}')">💳 Autorizar</button>`;
+    }
+  } else if (tipo === 'cartao_ok') {
+    ico = '✅';
+  } else if (tipo === 'cancelamento_pend') {
+    ico = '❌';
+    if (['operador','admin'].includes(perfil)) {
+      acoes = `<button class="btn-pend ok"  onclick="abrirModalResposta('${item.id}','cancelamento','Cancelamento — Pedido ${item.codigoPedido}','${esc2(item.nomePessoa)}','${esc2(item.motivo)}')">✅ Aprovar</button>
+               <button class="btn-pend nok" onclick="abrirModalRespostaRejeitar('${item.id}','cancelamento','Cancelamento — Pedido ${item.codigoPedido}','${esc2(item.nomePessoa)}','${esc2(item.motivo)}')">✕ Rejeitar</button>`;
+    }
+  } else if (tipo === 'cancelamento_hist') {
+    ico = item.status === 'aprovado' ? '✅' : '✕';
+  } else if (tipo === 'devolucao_pend') {
+    ico = '↩';
+    if (['comercial_gerente','admin'].includes(perfil)) {
+      acoes = `<button class="btn-pend ok" onclick="abrirModalResposta('${item.id}','devolucao','Devolução — Pedido ${item.codigoPedido}','${esc2(item.nomePessoa)}','${esc2(item.motivo)}')">✅ Responder</button>`;
+    }
+  } else if (tipo === 'devolucao_hist') {
+    ico = '📋';
+  }
+
+  const statusHtml = item.status
+    ? `<span class="pend-status ps-${item.status}">${item.status}</span>`
+    : '';
+
+  const respostaHtml = item.resposta
+    ? `<div class="pend-item-obs">💬 ${item.resposta}</div>`
+    : '';
+
+  const authHtml = item.codigoAutoriz
+    ? `<div class="pend-item-obs">✅ Autorizado: <strong>${item.codigoAutoriz}</strong> · ${fmtDataHoraBrasilia(item.dataHora)}</div>`
+    : '';
+
+  return `
+    <div class="pend-item">
+      <div class="pend-item-ico">${ico}</div>
+      <div class="pend-item-body">
+        <div class="pend-item-title">
+          Pedido <span class="mono">${item.codigoPedido||'—'}</span>
+          · ${item.nomePessoa||'—'}
+          ${statusHtml}
+        </div>
+        <div class="pend-item-meta">
+          NF: ${item.notaFiscal||'—'} · Ciclo: ${item.ciclo||'—'} · ${fmtDataHoraBrasilia(item.registradoEm)}
+          ${item.solicitadoPor ? ` · Por: ${item.solicitadoPor}` : ''}
+        </div>
+        ${item.motivo ? `<div class="pend-item-obs">${item.motivo}</div>` : ''}
+        ${respostaHtml}
+        ${authHtml}
+      </div>
+      ${acoes ? `<div class="pend-item-actions">${acoes}</div>` : ''}
+    </div>`;
+}
+
+function esc2(s) { return String(s||'').replace(/'/g,"\'").replace(/"/g,'&quot;'); }
+
+/* Atualiza badge no nav */
+function atualizarBadgePend() {
+  const pendentes = PEND.registros.filter(p => p.status === 'pendente').length;
+  const badge = document.getElementById('nav-pend-badge');
+  if (!badge) return;
+  if (pendentes > 0) {
+    badge.textContent = pendentes;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+/* ── Modais ── */
+
+// Cancelamento
+let _cancPedidoAtivo = null;
+function abrirModalCancelamento(codigoPedido, nomePessoa) {
+  _cancPedidoAtivo = { codigoPedido, nomePessoa };
+  document.getElementById('modal-canc-info').textContent =
+    `Pedido: ${codigoPedido} · ${nomePessoa}`;
+  document.getElementById('modal-canc-motivo').value = '';
+  document.getElementById('modal-cancelamento').classList.add('visible');
+}
+function fecharModalCancelamento() {
+  document.getElementById('modal-cancelamento').classList.remove('visible');
+  _cancPedidoAtivo = null;
+}
+async function confirmarSolicitacaoCancelamento() {
+  if (!_cancPedidoAtivo) return;
+  const motivo = document.getElementById('modal-canc-motivo').value.trim();
+  if (!motivo) { mostrarToast('Informe o motivo.','err'); return; }
+  const btn = document.getElementById('modal-canc-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Enviando...';
+
+  // Busca dados do pedido na lista local
+  const ped = S.vdRaw.find(p => String(p.CodigoPedido) === String(_cancPedidoAtivo.codigoPedido));
+
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
+      modulo:       'registrarPendencia',
+      tipo:         'cancelamento',
+      codigoPedido: String(_cancPedidoAtivo.codigoPedido),
+      nomePessoa:   _cancPedidoAtivo.nomePessoa,
+      notaFiscal:   ped?.NotaFiscal   || '',
+      ciclo:        ped?.Ciclo        || '',
+      bairro:       ped?.Bairro       || '',
+      motivo,
+      solicitadoPor: SESSAO.nome,
+      registradoEm: agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('✅ Solicitação enviada ao Operador!','ok');
+      fecharModalCancelamento();
+      PEND.iniciado = false;
+      if (document.getElementById('page-pendencias').classList.contains('active')) pendCarregar();
+    } else { mostrarToast(json.erro||'Erro.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+  finally { btn.disabled=false; btn.innerHTML='Enviar solicitação'; }
+}
+
+// Devolução
+function abrirModalDevolucao() {
+  document.getElementById('modal-dev-pedido').value = '';
+  document.getElementById('modal-dev-nome').value   = '';
+  document.getElementById('modal-dev-motivo').value = '';
+  document.getElementById('modal-devolucao').classList.add('visible');
+}
+function fecharModalDevolucao() {
+  document.getElementById('modal-devolucao').classList.remove('visible');
+}
+async function confirmarDevolucao() {
+  const pedido = document.getElementById('modal-dev-pedido').value.trim();
+  const nome   = document.getElementById('modal-dev-nome').value.trim();
+  const motivo = document.getElementById('modal-dev-motivo').value.trim();
+  if (!pedido || !motivo) { mostrarToast('Preencha pedido e motivo.','err'); return; }
+  const btn = document.getElementById('modal-dev-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
+      modulo: 'registrarPendencia', tipo: 'devolucao',
+      codigoPedido: pedido, nomePessoa: nome,
+      motivo, solicitadoPor: SESSAO.nome,
+      registradoEm: agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('✅ Devolução registrada!','ok');
+      fecharModalDevolucao();
+      PEND.iniciado = false;
+      if (document.getElementById('page-pendencias').classList.contains('active')) pendCarregar();
+    } else { mostrarToast(json.erro||'Erro.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+  finally { btn.disabled=false; btn.innerHTML='Registrar devolução'; }
+}
+
+// Resposta a cancelamento/devolução
+let _respostaItem = null;
+function abrirModalResposta(id, tipo, titulo, nome, motivo) {
+  _respostaItem = { id, tipo };
+  document.getElementById('modal-resp-titulo').textContent = titulo;
+  document.getElementById('modal-resp-info').textContent   = `${nome} — ${motivo}`;
+  document.getElementById('modal-resp-obs').value = '';
+  // Para devolução, só tem "Responder" (sem rejeitar)
+  document.getElementById('modal-resp-btn-nok').style.display = tipo === 'devolucao' ? 'none' : '';
+  document.getElementById('modal-resp-btn-ok').textContent = tipo === 'devolucao' ? '✅ Responder' : '✅ Aprovar';
+  document.getElementById('modal-resposta').classList.add('visible');
+}
+function abrirModalRespostaRejeitar(id, tipo, titulo, nome, motivo) {
+  abrirModalResposta(id, tipo, titulo, nome, motivo);
+}
+function fecharModalResposta() {
+  document.getElementById('modal-resposta').classList.remove('visible');
+  _respostaItem = null;
+}
+async function confirmarResposta(decisao) {
+  if (!_respostaItem) return;
+  const obs = document.getElementById('modal-resp-obs').value.trim();
+  const btn = decisao === 'aprovado'
+    ? document.getElementById('modal-resp-btn-ok')
+    : document.getElementById('modal-resp-btn-nok');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
+      modulo:    'responderPendencia',
+      id:        _respostaItem.id,
+      status:    decisao,
+      resposta:  obs,
+      respondidoPor: SESSAO.nome,
+      respondidoEm:  agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast(`✅ Respondido: ${decisao}!`,'ok');
+      fecharModalResposta();
+      PEND.iniciado = false;
+      pendCarregar();
+    } else { mostrarToast(json.erro||'Erro.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+  finally { btn.disabled=false; btn.innerHTML = decisao==='aprovado'?'✅ Aprovar':'✕ Rejeitar'; }
+}
+
+// Autorização cartão
+let _cartaoItemAtivo = null;
+function abrirModalCartao(id, codigoPedido, nomePessoa, notaFiscal) {
+  _cartaoItemAtivo = { id, codigoPedido };
+  document.getElementById('modal-cartao-info').innerHTML =
+    `Pedido: <strong>${codigoPedido}</strong> · ${nomePessoa} · NF: ${notaFiscal}`;
+  document.getElementById('modal-cartao-cod').value = '';
+  document.getElementById('modal-cartao').classList.add('visible');
+}
+function fecharModalCartao() {
+  document.getElementById('modal-cartao').classList.remove('visible');
+  _cartaoItemAtivo = null;
+}
+async function confirmarCartao() {
+  if (!_cartaoItemAtivo) return;
+  const cod = document.getElementById('modal-cartao-cod').value.trim();
+  if (!cod) { mostrarToast('Informe o código de autorização.','err'); return; }
+  const btn = document.getElementById('modal-cartao-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Confirmando...';
+  const dataHora = agoraBrasilia().toISOString();
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
+      modulo:       'autorizarCartao',
+      id:           _cartaoItemAtivo.id,
+      codigoPedido: _cartaoItemAtivo.codigoPedido,
+      codigoAutoriz: cod,
+      autorizadoPor: SESSAO.nome,
+      dataHora,
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      // Atualiza cache local
+      CARTOES_AUTORIZADOS[String(_cartaoItemAtivo.codigoPedido)] = { codigo: cod, dataHora };
+      mostrarToast('✅ Pagamento autorizado!','ok');
+      fecharModalCartao();
+      PEND.iniciado = false;
+      pendCarregar();
+      // Atualiza flag na tabela se expedição estiver visível
+      if (document.getElementById('page-expedicao').classList.contains('active')) {
+        renderVD();
+      }
+    } else { mostrarToast(json.erro||'Erro.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+  finally { btn.disabled=false; btn.innerHTML='💳 Confirmar autorização'; }
 }
 
 </script>
