@@ -574,6 +574,154 @@ tr:hover td { background:var(--surface-2); }
   color:var(--text-3); font-size:12.5px;
 }
 .ind-vazio span { font-size:28px; display:block; margin-bottom:8px; }
+
+/* ═══════════════════════════════════════════════
+   TELA DE CONFIGURAÇÕES
+═══════════════════════════════════════════════ */
+#config-screen {
+  position:fixed; inset:0; background:rgba(23,21,15,.45);
+  display:flex; align-items:flex-start; justify-content:flex-end;
+  z-index:900; opacity:0; pointer-events:none;
+  transition:opacity .2s ease;
+}
+#config-screen.visible { opacity:1; pointer-events:all; }
+
+.config-panel {
+  width:480px; max-width:100vw; height:100vh;
+  background:var(--surface); box-shadow:-4px 0 24px rgba(0,0,0,.12);
+  display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform .25s ease;
+  overflow:hidden;
+}
+#config-screen.visible .config-panel { transform:translateX(0); }
+
+.config-panel-head {
+  padding:18px 20px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.config-panel-title { font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.config-close {
+  width:30px; height:30px; border-radius:var(--r-sm);
+  border:1px solid var(--border-strong); background:var(--surface-2);
+  cursor:pointer; font-size:16px; color:var(--text-2);
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s;
+}
+.config-close:hover { background:var(--accent-bg); color:var(--accent); border-color:var(--accent-mid); }
+
+.config-body { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:20px; }
+
+.config-section { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.config-section-head {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+  background:var(--surface); font-size:13px; font-weight:700;
+}
+.config-section-ico { font-size:15px; }
+.config-section-body { padding:16px; display:flex; flex-direction:column; gap:10px; }
+
+/* Botão salvar config */
+.btn-config-save {
+  padding:9px 16px; border-radius:var(--r-sm);
+  background:var(--accent); color:#fff; border:none;
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; transition:opacity .15s;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn-config-save:hover { opacity:.88; }
+.btn-config-save:disabled { opacity:.45; cursor:not-allowed; }
+.btn-config-cancel {
+  padding:9px 16px; border-radius:var(--r-sm);
+  background:var(--surface); color:var(--text-2);
+  border:1px solid var(--border-strong);
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all .15s;
+}
+.btn-config-cancel:hover { background:var(--border); }
+
+/* Lista de usuários */
+.user-list { display:flex; flex-direction:column; gap:6px; }
+.user-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--r-sm);
+}
+.user-item-info { flex:1; min-width:0; }
+.user-item-nome { font-size:13px; font-weight:600; }
+.user-item-meta { font-size:11px; color:var(--text-3); margin-top:1px; }
+.user-item-actions { display:flex; gap:4px; flex-shrink:0; }
+.btn-user-action {
+  padding:4px 10px; border-radius:var(--r-sm); font-size:11px; font-weight:600;
+  cursor:pointer; border:1px solid var(--border-strong);
+  background:var(--surface-2); color:var(--text-2);
+  font-family:'DM Sans',sans-serif; transition:all .15s;
+}
+.btn-user-action:hover { background:var(--border); }
+.btn-user-action.danger:hover { background:var(--accent-bg); color:var(--accent); border-color:var(--accent-mid); }
+
+/* Perfil badge pequeno */
+.perfil-mini {
+  font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.3px;
+  padding:2px 6px; border-radius:10px;
+}
+
+/* Códigos de atenção */
+.atencao-list { display:flex; flex-direction:column; gap:4px; max-height:200px; overflow-y:auto; }
+.atencao-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:7px 10px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--r-sm);
+  font-size:12.5px;
+}
+.atencao-item-cod { font-family:'DM Mono',monospace; font-weight:600; color:var(--accent); }
+.atencao-item-nome { font-size:11px; color:var(--text-3); margin-left:8px; }
+.btn-rm-atencao {
+  width:22px; height:22px; border-radius:4px; border:none;
+  background:var(--accent-bg); color:var(--accent);
+  cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:all .15s;
+}
+.btn-rm-atencao:hover { background:var(--accent); color:#fff; }
+
+/* Row de atenção na tabela expedição */
+tr.row-atencao td { background:#fff0ee !important; }
+tr.row-atencao:hover td { background:#ffe4e0 !important; }
+
+/* Botão config no nav */
+.btn-nav-config {
+  width:30px; height:30px; border-radius:var(--r-sm);
+  border:1px solid var(--border-strong); background:var(--surface-2);
+  cursor:pointer; font-size:15px; color:var(--text-2);
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s; flex-shrink:0;
+}
+.btn-nav-config:hover { background:var(--accent-bg); color:var(--accent); border-color:var(--accent-mid); }
+
+/* Modal novo usuário */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(23,21,15,.5);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1100; opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.modal-overlay.visible { opacity:1; pointer-events:all; }
+.modal-box {
+  background:var(--surface); border-radius:var(--r);
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+  width:100%; max-width:360px; overflow:hidden;
+  transform:scale(.96); transition:transform .2s;
+}
+.modal-overlay.visible .modal-box { transform:scale(1); }
+.modal-head {
+  padding:14px 18px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:14px; font-weight:700;
+}
+.modal-body { padding:18px; display:flex; flex-direction:column; gap:12px; }
+.modal-foot {
+  padding:12px 18px; border-top:1px solid var(--border);
+  display:flex; gap:8px; justify-content:flex-end;
+}
 </style>
 </head>
 <body>
@@ -632,10 +780,87 @@ tr:hover td { background:var(--surface-2); }
         <div class="nav-perfil-nome" id="nav-nome">—</div>
         <span class="nav-perfil-tag" id="nav-tag">—</span>
       </div>
+      <button class="btn-nav-config" id="btn-config" onclick="abrirConfig()" title="Configurações">⚙️</button>
       <button class="btn-logout" onclick="fazerLogoutUI()">Sair</button>
     </div>
   </div>
 </nav>
+
+<!-- ═══ TELA DE CONFIGURAÇÕES ═══ -->
+<div id="config-screen" onclick="fecharConfigFora(event)">
+  <div class="config-panel">
+    <div class="config-panel-head">
+      <div class="config-panel-title">⚙️ Configurações</div>
+      <button class="config-close" onclick="fecharConfig()">✕</button>
+    </div>
+    <div class="config-body" id="config-body">
+      <!-- Conteúdo gerado por JS conforme o perfil -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL NOVO USUÁRIO ═══ -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="modal-usuario-titulo">Novo Usuário</span>
+      <button class="config-close" onclick="fecharModalUsuario()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label class="flabel">Usuário (login)</label>
+        <input class="finput-q" type="text" id="mu-usuario" placeholder="ex: joao.silva">
+      </div>
+      <div>
+        <label class="flabel">Nome completo</label>
+        <input class="finput-q" type="text" id="mu-nome" placeholder="João Silva">
+      </div>
+      <div>
+        <label class="flabel">Perfil</label>
+        <select class="fsel-q" id="mu-perfil">
+          <option value="operador">Operador</option>
+          <option value="financeiro">Financeiro</option>
+          <option value="comercial_consultor">Comercial Consultor</option>
+          <option value="comercial_gerente">Comercial Gerente</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div>
+        <label class="flabel">Senha inicial</label>
+        <input class="finput-q" type="password" id="mu-senha" placeholder="Mínimo 6 caracteres">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalUsuario()">Cancelar</button>
+      <button class="btn-config-save" id="mu-btn-salvar" onclick="salvarNovoUsuario()">Criar usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL REDEFINIR SENHA ═══ -->
+<div class="modal-overlay" id="modal-redef-senha">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>Redefinir senha</span>
+      <button class="config-close" onclick="fecharModalRedefSenha()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--text-2)" id="modal-redef-info"></p>
+      <div>
+        <label class="flabel">Nova senha</label>
+        <input class="finput-q" type="password" id="redef-senha" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div>
+        <label class="flabel">Confirmar senha</label>
+        <input class="finput-q" type="password" id="redef-senha2" placeholder="Repita a senha">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalRedefSenha()">Cancelar</button>
+      <button class="btn-config-save" id="redef-btn" onclick="confirmarRedefSenha()">Redefinir</button>
+    </div>
+  </div>
+</div>
 
 <main>
 
@@ -2768,10 +2993,11 @@ async function fazerLoginUI() {
 
     if (json.sucesso) {
       // Grava sessão
-      SESSAO.token  = json.token;
-      SESSAO.perfil = json.perfil;
-      SESSAO.nome   = json.nome;
-      localStorage.setItem(SESSAO_KEY, JSON.stringify({ token: json.token, perfil: json.perfil, nome: json.nome }));
+      SESSAO.token   = json.token;
+      SESSAO.perfil  = json.perfil;
+      SESSAO.nome    = json.nome;
+      SESSAO.usuario = usuario;
+      localStorage.setItem(SESSAO_KEY, JSON.stringify({ token: json.token, perfil: json.perfil, nome: json.nome, usuario }));
 
       entrarNoDashboard();
     } else {
@@ -2832,6 +3058,9 @@ function entrarNoDashboard() {
   // Módulos que precisam inicializar
   if (paginasPermitidas.includes('visao-geral')) ovIniciar();
   if (paginasPermitidas.includes('avarias'))    { /* lazy */ }
+
+  // Carrega códigos de atenção em background
+  carregarCodigosAtencaoInicial();
 }
 
 /* ── Aplica visibilidade das abas por perfil ── */
@@ -2893,9 +3122,10 @@ async function verificarSessaoSalva() {
     const json = await resp.json();
 
     if (json.sucesso) {
-      SESSAO.token  = json.token;
-      SESSAO.perfil = json.perfil;
-      SESSAO.nome   = json.nome;
+      SESSAO.token   = json.token;
+      SESSAO.perfil  = json.perfil;
+      SESSAO.nome    = json.nome;
+      SESSAO.usuario = json.usuario || '';
       entrarNoDashboard();
     } else {
       localStorage.removeItem(SESSAO_KEY);
@@ -2904,8 +3134,8 @@ async function verificarSessaoSalva() {
   } catch(err) {
     // Erro de rede: deixa entrar mesmo assim se tiver dados locais
     try {
-      const { token, perfil, nome } = JSON.parse(salva);
-      SESSAO.token = token; SESSAO.perfil = perfil; SESSAO.nome = nome;
+      const { token, perfil, nome, usuario } = JSON.parse(salva);
+      SESSAO.token = token; SESSAO.perfil = perfil; SESSAO.nome = nome; SESSAO.usuario = usuario || '';
       entrarNoDashboard();
     } catch(e) {
       mostrarTelaLogin();
@@ -2919,6 +3149,390 @@ async function verificarSessaoSalva() {
 window.addEventListener('DOMContentLoaded', () => {
   verificarSessaoSalva();
 });
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO CONFIGURAÇÕES
+═══════════════════════════════════════════════ */
+
+// Estado dos códigos de atenção (carregados do Sheets)
+const CONFIG = {
+  codigosAtencao: [], // [{codigo, nome}]
+  usuarios: [],       // lista de usuários (só admin)
+  carregado: false,
+};
+
+/* ── Abre/fecha painel ── */
+function abrirConfig() {
+  const el = document.getElementById('config-screen');
+  el.classList.add('visible');
+  if (!CONFIG.carregado) carregarConfig();
+  else renderConfig();
+}
+
+function fecharConfig() {
+  document.getElementById('config-screen').classList.remove('visible');
+}
+
+function fecharConfigFora(e) {
+  if (e.target === document.getElementById('config-screen')) fecharConfig();
+}
+
+/* ── Carrega dados do Sheets ── */
+async function carregarConfig() {
+  renderConfigLoading();
+  try {
+    // Carrega códigos de atenção
+    const r1 = await fetch(SCRIPT_URL + '?modulo=codigosAtencao');
+    const j1 = await r1.json();
+    if (j1.sucesso) CONFIG.codigosAtencao = j1.codigos || [];
+
+    // Admin carrega lista de usuários
+    if (SESSAO.perfil === 'admin') {
+      const r2 = await fetch(SCRIPT_URL + '?modulo=listarUsuarios');
+      const j2 = await r2.json();
+      if (j2.sucesso) CONFIG.usuarios = j2.usuarios || [];
+    }
+
+    CONFIG.carregado = true;
+    renderConfig();
+  } catch(err) {
+    console.error('Erro ao carregar config:', err);
+    renderConfig();
+  }
+}
+
+/* ── Render do painel conforme perfil ── */
+function renderConfig() {
+  const body = document.getElementById('config-body');
+  let html = '';
+
+  // Seção: Trocar senha (todos)
+  html += `
+    <div class="config-section">
+      <div class="config-section-head">
+        <span class="config-section-ico">🔑</span>
+        <span>Trocar minha senha</span>
+      </div>
+      <div class="config-section-body">
+        <div>
+          <label class="flabel">Senha atual</label>
+          <input class="finput-q" type="password" id="cfg-senha-atual" placeholder="••••••••">
+        </div>
+        <div>
+          <label class="flabel">Nova senha</label>
+          <input class="finput-q" type="password" id="cfg-senha-nova" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div>
+          <label class="flabel">Confirmar nova senha</label>
+          <input class="finput-q" type="password" id="cfg-senha-conf" placeholder="Repita a nova senha">
+        </div>
+        <div id="cfg-senha-erro" style="display:none;font-size:12px;color:var(--accent);padding:4px 0"></div>
+        <button class="btn-config-save" id="cfg-btn-senha" onclick="trocarSenha()" style="align-self:flex-start">
+          🔑 Atualizar senha
+        </button>
+      </div>
+    </div>`;
+
+  // Seção: Códigos de atenção (admin + operador)
+  if (['admin','operador'].includes(SESSAO.perfil)) {
+    html += `
+      <div class="config-section">
+        <div class="config-section-head">
+          <span class="config-section-ico">🔴</span>
+          <span>Códigos de atenção</span>
+          <span style="font-size:11px;color:var(--text-3);font-weight:400;margin-left:4px">— linhas em vermelho na expedição</span>
+        </div>
+        <div class="config-section-body">
+          <div class="atencao-list" id="cfg-atencao-list">
+            ${renderCodigosAtencao()}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <input class="finput-q" type="text" id="cfg-atencao-cod" placeholder="Código do revendedor" style="width:160px;font-family:'DM Mono',monospace">
+            <input class="finput-q" type="text" id="cfg-atencao-nome" placeholder="Nome (opcional)" style="flex:1">
+            <button class="btn-config-save" onclick="adicionarCodigoAtencao()" style="padding:7px 14px;white-space:nowrap">+ Adicionar</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Seção: Gerenciar usuários (só admin)
+  if (SESSAO.perfil === 'admin') {
+    html += `
+      <div class="config-section">
+        <div class="config-section-head">
+          <span class="config-section-ico">👥</span>
+          <span>Gerenciar usuários</span>
+        </div>
+        <div class="config-section-body">
+          <div class="user-list" id="cfg-user-list">
+            ${renderListaUsuarios()}
+          </div>
+          <button class="btn-config-save" onclick="abrirModalUsuario()" style="align-self:flex-start;margin-top:4px">
+            + Novo usuário
+          </button>
+        </div>
+      </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+function renderConfigLoading() {
+  document.getElementById('config-body').innerHTML =
+    `<div style="text-align:center;padding:40px;color:var(--text-3)">
+      <span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--accent);width:20px;height:20px"></span>
+      <div style="margin-top:10px;font-size:13px">Carregando configurações...</div>
+    </div>`;
+}
+
+/* ── Render códigos de atenção ── */
+function renderCodigosAtencao() {
+  if (!CONFIG.codigosAtencao.length) {
+    return `<div style="text-align:center;padding:16px;color:var(--text-3);font-size:12.5px">Nenhum código cadastrado</div>`;
+  }
+  return CONFIG.codigosAtencao.map(c => `
+    <div class="atencao-item">
+      <span class="atencao-item-cod">${c.codigo}</span>
+      <span class="atencao-item-nome">${c.nome || ''}</span>
+      <button class="btn-rm-atencao" onclick="removerCodigoAtencao('${c.codigo}')" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+/* ── Render lista de usuários ── */
+function renderListaUsuarios() {
+  if (!CONFIG.usuarios.length) {
+    return `<div style="text-align:center;padding:16px;color:var(--text-3);font-size:12.5px">Nenhum usuário encontrado</div>`;
+  }
+
+  const corPerfil = {
+    admin: '#17150f', operador: 'var(--blue)',
+    financeiro: 'var(--green)', comercial_consultor: 'var(--purple)',
+    comercial_gerente: 'var(--yellow)'
+  };
+  const bgPerfil = {
+    admin: '#e7e7e7', operador: 'var(--blue-bg)',
+    financeiro: 'var(--green-bg)', comercial_consultor: 'var(--purple-bg)',
+    comercial_gerente: 'var(--yellow-bg)'
+  };
+
+  return CONFIG.usuarios.map(u => `
+    <div class="user-item">
+      <div class="user-item-info">
+        <div class="user-item-nome">
+          ${u.nome}
+          <span class="perfil-mini" style="background:${bgPerfil[u.perfil]||'var(--border)'};color:${corPerfil[u.perfil]||'var(--text-2)'};margin-left:6px">
+            ${PERFIL_LABEL[u.perfil]||u.perfil}
+          </span>
+        </div>
+        <div class="user-item-meta">@${u.usuario} · ${u.ativo==='sim'?'<span style="color:var(--green)">Ativo</span>':'<span style="color:var(--accent)">Inativo</span>'}</div>
+      </div>
+      <div class="user-item-actions">
+        <button class="btn-user-action" onclick="abrirModalRedefSenha('${u.usuario}','${u.nome}')">🔑 Senha</button>
+        <button class="btn-user-action ${u.ativo==='sim'?'danger':''}" onclick="toggleUsuario('${u.usuario}','${u.ativo}')">
+          ${u.ativo==='sim'?'Desativar':'Ativar'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── Trocar senha (usuário logado) ── */
+async function trocarSenha() {
+  const atual = document.getElementById('cfg-senha-atual').value.trim();
+  const nova  = document.getElementById('cfg-senha-nova').value.trim();
+  const conf  = document.getElementById('cfg-senha-conf').value.trim();
+  const erroEl = document.getElementById('cfg-senha-erro');
+  const btn    = document.getElementById('cfg-btn-senha');
+
+  erroEl.style.display = 'none';
+
+  if (!atual || !nova || !conf) { erroEl.textContent='Preencha todos os campos.'; erroEl.style.display='block'; return; }
+  if (nova.length < 6)          { erroEl.textContent='A nova senha deve ter ao menos 6 caracteres.'; erroEl.style.display='block'; return; }
+  if (nova !== conf)             { erroEl.textContent='As senhas não coincidem.'; erroEl.style.display='block'; return; }
+
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Salvando...';
+
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify({ modulo:'trocarSenha', usuario: SESSAO.usuario || document.getElementById('login-usuario').value || SESSAO.nome, senhaAtual: atual, senhaNova: nova })
+    });
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('✅ Senha alterada com sucesso!', 'ok');
+      ['cfg-senha-atual','cfg-senha-nova','cfg-senha-conf'].forEach(id => document.getElementById(id).value='');
+    } else {
+      erroEl.textContent = json.erro || 'Erro ao alterar senha.';
+      erroEl.style.display = 'block';
+    }
+  } catch(err) { erroEl.textContent='Falha na conexão.'; erroEl.style.display='block'; }
+  finally { btn.disabled=false; btn.innerHTML='🔑 Atualizar senha'; }
+}
+
+/* ── Códigos de atenção ── */
+async function adicionarCodigoAtencao() {
+  const cod  = document.getElementById('cfg-atencao-cod').value.trim();
+  const nome = document.getElementById('cfg-atencao-nome').value.trim();
+  if (!cod) { mostrarToast('Informe o código.','err'); return; }
+  if (CONFIG.codigosAtencao.some(c => c.codigo === cod)) { mostrarToast('Código já cadastrado.','err'); return; }
+
+  CONFIG.codigosAtencao.push({ codigo: cod, nome });
+  await salvarCodigosAtencao();
+  document.getElementById('cfg-atencao-cod').value  = '';
+  document.getElementById('cfg-atencao-nome').value = '';
+  document.getElementById('cfg-atencao-list').innerHTML = renderCodigosAtencao();
+  aplicarCodigosAtencaoNaTabela();
+  mostrarToast('✅ Código adicionado!', 'ok');
+}
+
+async function removerCodigoAtencao(cod) {
+  CONFIG.codigosAtencao = CONFIG.codigosAtencao.filter(c => c.codigo !== cod);
+  await salvarCodigosAtencao();
+  document.getElementById('cfg-atencao-list').innerHTML = renderCodigosAtencao();
+  aplicarCodigosAtencaoNaTabela();
+  mostrarToast('Código removido.', 'ok');
+}
+
+async function salvarCodigosAtencao() {
+  try {
+    await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify({ modulo:'salvarCodigosAtencao', codigos: CONFIG.codigosAtencao })
+    });
+  } catch(err) { console.error('Erro ao salvar códigos:', err); }
+}
+
+/* Aplica fundo vermelho nas linhas da tabela VD */
+function aplicarCodigosAtencaoNaTabela() {
+  const codigos = new Set(CONFIG.codigosAtencao.map(c => String(c.codigo)));
+  document.querySelectorAll('#vd-tbody tr').forEach(tr => {
+    const tdCod = tr.querySelector('td:nth-child(4)');
+    if (!tdCod) return;
+    const cod = tdCod.textContent.trim();
+    if (codigos.has(cod)) tr.classList.add('row-atencao');
+    else tr.classList.remove('row-atencao');
+  });
+}
+
+/* ── Gerenciar usuários (Admin) ── */
+let _redefUsuario = null;
+
+function abrirModalUsuario() {
+  ['mu-usuario','mu-nome','mu-senha'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('modal-usuario').classList.add('visible');
+}
+function fecharModalUsuario() {
+  document.getElementById('modal-usuario').classList.remove('visible');
+}
+
+async function salvarNovoUsuario() {
+  const usuario = document.getElementById('mu-usuario').value.trim().toLowerCase();
+  const nome    = document.getElementById('mu-nome').value.trim();
+  const perfil  = document.getElementById('mu-perfil').value;
+  const senha   = document.getElementById('mu-senha').value.trim();
+  const btn     = document.getElementById('mu-btn-salvar');
+
+  if (!usuario || !nome || !senha) { mostrarToast('Preencha todos os campos.','err'); return; }
+  if (senha.length < 6) { mostrarToast('Senha deve ter ao menos 6 caracteres.','err'); return; }
+
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Criando...';
+
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify({ modulo:'criarUsuario', usuario, nome, perfil, senha })
+    });
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('✅ Usuário criado!','ok');
+      fecharModalUsuario();
+      CONFIG.carregado = false;
+      carregarConfig();
+    } else { mostrarToast(json.erro||'Erro ao criar usuário.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+  finally { btn.disabled=false; btn.innerHTML='Criar usuário'; }
+}
+
+function abrirModalRedefSenha(usuario, nome) {
+  _redefUsuario = usuario;
+  document.getElementById('modal-redef-info').textContent = `Redefinir senha de: ${nome} (@${usuario})`;
+  document.getElementById('redef-senha').value  = '';
+  document.getElementById('redef-senha2').value = '';
+  document.getElementById('modal-redef-senha').classList.add('visible');
+}
+function fecharModalRedefSenha() {
+  document.getElementById('modal-redef-senha').classList.remove('visible');
+  _redefUsuario = null;
+}
+
+async function confirmarRedefSenha() {
+  const nova  = document.getElementById('redef-senha').value.trim();
+  const conf  = document.getElementById('redef-senha2').value.trim();
+  const btn   = document.getElementById('redef-btn');
+
+  if (!nova || nova.length < 6) { mostrarToast('Senha deve ter ao menos 6 caracteres.','err'); return; }
+  if (nova !== conf) { mostrarToast('As senhas não coincidem.','err'); return; }
+
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify({ modulo:'redefSenha', usuario: _redefUsuario, senhaNova: nova })
+    });
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('✅ Senha redefinida!','ok');
+      fecharModalRedefSenha();
+    } else { mostrarToast(json.erro||'Erro.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+  finally { btn.disabled=false; btn.innerHTML='Redefinir'; }
+}
+
+async function toggleUsuario(usuario, ativoAtual) {
+  const novoStatus = ativoAtual === 'sim' ? 'nao' : 'sim';
+  const acao = novoStatus === 'sim' ? 'ativar' : 'desativar';
+  if (!confirm(`Confirma ${acao} o usuário @${usuario}?`)) return;
+
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify({ modulo:'toggleUsuario', usuario, ativo: novoStatus })
+    });
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast(`✅ Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'}!`,'ok');
+      CONFIG.carregado = false;
+      carregarConfig();
+    } else { mostrarToast(json.erro||'Erro.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+}
+
+/* ── Carrega códigos de atenção ao entrar no dashboard ── */
+async function carregarCodigosAtencaoInicial() {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const resp = await fetch(SCRIPT_URL + '?modulo=codigosAtencao', { signal: controller.signal });
+    clearTimeout(timeout);
+    const json = await resp.json();
+    if (json.sucesso) {
+      CONFIG.codigosAtencao = json.codigos || [];
+      CONFIG.carregado = true; // parcial — só códigos
+    }
+  } catch(err) { console.warn('Códigos de atenção não disponíveis:', err.name); }
+}
+
+/* Hook: após renderVD, aplica os códigos de atenção */
+const _renderVDOriginal = renderVD;
+function renderVD() {
+  _renderVDOriginal();
+  // Aplica depois de um tick para o DOM estar pronto
+  setTimeout(aplicarCodigosAtencaoNaTabela, 50);
+}
+
 </script>
 </body>
 </html>
