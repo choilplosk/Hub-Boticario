@@ -1331,10 +1331,16 @@ const MADALENA = new Set(['349129','731858']);
 
 /* Navegação */
 function goPage(id, btn) {
+  // Verifica permissão
+  const permitidas = PERFIL_PAGINAS[SESSAO.perfil] || [];
+  if (SESSAO.perfil && !permitidas.includes(id)) {
+    mostrarToast('Sem permissão para acessar esta área.', 'err');
+    return;
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
   if (id === 'avarias')    qIniciar();
   if (id === 'fretes')     frIniciar();
   if (id === 'visao-geral') ovIniciar();
@@ -2907,16 +2913,7 @@ async function verificarSessaoSalva() {
   }
 }
 
-/* Sobrescreve goPage para checar permissão */
-const _goPageOriginal = goPage;
-function goPage(id, btn) {
-  const permitidas = PERFIL_PAGINAS[SESSAO.perfil] || [];
-  if (!permitidas.includes(id)) {
-    mostrarToast('Sem permissão para acessar esta área.', 'err');
-    return;
-  }
-  _goPageOriginal(id, btn);
-}
+/* goPage já inclui verificação de permissão — não sobrescreve */
 
 /* ── Inicialização ── */
 window.addEventListener('DOMContentLoaded', () => {
