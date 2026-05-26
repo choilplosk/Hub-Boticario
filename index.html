@@ -266,7 +266,7 @@ tr:hover td { background:var(--surface-2); }
 .ciclo-cell-h { background:var(--surface-2); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-3); padding:8px 14px; border-bottom:1px solid var(--border); }
 .ciclo-right { text-align:right; }
 
-/* Badges tipo avaria - inclui Omni */
+/* Badges tipo avaria */
 .b-vazamento { background:var(--blue-bg);   color:var(--blue); }
 .b-embalagem { background:var(--yellow-bg); color:var(--yellow); }
 .b-quebra    { background:var(--accent-bg); color:var(--accent); }
@@ -301,7 +301,7 @@ tr:hover td { background:var(--surface-2); }
 }
 @keyframes spinning { to{transform:rotate(360deg)} }
 
-/* ARMAZENAGEM — card visão geral */
+/* ARMAZENAGEM */
 .arm-card {
   background:var(--surface); border:1px solid var(--border);
   border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden; grid-column:1/-1;
@@ -325,9 +325,6 @@ tr:hover td { background:var(--surface-2); }
 .arm-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); }
 .arm-stat-val { font-size:18px; font-weight:700; font-family:'DM Mono',monospace; letter-spacing:-.5px; }
 .arm-stat-sub { font-size:11px; color:var(--text-2); }
-.arm-status-ok   { color:var(--green); }
-.arm-status-warn { color:var(--yellow); }
-.arm-status-risk { color:var(--accent); }
 .arm-freshbar-wrap { margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
 .arm-freshbar-lbl  { font-size:11px; color:var(--text-2); margin-bottom:5px; display:flex; justify-content:space-between; }
 .arm-freshbar-bg   { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
@@ -348,15 +345,10 @@ tr:hover td { background:var(--surface-2); }
 .arm-expired-text strong { display:block; font-size:13px; font-weight:700; color:var(--yellow); }
 .arm-expired-text span   { font-size:12px; color:#7a5000; }
 
-/* FRETES ESPECIAIS — estilos exclusivos */
-
-/* Layout principal 2 colunas */
+/* FRETES ESPECIAIS */
 .fr-layout { display:grid; grid-template-columns:420px 1fr; gap:20px; align-items:start; }
 @media(max-width:960px){ .fr-layout { grid-template-columns:1fr; } }
 
-/* Card gen-rico reutiliza .qcard */
-
-/* Lista de pedidos pendentes com checkboxes */
 .fr-pedidos-list {
   max-height:340px; overflow-y:auto;
   border:1px solid var(--border); border-radius:var(--r-sm);
@@ -376,7 +368,6 @@ tr:hover td { background:var(--surface-2); }
 .fr-ped-detail { font-size:11px; color:var(--text-3); font-family:'DM Mono',monospace; margin-top:1px; }
 .fr-ped-empty { padding:28px 16px; text-align:center; color:var(--text-3); font-size:12.5px; }
 
-/* Sele--o resumida */
 .fr-sel-resumo {
   background:var(--accent-bg); border:1px solid var(--accent-mid);
   border-radius:var(--r-sm); padding:9px 13px; margin-bottom:12px;
@@ -384,7 +375,6 @@ tr:hover td { background:var(--surface-2); }
 }
 .fr-sel-resumo.visible { display:block; }
 
-/* Bot-o confirmar frete */
 .btn-conf-frete {
   width:100%; margin-top:14px; padding:10px;
   background:var(--blue); color:#fff; border:none;
@@ -397,23 +387,111 @@ tr:hover td { background:var(--surface-2); }
 .btn-conf-frete:active { transform:scale(.99); }
 .btn-conf-frete:disabled { opacity:.45; cursor:not-allowed; }
 
-/* KPIs fretes */
 .fr-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px; }
 @media(max-width:700px){ .fr-kpis { grid-template-columns:repeat(2,1fr); } }
 
-/* Tabela ciclos fretes - 5 colunas */
 .fr-ciclo-grid { display:grid; grid-template-columns:1fr 60px 80px 1fr 80px; }
-
-/* Badge tipo frete */
 .b-particular { background:var(--purple-bg); color:var(--purple); }
 .b-euentrego  { background:var(--green-bg);  color:var(--green); }
 
-/* Aviso sem upload */
 .fr-sem-upload {
   background:var(--yellow-bg); border:1px solid #f0d070;
   border-radius:var(--r-sm); padding:13px 16px; margin-bottom:18px;
   font-size:13px; color:#7a5000; display:flex; gap:10px; align-items:center;
 }
+
+/* ── INDICADORES (novos) ── */
+.ind-section { margin-bottom:24px; }
+.ind-section-title {
+  font-size:11px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.6px; color:var(--text-3); margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.ind-section-title::after {
+  content:''; flex:1; height:1px; background:var(--border);
+}
+
+/* Card de indicador grande */
+.ind-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden;
+}
+.ind-card-head {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.ind-card-title { font-size:13px; font-weight:700; }
+.ind-card-sub   { font-size:11px; color:var(--text-3); }
+.ind-card-body  { padding:16px 18px; }
+
+/* Grid indicadores linha */
+.ind-kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:20px; }
+
+/* Barra comparativa */
+.comp-bar-wrap { display:flex; flex-direction:column; gap:10px; }
+.comp-bar-item { display:flex; flex-direction:column; gap:4px; }
+.comp-bar-label { display:flex; justify-content:space-between; font-size:12px; }
+.comp-bar-label span:first-child { font-weight:600; color:var(--text-1); }
+.comp-bar-label span:last-child  { color:var(--text-3); font-family:'DM Mono',monospace; }
+.comp-bar-tracks { display:flex; flex-direction:column; gap:3px; }
+.comp-bar-track { height:8px; background:var(--border); border-radius:4px; overflow:hidden; position:relative; }
+.comp-bar-fill { height:100%; border-radius:4px; transition:width .5s ease; }
+.comp-bar-fill-26 { background:var(--accent); }
+.comp-bar-fill-25 { background:var(--border-strong); }
+.comp-bar-legend {
+  display:flex; gap:14px; margin-bottom:12px;
+  font-size:11px; color:var(--text-2);
+}
+.comp-bar-legend span { display:flex; align-items:center; gap:5px; }
+.comp-bar-legend i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+
+/* OTD gauge */
+.otd-wrap { display:flex; align-items:center; gap:28px; flex-wrap:wrap; padding:4px 0; }
+.otd-gauge { position:relative; width:100px; height:100px; flex-shrink:0; }
+.otd-gauge svg { width:100px; height:100px; transform:rotate(-90deg); }
+.otd-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.otd-pct  { font-size:20px; font-weight:700; font-family:'DM Mono',monospace; letter-spacing:-1px; }
+.otd-lbl  { font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:.4px; }
+.otd-stats { display:flex; flex-direction:column; gap:10px; }
+.otd-stat { display:flex; flex-direction:column; gap:1px; }
+.otd-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-3); }
+.otd-stat-val { font-size:16px; font-weight:700; font-family:'DM Mono',monospace; }
+.otd-stat-sub { font-size:11px; color:var(--text-2); }
+
+/* HT (Handling Time) */
+.ht-wrap { display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+.ht-big { font-size:48px; font-weight:700; font-family:'DM Mono',monospace; letter-spacing:-2px; line-height:1; }
+.ht-unit { font-size:14px; color:var(--text-2); font-weight:500; margin-left:4px; }
+.ht-detail { display:flex; flex-direction:column; gap:6px; }
+.ht-stat { display:flex; flex-direction:column; gap:1px; }
+.ht-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-3); }
+.ht-stat-val { font-size:15px; font-weight:700; font-family:'DM Mono',monospace; }
+
+/* Tabela bairros */
+.bairro-table-wrap { max-height:320px; overflow-y:auto; }
+.bairro-row {
+  display:grid; grid-template-columns:1fr 70px 80px 120px;
+  padding:8px 14px; border-bottom:1px solid var(--border);
+  font-size:12.5px; align-items:center; gap:8px;
+}
+.bairro-row:last-child { border-bottom:none; }
+.bairro-row:hover { background:var(--surface-2); }
+.bairro-row-h {
+  background:var(--surface-2); font-size:10.5px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.4px; color:var(--text-3);
+  padding:8px 14px; border-bottom:1px solid var(--border);
+  display:grid; grid-template-columns:1fr 70px 80px 120px; gap:8px;
+}
+.bairro-bar-bg { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+.bairro-bar-fill { height:100%; background:var(--accent); border-radius:3px; transition:width .4s ease; opacity:.7; }
+.bairro-right { text-align:right; font-family:'DM Mono',monospace; }
+
+/* Sem dados indicadores */
+.ind-vazio {
+  padding:32px 16px; text-align:center;
+  color:var(--text-3); font-size:12.5px;
+}
+.ind-vazio span { font-size:28px; display:block; margin-bottom:8px; }
 </style>
 </head>
 <body>
@@ -427,12 +505,11 @@ tr:hover td { background:var(--surface-2); }
     </div>
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab" onclick="goPage('visao-geral',this)">◈ Visão Geral</button>
-    <button class="nav-tab active" onclick="goPage('expedicao',this)">📦 Expedição</button>
+    <button class="nav-tab active" onclick="goPage('visao-geral',this)">◈ Visão Geral</button>
+    <button class="nav-tab" onclick="goPage('expedicao',this)">📦 Expedição</button>
     <button class="nav-tab" onclick="goPage('producao',this)">⚙️ Produção <span class="tag-wms">WMS</span></button>
-
-    <button class="nav-tab" onclick="goPage('qualidade',this)">🔍 Qualidade</button>
-    <button class="nav-tab" onclick="goPage('ciclos',this)">🔄 Ciclos</button>
+    <button class="nav-tab" onclick="goPage('avarias',this)">🚨 Avarias</button>
+    <button class="nav-tab" onclick="goPage('financeiro',this)">💰 Financeiro</button>
     <button class="nav-tab" onclick="goPage('fretes',this)">🚚 Fretes Especiais</button>
   </div>
   <div class="nav-right"><span class="nav-clock" id="clock"></span></div>
@@ -440,12 +517,13 @@ tr:hover td { background:var(--surface-2); }
 
 <main>
 
-<!-- VISÃO GERAL -->
-<div class="page" id="page-visao-geral">
+<!-- ═══════════════════════════════════════════════
+     VISÃO GERAL
+═══════════════════════════════════════════════ -->
+<div class="page active" id="page-visao-geral">
   <div class="ph">
     <div><h1>Visão Geral</h1><p>Indicadores consolidados por ciclo</p></div>
     <div style="display:flex;align-items:center;gap:10px">
-      <!-- Upload histórico 2025 -->
       <div style="position:relative">
         <button class="btn btn-ghost" style="font-size:12px" onclick="document.getElementById('ov-hist-input').click()">
           📥 Histórico 2025
@@ -453,33 +531,150 @@ tr:hover td { background:var(--surface-2); }
         <input type="file" id="ov-hist-input" accept=".xlsx,.xls" style="display:none" onchange="ovCarregarHist(event)">
       </div>
       <span id="ov-hist-status" style="font-size:11px;color:var(--text-3)"></span>
-      <!-- Seletor de ciclo -->
       <select class="fsel" id="ov-sel-ciclo" onchange="ovRender()" style="font-weight:600">
         <option value="">Selecione o ciclo...</option>
       </select>
     </div>
   </div>
 
-  <!-- Aviso sem dados de expedição -->
   <div id="ov-sem-exp" class="alert alert-warning" style="display:none">
     <span class="alert-ico">📂</span>
     <span>Carregue a planilha <strong>ConsultaPedidos</strong> na aba <strong>Expedição</strong> para ver os indicadores do ciclo.</span>
   </div>
 
-  <!-- ── LINHA 1: KPIs do ciclo ── -->
+  <!-- KPIs do ciclo -->
   <div id="ov-kpis-ciclo" style="display:none">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:8px">Ciclo selecionado</div>
+    <div class="ind-section-title">Ciclo selecionado</div>
     <div class="kpi-row" id="ov-kpi-row"></div>
   </div>
 
-  <!-- ── LINHA 2: Gráfico barras 2026 vs 2025 ── -->
+  <!-- ── INDICADORES DE PERFORMANCE ── -->
+  <div id="ov-indicadores" style="display:none">
+
+    <!-- Linha: Handling Time + OTD -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="ov-ind-grid-1">
+
+      <!-- Handling Time -->
+      <div class="ind-card">
+        <div class="ind-card-head">
+          <div>
+            <div class="ind-card-title">⏱ Handling Time</div>
+            <div class="ind-card-sub">Aprovação → Faturamento</div>
+          </div>
+          <div id="ov-ht-badge" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--border);color:var(--text-3)">—</div>
+        </div>
+        <div class="ind-card-body">
+          <div class="ht-wrap">
+            <div>
+              <span class="ht-big" id="ov-ht-media">—</span>
+              <span class="ht-unit">dias em média</span>
+            </div>
+            <div class="ht-detail">
+              <div class="ht-stat">
+                <span class="ht-stat-lbl">Mediana</span>
+                <span class="ht-stat-val" id="ov-ht-mediana">—</span>
+              </div>
+              <div class="ht-stat">
+                <span class="ht-stat-lbl">Mínimo / Máximo</span>
+                <span class="ht-stat-val" id="ov-ht-minmax">—</span>
+              </div>
+              <div class="ht-stat">
+                <span class="ht-stat-lbl">Pedidos calculados</span>
+                <span class="ht-stat-val" id="ov-ht-n">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- On Time Delivery -->
+      <div class="ind-card">
+        <div class="ind-card-head">
+          <div>
+            <div class="ind-card-title">🎯 On Time Delivery</div>
+            <div class="ind-card-sub">Aprovação → Entrega em menos de 3 dias</div>
+          </div>
+          <div id="ov-otd-badge" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--border);color:var(--text-3)">—</div>
+        </div>
+        <div class="ind-card-body">
+          <div class="otd-wrap">
+            <div class="otd-gauge">
+              <svg viewBox="0 0 100 100">
+                <circle fill="none" stroke="var(--border)" stroke-width="10" cx="50" cy="50" r="40"/>
+                <circle fill="none" stroke-width="10" stroke-linecap="round"
+                  id="ov-otd-arc"
+                  cx="50" cy="50" r="40"
+                  stroke-dasharray="251.3" stroke-dashoffset="251.3"
+                  style="transition:stroke-dashoffset .6s ease,stroke .3s"/>
+              </svg>
+              <div class="otd-center">
+                <span class="otd-pct" id="ov-otd-pct">—</span>
+                <span class="otd-lbl">OTD</span>
+              </div>
+            </div>
+            <div class="otd-stats">
+              <div class="otd-stat">
+                <span class="otd-stat-lbl">≤ 3 dias</span>
+                <span class="otd-stat-val" id="ov-otd-ok">—</span>
+                <span class="otd-stat-sub">pedidos no prazo</span>
+              </div>
+              <div class="otd-stat">
+                <span class="otd-stat-lbl">&gt; 3 dias</span>
+                <span class="otd-stat-val" id="ov-otd-nok">—</span>
+                <span class="otd-stat-sub">fora do prazo</span>
+              </div>
+              <div class="otd-stat">
+                <span class="otd-stat-lbl">Base calculada</span>
+                <span class="otd-stat-val" id="ov-otd-base">—</span>
+                <span class="otd-stat-sub">entregues com datas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha: Pedidos entregues + Bairros -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" id="ov-ind-grid-2">
+
+      <!-- Pedidos entregues vs 2025 -->
+      <div class="ind-card">
+        <div class="ind-card-head">
+          <div>
+            <div class="ind-card-title">📦 Pedidos Entregues</div>
+            <div class="ind-card-sub">Ciclo selecionado — 2026 vs 2025</div>
+          </div>
+        </div>
+        <div class="ind-card-body" id="ov-entregues-body">
+          <div class="ind-vazio"><span>📊</span>Selecione um ciclo acima</div>
+        </div>
+      </div>
+
+      <!-- Distribuição por bairro -->
+      <div class="ind-card">
+        <div class="ind-card-head">
+          <div>
+            <div class="ind-card-title">📍 Distribuição por Bairro</div>
+            <div class="ind-card-sub">2026 — ciclo selecionado</div>
+          </div>
+          <span id="ov-bairro-total" style="font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace"></span>
+        </div>
+        <div id="ov-bairros-body">
+          <div class="ind-vazio"><span>🗺️</span>Selecione um ciclo acima</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Gráfico barras 2026 vs 2025 -->
   <div id="ov-grafico-wrap" style="display:none;margin-bottom:20px">
     <div class="tcard">
       <div class="tcard-head">
         <span class="tcard-title">📊 Pedidos por Ciclo — 2026 vs 2025</span>
         <div style="display:flex;gap:14px;align-items:center;font-size:11px">
           <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>2026</span>
-          <span id="ov-leg-2025" style="display:flex;align-items:center;gap:5px;display:none"><span style="width:10px;height:10px;border-radius:2px;background:var(--border-strong);display:inline-block"></span>2025</span>
+          <span id="ov-leg-2025" style="display:none;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--border-strong);display:inline-block"></span>2025</span>
         </div>
       </div>
       <div style="padding:16px 18px;overflow-x:auto">
@@ -488,21 +683,21 @@ tr:hover td { background:var(--surface-2); }
     </div>
   </div>
 
-  <!-- ── LINHA 3: Comparativo acumulado ── -->
+  <!-- Comparativo acumulado -->
   <div id="ov-comparativo-wrap" style="display:none;margin-bottom:20px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:8px">Acumulado anual — 2026 vs 2025</div>
+    <div class="ind-section-title">Acumulado anual — 2026 vs 2025</div>
     <div class="kpi-row" id="ov-comp-row"></div>
   </div>
 
-  <!-- ── Card Armazenagem (mantido) ── -->
-  <div class="ov-grid" style="margin-bottom:0">
+  <!-- Cards módulos -->
+  <div class="ov-grid">
     <div class="ov-card"><div class="ov-card-ico">📦</div><div class="ov-card-title">Expedição</div><div class="ov-card-desc"><span class="dot"></span>Ativo — carregue a planilha na aba Expedição.</div></div>
     <div class="ov-card"><div class="ov-card-ico">⚙️</div><div class="ov-card-title">Produção</div><div class="ov-card-desc">Aguardando integração com WMS.</div></div>
-    <div class="ov-card"><div class="ov-card-ico">🔍</div><div class="ov-card-title">Qualidade</div><div class="ov-card-desc"><span class="dot"></span>Ativo — Registro de avarias.</div></div>
-    <div class="ov-card"><div class="ov-card-ico">🔄</div><div class="ov-card-title">Ciclos</div><div class="ov-card-desc">Em construção — Parte 3.</div></div>
+    <div class="ov-card"><div class="ov-card-ico">🚨</div><div class="ov-card-title">Avarias</div><div class="ov-card-desc"><span class="dot"></span>Ativo — Registro de avarias.</div></div>
+    <div class="ov-card"><div class="ov-card-ico">💰</div><div class="ov-card-title">Financeiro</div><div class="ov-card-desc">Em construção — Parte 3.</div></div>
     <div class="ov-card"><div class="ov-card-ico">🚚</div><div class="ov-card-title">Fretes Especiais</div><div class="ov-card-desc"><span class="dot"></span>Ativo — Controle de fretes Madalena.</div></div>
 
-    <!-- ── CARD ARMAZENAGEM ── -->
+    <!-- Card Armazenagem -->
     <div class="arm-card">
       <div class="arm-card-head">
         <div class="arm-card-title">
@@ -515,8 +710,6 @@ tr:hover td { background:var(--surface-2); }
         </div>
       </div>
       <div class="arm-card-body">
-
-        <!-- Estado: expirado (>30 dias) -->
         <div id="arm-expirado" class="arm-expired" style="display:none">
           <div class="arm-expired-ico">⚠️</div>
           <div class="arm-expired-text">
@@ -524,15 +717,11 @@ tr:hover td { background:var(--surface-2); }
             <span>Importe a planilha <strong>PosicaoEstoque</strong> do VD+ para atualizar o indicador.</span>
           </div>
         </div>
-
-        <!-- Estado: sem dados ainda -->
         <div id="arm-vazio" style="display:none">
           <p style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">
             Importe a planilha <strong>PosicaoEstoque</strong> exportada do VD+ para calcular a taxa de ocupação.
           </p>
         </div>
-
-        <!-- Upload (aparece quando sem dados ou expirado) -->
         <div class="arm-upload-zone" id="arm-upload-zone" style="display:none"
              ondragover="armDragOver(event)" ondragleave="armDragLeave(event)" ondrop="armDrop(event)">
           <input type="file" id="arm-file-input" accept=".xlsx,.xls" onchange="armOnFileChange(event)">
@@ -540,11 +729,8 @@ tr:hover td { background:var(--surface-2); }
           <strong style="font-size:13px">Carregar PosicaoEstoque</strong>
           <p>Arraste o arquivo ou clique para selecionar</p>
         </div>
-
-        <!-- Estado: dados válidos -->
         <div id="arm-dados" style="display:none">
           <div class="arm-gauge-wrap">
-            <!-- Gauge SVG circular -->
             <div class="arm-gauge">
               <svg viewBox="0 0 110 110">
                 <circle class="arm-gauge-track" cx="55" cy="55" r="45"/>
@@ -556,7 +742,6 @@ tr:hover td { background:var(--surface-2); }
                 <span class="arm-gauge-lbl">ocupação</span>
               </div>
             </div>
-            <!-- Stats -->
             <div class="arm-stats">
               <div class="arm-stat">
                 <span class="arm-stat-lbl">Peças no estoque</span>
@@ -575,8 +760,6 @@ tr:hover td { background:var(--surface-2); }
               </div>
             </div>
           </div>
-
-          <!-- Barra de frescor -->
           <div class="arm-freshbar-wrap">
             <div class="arm-freshbar-lbl">
               <span id="arm-fresh-txt">Atualidade da informação</span>
@@ -587,21 +770,20 @@ tr:hover td { background:var(--surface-2); }
             </div>
           </div>
         </div>
-
-        <!-- Spinner durante processamento -->
         <div id="arm-loading" style="display:none;text-align:center;padding:28px;color:var(--text-3);font-size:13px">
           <span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--accent);width:18px;height:18px"></span>
           <span style="margin-left:8px">Processando planilha...</span>
         </div>
-
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- EXPEDIÇÃO -->
-<div class="page active" id="page-expedicao">
+<!-- ═══════════════════════════════════════════════
+     EXPEDIÇÃO
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-expedicao">
   <div class="ph">
     <div><h1>Expedição</h1><p>Carregue o arquivo <strong>ConsultaPedidos</strong> exportado do ERP VD+</p></div>
     <button class="btn btn-ghost" id="btn-reload" style="display:none" onclick="resetUpload()">↩ Nova planilha</button>
@@ -637,7 +819,6 @@ tr:hover td { background:var(--surface-2); }
       <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
     </div>
 
-    <!-- VD -->
     <div id="tab-vd">
       <div class="tcard">
         <div class="tcard-head">
@@ -668,7 +849,6 @@ tr:hover td { background:var(--surface-2); }
       </div>
     </div>
 
-    <!-- OMNI -->
     <div id="tab-omni" style="display:none">
       <div class="tcard">
         <div class="tcard-head">
@@ -709,12 +889,12 @@ tr:hover td { background:var(--surface-2); }
   </div>
 </div>
 
-<!-- ARMAZENAGEM -->
-
-<!-- QUALIDADE -->
-<div class="page" id="page-qualidade">
+<!-- ═══════════════════════════════════════════════
+     AVARIAS (era Qualidade)
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-avarias">
   <div class="ph">
-    <div><h1>Qualidade</h1><p>Registro e acompanhamento de avarias por ciclo</p></div>
+    <div><h1>Avarias</h1><p>Registro e acompanhamento de avarias por ciclo</p></div>
   </div>
 
   <div id="qual-config-warn" class="config-warn" style="display:none">
@@ -723,8 +903,6 @@ tr:hover td { background:var(--surface-2); }
   </div>
 
   <div class="qual-layout">
-
-    <!-- FORMULÁRIO -->
     <div class="qcard">
       <div class="qcard-header">
         <div class="qcard-ico" style="background:var(--accent-bg)">🚨</div>
@@ -735,7 +913,6 @@ tr:hover td { background:var(--surface-2); }
       </div>
       <div class="qcard-body">
         <div class="form-grid-2">
-
           <div>
             <label class="flabel">Data</label>
             <input class="finput-q" type="date" id="q-data">
@@ -778,7 +955,6 @@ tr:hover td { background:var(--surface-2); }
             <label class="flabel">Observações</label>
             <textarea class="ftarea-q" id="q-obs" placeholder="Informações adicionais (opcional)"></textarea>
           </div>
-
         </div>
         <button class="btn-registrar" id="q-btn" onclick="qRegistrar()">
           ✅ Registrar Avaria
@@ -786,10 +962,7 @@ tr:hover td { background:var(--surface-2); }
       </div>
     </div>
 
-    <!-- PAINEL INDICADORES -->
     <div>
-
-      <!-- KPIs -->
       <div class="qual-kpis">
         <div class="kpi c-red">
           <div class="kpi-lbl">Total Peças</div>
@@ -808,7 +981,6 @@ tr:hover td { background:var(--surface-2); }
         </div>
       </div>
 
-      <!-- Filtros -->
       <div class="qfbar">
         <span class="fbar-lbl">Filtrar</span>
         <select class="fsel" id="q-fil-ciclo" onchange="qRender()">
@@ -824,7 +996,6 @@ tr:hover td { background:var(--surface-2); }
         <button class="btn-clear" onclick="qLimparFiltros()">✕ Limpar</button>
       </div>
 
-      <!-- Resumo por ciclo -->
       <div class="qcard" style="margin-bottom:14px">
         <div class="qcard-header">
           <div class="qcard-ico" style="background:var(--purple-bg)">📊</div>
@@ -838,7 +1009,6 @@ tr:hover td { background:var(--surface-2); }
         </div>
       </div>
 
-      <!-- Histórico -->
       <div class="qcard">
         <div class="qcard-header">
           <div class="qcard-ico" style="background:var(--yellow-bg)">📝</div>
@@ -851,23 +1021,24 @@ tr:hover td { background:var(--surface-2); }
           <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- CICLOS -->
-<div class="page" id="page-ciclos">
+<!-- ═══════════════════════════════════════════════
+     FINANCEIRO (era Ciclos)
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-financeiro">
   <div class="placeholder">
-    <div class="ph-ico">🔄</div><span class="ptag">Em construção — Parte 3</span>
-    <h2>Módulo de Ciclos</h2>
-    <p>Comparativo de pedidos e itens por ciclo de campanha (2025 vs 2026).</p>
+    <div class="ph-ico">💰</div><span class="ptag">Em construção — Parte 3</span>
+    <h2>Módulo Financeiro</h2>
+    <p>Autorização de cartão, devoluções Omni e controle financeiro por ciclo.</p>
   </div>
 </div>
 
-<!-- ===============================================═════
+<!-- ═══════════════════════════════════════════════
      FRETES ESPECIAIS
-     ===============================================═════ -->
+═══════════════════════════════════════════════ -->
 <div class="page" id="page-fretes">
   <div class="ph">
     <div>
@@ -881,15 +1052,12 @@ tr:hover td { background:var(--surface-2); }
     <span>Configure a variável <strong>FRETES_URL</strong> no código JavaScript com a URL do seu Apps Script.</span>
   </div>
 
-  <!-- Aviso sem upload -->
   <div id="fr-sem-upload" class="fr-sem-upload" style="display:none">
     <span>📂</span>
     <span>Carregue o arquivo <strong>ConsultaPedidos</strong> na aba <strong>Expedição</strong> para visualizar os pedidos pendentes da Madalena.</span>
   </div>
 
   <div class="fr-layout">
-
-    <!-- ── COLUNA ESQUERDA: Formulário ── -->
     <div>
       <div class="qcard" style="margin-bottom:16px">
         <div class="qcard-header">
@@ -900,17 +1068,11 @@ tr:hover td { background:var(--surface-2); }
           </div>
         </div>
         <div class="qcard-body">
-
-          <!-- Lista de pedidos pendentes -->
           <label class="flabel" style="margin-bottom:6px">Pedidos Madalena — Pendentes de Frete</label>
           <div class="fr-pedidos-list" id="fr-lista-pedidos">
             <div class="fr-ped-empty">Carregue a planilha na aba Expedição para ver os pedidos.</div>
           </div>
-
-          <!-- Resumo da seleção -->
           <div class="fr-sel-resumo" id="fr-sel-resumo"></div>
-
-          <!-- Campos do frete -->
           <div class="form-grid-2" style="margin-top:14px">
             <div>
               <label class="flabel">Data de Envio</label>
@@ -936,19 +1098,14 @@ tr:hover td { background:var(--surface-2); }
               <textarea class="ftarea-q" id="fr-obs" placeholder="Ex: Duas viagens, horário combinado..." style="min-height:44px"></textarea>
             </div>
           </div>
-
           <button class="btn-conf-frete" id="fr-btn" onclick="frRegistrar()">
             ✅ Confirmar Frete
           </button>
-
         </div>
       </div>
     </div>
 
-    <!-- ── COLUNA DIREITA: Painel ── -->
     <div>
-
-      <!-- KPIs -->
       <div class="fr-kpis">
         <div class="kpi c-blue">
           <div class="kpi-lbl">Total Fretes</div>
@@ -972,12 +1129,9 @@ tr:hover td { background:var(--surface-2); }
         </div>
       </div>
 
-      <!-- Filtros painel -->
       <div class="qfbar">
         <span class="fbar-lbl">Filtrar</span>
-        <select class="fsel" id="fr-fil-ciclo" onchange="frRender()">
-          <option value="">Todos os ciclos</option>
-        </select>
+        <select class="fsel" id="fr-fil-ciclo" onchange="frRender()"><option value="">Todos os ciclos</option></select>
         <select class="fsel" id="fr-fil-tipo" onchange="frRender()">
           <option value="">Todos os tipos</option>
           <option value="PARTICULAR">PARTICULAR</option>
@@ -986,7 +1140,6 @@ tr:hover td { background:var(--surface-2); }
         <button class="btn-clear" onclick="frLimparFiltros()">✕ Limpar</button>
       </div>
 
-      <!-- Resumo por ciclo -->
       <div class="qcard" style="margin-bottom:14px">
         <div class="qcard-header">
           <div class="qcard-ico" style="background:var(--blue-bg)">📊</div>
@@ -1000,7 +1153,6 @@ tr:hover td { background:var(--surface-2); }
         </div>
       </div>
 
-      <!-- Histórico completo -->
       <div class="qcard">
         <div class="qcard-header">
           <div class="qcard-ico" style="background:var(--yellow-bg)">📝</div>
@@ -1013,22 +1165,19 @@ tr:hover td { background:var(--surface-2); }
           <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 </main>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
 // ============================================================
-// --  URLs dos Apps Script - configure com suas URLs
+// URLs Apps Script
 // ============================================================
-const SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbxp2xHs2PSDtWBUSPWhYzEmkx9M35esV9VhhSDHO1IJFht-KrNmET9SuVXNgP5gfNnYUQ/exec";
-// Todos os m-dulos usam a mesma URL - o roteamento - feito pelo campo "modulo" no payload
+const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbxp2xHs2PSDtWBUSPWhYzEmkx9M35esV9VhhSDHO1IJFht-KrNmET9SuVXNgP5gfNnYUQ/exec";
 const AVARIAS_URL     = SCRIPT_URL;
 const FRETES_URL      = SCRIPT_URL;
 const ARMAZENAGEM_URL = SCRIPT_URL;
@@ -1037,16 +1186,16 @@ const ARMAZENAGEM_URL = SCRIPT_URL;
 /* Estado global */
 const S = {
   vdRaw:[], omniRaw:[], vdF:[], omniF:[],
+  allRaw: [], // todos os pedidos incluindo campos novos (aprovação, faturamento, entrega)
   tab:'vd', madOn:false,
   sortCol:null, sortDir:1,
   vdPage:1, omniPage:1, PAGE_SIZE:100,
 };
 
-// Estado do m-dulo Fretes
 const FR = {
   registros: [],
   iniciado: false,
-  selecionados: new Set(),   // Set de CodigoPedido selecionados
+  selecionados: new Set(),
 };
 
 const REQUIRED = [
@@ -1058,27 +1207,23 @@ const REQUIRED = [
 
 const MADALENA = new Set(['349129','731858']);
 
-/* Navega--o */
+/* Navegação */
 function goPage(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
-  if (id === 'qualidade')   qIniciar();
-  if (id === 'fretes')      frIniciar();
+  if (id === 'avarias')    qIniciar();
+  if (id === 'fretes')     frIniciar();
   if (id === 'visao-geral') ovIniciar();
 }
 
-/* Rel-gio */
+/* Relógio */
 (function(){
   const el = document.getElementById('clock');
   function t(){ const n=new Date(); el.textContent=n.toLocaleDateString('pt-BR')+' · '+n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
   t(); setInterval(t, 30000);
 })();
-
-// Inicializa armazenagem imediatamente (card fica na Vis-o Geral que pode ser a primeira aba acessada)
-// Inicializa--es disparadas pela navega--o (goPage), n-o no carregamento
-// para evitar requisi--es ao Sheets antes do usu-rio interagir.
 
 /* Drag & Drop upload */
 function onDragOver(e){ e.preventDefault(); document.getElementById('upload-zone').classList.add('over'); }
@@ -1087,17 +1232,16 @@ function onDrop(e){ e.preventDefault(); onDragLeave(); const f=e.dataTransfer.fi
 function onFileChange(e){ const f=e.target.files[0]; if(f)processFile(f); }
 
 function resetUpload(){
-  S.vdRaw=[];S.omniRaw=[];S.vdF=[];S.omniF=[];
+  S.vdRaw=[];S.omniRaw=[];S.vdF=[];S.omniF=[];S.allRaw=[];
   document.getElementById('upload-zone').style.display='';
   document.getElementById('exp-content').style.display='none';
   document.getElementById('btn-reload').style.display='none';
   document.getElementById('file-input').value='';
   setAlert('','');
-  // Atualiza lista de pendentes de fretes
   frRenderPendentes();
 }
 
-/* Processo principal de leitura do xlsx */
+/* Leitura do xlsx */
 function processFile(file){
   setAlert('','');
   const reader = new FileReader();
@@ -1133,6 +1277,8 @@ function processFile(file){
           NotaFiscal:        r[idx['NotaFiscal']],
           PrevisaoEntrega:   fmtDate(r[idx['PrevisãoEntrega']]),
           DataEntrega:       fmtDate(r[idx['DataEntrega']]),
+          DataAprovacao:     fmtDate(r[idx['Data Aprovação']]),
+          DataFaturamento:   fmtDate(r[idx['DataFaturamento']]),
           Lote:              r[idx['Lote de separação']],
           Ciclo:             r[idx['Ciclo Captação']],
           Bairro:            r[idx['BairroEntregaRetirada']]||r[idx['Bairro']],
@@ -1141,11 +1287,15 @@ function processFile(file){
           TipoEntrega:       r[idx['Tipo de Entrega']],
           Recebedor:         r[idx['Nome do Recebedor']],
           isMad:             MADALENA.has(String(r[idx['Pessoa']]||'').trim()),
+          _dataAprovacaoRaw: r[idx['Data Aprovação']],
+          _dataFaturamentoRaw: r[idx['DataFaturamento']],
+          _dataEntregaRaw:   r[idx['DataEntrega']],
         });
       }
 
       const ativos = all.filter(r => r.SituaçãoComercial !== 'Cancelado');
       const canc = all.length - ativos.length;
+      S.allRaw  = ativos;
       S.vdRaw   = ativos.filter(r => r.MeioCaptacao !== 'Pedido Omnichannel');
       S.omniRaw = ativos.filter(r => r.MeioCaptacao === 'Pedido Omnichannel');
 
@@ -1157,8 +1307,6 @@ function processFile(file){
 
       populateFilters();
       applyFilters();
-
-      // Atualiza lista pendentes de fretes com dados reais
       frRenderPendentes();
 
     } catch(err){
@@ -1169,6 +1317,7 @@ function processFile(file){
   reader.readAsArrayBuffer(file);
 }
 
+/* Converte data para string dd/mm/aaaa e também para objeto Date */
 function fmtDate(v){
   if(!v) return '';
   if(v instanceof Date) return v.toLocaleDateString('pt-BR');
@@ -1178,7 +1327,288 @@ function fmtDate(v){
   return s;
 }
 
-/* Filtros Expedi--o */
+/* Converte string dd/mm/aaaa ou Date para objeto Date */
+function toDate(v){
+  if(!v) return null;
+  if(v instanceof Date) return isNaN(v)?null:v;
+  const s = String(v).trim();
+  // dd/mm/aaaa
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
+    const [d,m,a] = s.split('/');
+    return new Date(parseInt(a), parseInt(m)-1, parseInt(d));
+  }
+  // aaaa-mm-dd
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+/* Diferença em dias entre duas datas (ignora hora) */
+function diffDias(d1, d2){
+  if(!d1||!d2) return null;
+  const a = toDate(d1), b = toDate(d2);
+  if(!a||!b) return null;
+  const ms = b.getTime() - a.getTime();
+  return Math.round(ms / 86400000);
+}
+
+/* ═══ INDICADORES ═══ */
+
+/* Calcula Handling Time para um conjunto de pedidos */
+function calcHandlingTime(pedidos){
+  const validos = pedidos
+    .map(r => diffDias(r._dataAprovacaoRaw || r.DataAprovacao, r._dataFaturamentoRaw || r.DataFaturamento))
+    .filter(d => d !== null && d >= 0);
+
+  if(!validos.length) return null;
+
+  validos.sort((a,b)=>a-b);
+  const soma = validos.reduce((s,v)=>s+v,0);
+  const media = soma / validos.length;
+  const mediana = validos.length % 2 === 0
+    ? (validos[validos.length/2-1] + validos[validos.length/2]) / 2
+    : validos[Math.floor(validos.length/2)];
+
+  return {
+    media:   parseFloat(media.toFixed(1)),
+    mediana: parseFloat(mediana.toFixed(1)),
+    min:     validos[0],
+    max:     validos[validos.length-1],
+    n:       validos.length,
+  };
+}
+
+/* Calcula OTD para um conjunto de pedidos */
+function calcOTD(pedidos){
+  const entregues = pedidos.filter(r => r.SituaçãoComercial === 'Entregue');
+  const comDatas  = entregues.filter(r => {
+    const aprov = r._dataAprovacaoRaw || r.DataAprovacao;
+    const entrega = r._dataEntregaRaw || r.DataEntrega;
+    return aprov && entrega;
+  });
+
+  if(!comDatas.length) return null;
+
+  const ok  = comDatas.filter(r => {
+    const d = diffDias(r._dataAprovacaoRaw || r.DataAprovacao, r._dataEntregaRaw || r.DataEntrega);
+    return d !== null && d <= 3;
+  });
+
+  return {
+    ok:   ok.length,
+    nok:  comDatas.length - ok.length,
+    base: comDatas.length,
+    pct:  parseFloat((ok.length / comDatas.length * 100).toFixed(1)),
+  };
+}
+
+/* Renderiza seção de indicadores */
+function ovRenderIndicadores(ciclo){
+  const wrap = document.getElementById('ov-indicadores');
+  if(!S.allRaw.length){ wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+
+  const pedCiclo = ciclo
+    ? S.allRaw.filter(r => r.Ciclo === ciclo)
+    : S.allRaw;
+
+  // ── Handling Time ──
+  const ht = calcHandlingTime(pedCiclo);
+  if(ht){
+    document.getElementById('ov-ht-media').textContent   = ht.media;
+    document.getElementById('ov-ht-mediana').textContent = ht.mediana + ' dias';
+    document.getElementById('ov-ht-minmax').textContent  = ht.min + ' / ' + ht.max + ' dias';
+    document.getElementById('ov-ht-n').textContent       = ht.n.toLocaleString('pt-BR') + ' pedidos';
+
+    const badge = document.getElementById('ov-ht-badge');
+    if(ht.media <= 1){
+      badge.style.background='var(--green-bg)'; badge.style.color='var(--green)'; badge.textContent='✅ Excelente';
+    } else if(ht.media <= 2){
+      badge.style.background='var(--yellow-bg)'; badge.style.color='var(--yellow)'; badge.textContent='⚠️ Atenção';
+    } else {
+      badge.style.background='var(--accent-bg)'; badge.style.color='var(--accent)'; badge.textContent='🔴 Crítico';
+    }
+  } else {
+    document.getElementById('ov-ht-media').textContent   = '—';
+    document.getElementById('ov-ht-mediana').textContent = '—';
+    document.getElementById('ov-ht-minmax').textContent  = '—';
+    document.getElementById('ov-ht-n').textContent       = 'Sem datas suficientes';
+    const badge = document.getElementById('ov-ht-badge');
+    badge.style.background='var(--border)'; badge.style.color='var(--text-3)'; badge.textContent='Sem dados';
+  }
+
+  // ── OTD ──
+  const otd = calcOTD(pedCiclo);
+  if(otd){
+    const pct = otd.pct;
+    const corOtd = pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--yellow)' : 'var(--accent)';
+    const circum = 251.3;
+    const offset = circum - (circum * pct / 100);
+
+    const arc = document.getElementById('ov-otd-arc');
+    arc.style.strokeDashoffset = offset;
+    arc.style.stroke = corOtd;
+
+    document.getElementById('ov-otd-pct').textContent  = pct + '%';
+    document.getElementById('ov-otd-pct').style.color  = corOtd;
+    document.getElementById('ov-otd-ok').textContent   = otd.ok.toLocaleString('pt-BR');
+    document.getElementById('ov-otd-nok').textContent  = otd.nok.toLocaleString('pt-BR');
+    document.getElementById('ov-otd-base').textContent = otd.base.toLocaleString('pt-BR');
+
+    const badge = document.getElementById('ov-otd-badge');
+    if(pct >= 90){
+      badge.style.background='var(--green-bg)'; badge.style.color='var(--green)'; badge.textContent='✅ No prazo';
+    } else if(pct >= 70){
+      badge.style.background='var(--yellow-bg)'; badge.style.color='var(--yellow)'; badge.textContent='⚠️ Atenção';
+    } else {
+      badge.style.background='var(--accent-bg)'; badge.style.color='var(--accent)'; badge.textContent='🔴 Abaixo da meta';
+    }
+  } else {
+    document.getElementById('ov-otd-pct').textContent  = '—';
+    document.getElementById('ov-otd-ok').textContent   = '—';
+    document.getElementById('ov-otd-nok').textContent  = '—';
+    document.getElementById('ov-otd-base').textContent = 'Sem datas suficientes';
+    const badge = document.getElementById('ov-otd-badge');
+    badge.style.background='var(--border)'; badge.style.color='var(--text-3)'; badge.textContent='Sem dados';
+  }
+
+  // ── Pedidos entregues vs 2025 ──
+  ovRenderEntregues(ciclo, pedCiclo);
+
+  // ── Distribuição por bairro ──
+  ovRenderBairros(pedCiclo);
+}
+
+function ovRenderEntregues(ciclo, pedidos){
+  const el = document.getElementById('ov-entregues-body');
+  const entg2026 = pedidos.filter(r => r.SituaçãoComercial === 'Entregue').length;
+  const tot2026  = pedidos.length;
+  const pct2026  = tot2026 ? (entg2026/tot2026*100).toFixed(1) : 0;
+
+  // Busca dados 2025 para o ciclo
+  const d2025 = OV.hist2025ok && ciclo
+    ? OV.hist2025.find(c => String(c.ciclo) === ciclo)
+    : null;
+
+  const entg2025 = d2025 ? Number(d2025.entregues) : null;
+  const tot2025  = d2025 ? Number(d2025.total)      : null;
+  const pct2025  = tot2025 ? (entg2025/tot2025*100).toFixed(1) : null;
+
+  const maxVal = Math.max(entg2026, entg2025||0, 1);
+
+  let html = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px;display:flex;gap:16px">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:4px;border-radius:2px;background:var(--accent);display:inline-block"></span>2026</span>
+        ${entg2025!==null?`<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:4px;border-radius:2px;background:var(--border-strong);display:inline-block"></span>2025</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;align-items:flex-end;margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);margin-bottom:3px">Entregues 2026</div>
+        <div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-2px;line-height:1;color:var(--accent)">${entg2026.toLocaleString('pt-BR')}</div>
+        <div style="font-size:11px;color:var(--text-2);margin-top:3px">${pct2026}% de ${tot2026.toLocaleString('pt-BR')} pedidos</div>
+      </div>
+      ${entg2025!==null?`
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);margin-bottom:3px">Entregues 2025</div>
+        <div style="font-size:28px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-1px;line-height:1;color:var(--text-2)">${entg2025.toLocaleString('pt-BR')}</div>
+        <div style="font-size:11px;color:var(--text-2);margin-top:3px">${pct2025}% de ${tot2025.toLocaleString('pt-BR')} pedidos</div>
+      </div>
+      `:''}
+    </div>
+  `;
+
+  // Barras comparativas
+  html += `<div style="display:flex;flex-direction:column;gap:8px">`;
+  html += `
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+        <span style="font-weight:600">2026</span>
+        <span style="color:var(--text-3);font-family:'DM Mono',monospace">${entg2026.toLocaleString('pt-BR')}</span>
+      </div>
+      <div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden">
+        <div style="width:${Math.round(entg2026/maxVal*100)}%;height:100%;background:var(--accent);border-radius:5px;transition:width .5s ease"></div>
+      </div>
+    </div>
+  `;
+  if(entg2025 !== null){
+    html += `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+          <span style="font-weight:600;color:var(--text-2)">2025</span>
+          <span style="color:var(--text-3);font-family:'DM Mono',monospace">${entg2025.toLocaleString('pt-BR')}</span>
+        </div>
+        <div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden">
+          <div style="width:${Math.round(entg2025/maxVal*100)}%;height:100%;background:var(--border-strong);border-radius:5px;transition:width .5s ease"></div>
+        </div>
+      </div>
+    `;
+    // Delta
+    const delta = entg2025 > 0 ? ((entg2026-entg2025)/entg2025*100) : 0;
+    const pos = delta >= 0;
+    html += `
+      <div style="margin-top:6px;padding:8px 12px;border-radius:var(--r-sm);background:${pos?'var(--green-bg)':'var(--accent-bg)'};display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:${pos?'var(--green)':'var(--accent)'}">
+        ${pos?'↑':'↓'} ${Math.abs(delta).toFixed(1)}% vs 2025
+      </div>
+    `;
+  }
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+function ovRenderBairros(pedidos){
+  const el    = document.getElementById('ov-bairros-body');
+  const total = document.getElementById('ov-bairro-total');
+
+  if(!pedidos.length){
+    el.innerHTML = '<div class="ind-vazio"><span>🗺️</span>Sem dados para o ciclo</div>';
+    total.textContent = '';
+    return;
+  }
+
+  // Agrupa por bairro
+  const mapa = {};
+  pedidos.forEach(r => {
+    const b = String(r.Bairro||'').trim().toUpperCase() || 'NÃO INFORMADO';
+    mapa[b] = (mapa[b]||0) + 1;
+  });
+
+  const sorted = Object.entries(mapa).sort((a,b)=>b[1]-a[1]);
+  const tot = pedidos.length;
+  const maxQtd = sorted[0]?.[1] || 1;
+
+  total.textContent = tot.toLocaleString('pt-BR') + ' pedidos';
+
+  let html = `
+    <div class="bairro-row-h">
+      <span>Bairro</span>
+      <span style="text-align:right">Qtd</span>
+      <span style="text-align:right">%</span>
+      <span></span>
+    </div>
+    <div class="bairro-table-wrap">
+  `;
+
+  sorted.forEach(([bairro, qtd]) => {
+    const pct = (qtd/tot*100).toFixed(1);
+    const barW = Math.round(qtd/maxQtd*100);
+    html += `
+      <div class="bairro-row">
+        <span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${bairro}">${bairro}</span>
+        <span class="bairro-right">${qtd.toLocaleString('pt-BR')}</span>
+        <span class="bairro-right">${pct}%</span>
+        <div class="bairro-bar-bg"><div class="bairro-bar-fill" style="width:${barW}%"></div></div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* Filtros Expedição */
 function populateFilters(){
   const all = [...S.vdRaw, ...S.omniRaw];
   fill('f-lote',    uniq(all.map(r=>r.Lote).filter(Boolean)).sort(), 'Todos os lotes');
@@ -1218,7 +1648,6 @@ function applyFilters(){
   S.omniF = S.omniRaw.filter(match);
   S.vdPage = 1; S.omniPage = 1;
   renderKPIs(); renderVD(); renderOmni();
-  // Atualiza painel se vis-o geral estiver ativa
   if (document.getElementById('page-visao-geral').classList.contains('active')) ovRender();
 }
 
@@ -1230,7 +1659,7 @@ function clearFilters(){
 }
 function toggleMad(){ S.madOn = !S.madOn; document.getElementById('btn-mad').classList.toggle('on', S.madOn); applyFilters(); }
 
-/* KPIs Expedi--o */
+/* KPIs Expedição */
 function renderKPIs(){
   const all = [...S.vdF, ...S.omniF];
   const tot  = all.length;
@@ -1274,7 +1703,7 @@ function renderKPIs(){
   `;
 }
 
-/* Tabelas Expedi--o */
+/* Tabelas Expedição */
 function renderVD(){
   const data = S.vdF;
   document.getElementById('vd-count').textContent = data.length.toLocaleString('pt-BR') + ' registros';
@@ -1350,7 +1779,7 @@ function switchTab(tab, btn){
   document.getElementById('tab-omni').style.display = tab==='omni' ? 'block':'none';
 }
 
-/* Pagina--o */
+/* Paginação */
 function pagSlice(arr, page, size){ return arr.slice((page-1)*size, page*size); }
 
 function renderPag(cid, total, cur, size, cb){
@@ -1379,7 +1808,7 @@ function renderPag(cid, total, cur, size, cb){
     </div>`;
 }
 
-/* Alert Expedi--o */
+/* Alert Expedição */
 function setAlert(type, msg){
   const el = document.getElementById('exp-alert');
   if(!type){el.innerHTML=''; return;}
@@ -1387,8 +1816,9 @@ function setAlert(type, msg){
   el.innerHTML=`<div class="alert alert-${type}"><span class="alert-ico">${ico}</span><span>${msg}</span></div>`;
 }
 
-/* MÓDULO QUALIDADE — AVARIAS */
-
+/* ═══════════════════════════════════════════════
+   MÓDULO AVARIAS (era Qualidade)
+═══════════════════════════════════════════════ */
 let qRegistros = [];
 let qIniciado  = false;
 
@@ -1398,14 +1828,10 @@ function qIniciar(){
 
   if(AVARIAS_URL === 'COLE_SUA_URL_AQUI'){
     document.getElementById('qual-config-warn').style.display = 'flex';
-    qRenderVazio();
-    return;
+    qRenderVazio(); return;
   }
 
-  if(!qIniciado){
-    qIniciado = true;
-    qCarregar();
-  }
+  if(!qIniciado){ qIniciado = true; qCarregar(); }
 }
 
 function qCalcTotal(){
@@ -1417,12 +1843,9 @@ function qCalcTotal(){
 
 function qValidar(){
   const campos = [
-    {id:'q-data',  nome:'Data'},
-    {id:'q-ciclo', nome:'Ciclo'},
-    {id:'q-codigo',nome:'Código'},
-    {id:'q-qtd',   nome:'Quantidade'},
-    {id:'q-vunit', nome:'Valor Unitário'},
-    {id:'q-tipo',  nome:'Tipo de Avaria'},
+    {id:'q-data',  nome:'Data'},{id:'q-ciclo', nome:'Ciclo'},
+    {id:'q-codigo',nome:'Código'},{id:'q-qtd', nome:'Quantidade'},
+    {id:'q-vunit', nome:'Valor Unitário'},{id:'q-tipo', nome:'Tipo de Avaria'},
     {id:'q-resp',  nome:'Responsável'},
   ];
   for(const c of campos){
@@ -1454,27 +1877,16 @@ async function qRegistrar(){
   try {
     const resp = await fetch(AVARIAS_URL, { method:'POST', body:JSON.stringify(payload) });
     const json = await resp.json();
-    if(json.sucesso){
-      mostrarToast('✅ Avaria registrada!', 'ok');
-      qLimparForm();
-      qCarregar();
-    } else {
-      mostrarToast('Erro: ' + json.erro, 'err');
-    }
-  } catch(err){
-    mostrarToast('Falha na conexão.', 'err');
-    console.error(err);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '✅ Registrar Avaria';
-  }
+    if(json.sucesso){ mostrarToast('✅ Avaria registrada!', 'ok'); qLimparForm(); qCarregar(); }
+    else { mostrarToast('Erro: ' + json.erro, 'err'); }
+  } catch(err){ mostrarToast('Falha na conexão.', 'err'); console.error(err); }
+  finally { btn.disabled = false; btn.innerHTML = '✅ Registrar Avaria'; }
 }
 
 function qLimparForm(){
   const hoje = new Date().toISOString().split('T')[0];
   document.getElementById('q-data').value = hoje;
-  ['q-ciclo','q-codigo','q-qtd','q-vunit','q-tipo','q-resp','q-obs']
-    .forEach(id => document.getElementById(id).value = '');
+  ['q-ciclo','q-codigo','q-qtd','q-vunit','q-tipo','q-resp','q-obs'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('q-vtotal').textContent = 'R$ 0,00';
 }
 
@@ -1482,11 +1894,7 @@ async function qCarregar(){
   try {
     const resp = await fetch(AVARIAS_URL);
     const json = await resp.json();
-    if(json.sucesso){
-      qRegistros = json.registros;
-      qPopularCiclos();
-      qRender();
-    }
+    if(json.sucesso){ qRegistros = json.registros; qPopularCiclos(); qRender(); }
   } catch(err){ console.error('Erro ao carregar avarias:', err); }
 }
 
@@ -1500,10 +1908,7 @@ function qPopularCiclos(){
 function qFiltrar(){
   const ciclo = document.getElementById('q-fil-ciclo').value;
   const tipo  = document.getElementById('q-fil-tipo').value;
-  return qRegistros.filter(r =>
-    (!ciclo || r.ciclo === ciclo) &&
-    (!tipo  || r.tipoAvaria === tipo)
-  );
+  return qRegistros.filter(r => (!ciclo || r.ciclo === ciclo) && (!tipo || r.tipoAvaria === tipo));
 }
 
 function qLimparFiltros(){
@@ -1514,13 +1919,11 @@ function qLimparFiltros(){
 
 function qRender(){
   const dados = qFiltrar();
-
   const tPecas = qRegistros.reduce((s,r) => s + Number(r.quantidade), 0);
   const tValor = qRegistros.reduce((s,r) => s + Number(r.valorTotal), 0);
   document.getElementById('q-kpi-pecas').textContent  = tPecas.toLocaleString('pt-BR');
   document.getElementById('q-kpi-valor').textContent  = tValor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   document.getElementById('q-kpi-oc').textContent     = qRegistros.length;
-
   qRenderCiclos(dados);
   qRenderHist(dados);
 }
@@ -1535,10 +1938,8 @@ function qRenderVazio(){
 function qRenderCiclos(dados){
   if(!dados.length){
     document.getElementById('q-tabela-ciclos').innerHTML =
-      `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`;
-    return;
+      `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`; return;
   }
-
   const mapa = {};
   dados.forEach(r=>{
     if(!mapa[r.ciclo]) mapa[r.ciclo]={pecas:0,valor:0,oc:0};
@@ -1546,42 +1947,28 @@ function qRenderCiclos(dados){
     mapa[r.ciclo].valor += Number(r.valorTotal);
     mapa[r.ciclo].oc++;
   });
-
   const ciclos = Object.keys(mapa).sort().reverse();
-
-  let html = `
-    <div class="ciclo-grid" style="border-bottom:1px solid var(--border)">
-      <div class="ciclo-cell-h">Ciclo</div>
-      <div class="ciclo-cell-h ciclo-right">Peças</div>
-      <div class="ciclo-cell-h ciclo-right">Valor Total</div>
-      <div class="ciclo-cell-h ciclo-right">Oc.</div>
-    </div>
-  `;
-
+  let html = `<div class="ciclo-grid" style="border-bottom:1px solid var(--border)">
+    <div class="ciclo-cell-h">Ciclo</div>
+    <div class="ciclo-cell-h ciclo-right">Peças</div>
+    <div class="ciclo-cell-h ciclo-right">Valor Total</div>
+    <div class="ciclo-cell-h ciclo-right">Oc.</div></div>`;
   ciclos.forEach(c=>{
-    html += `
-      <div class="ciclo-grid">
-        <div class="ciclo-cell" style="font-weight:600">${c}</div>
-        <div class="ciclo-cell ciclo-right">${mapa[c].pecas.toLocaleString('pt-BR')}</div>
-        <div class="ciclo-cell ciclo-right">${mapa[c].valor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
-        <div class="ciclo-cell ciclo-right" style="color:var(--text-3)">${mapa[c].oc}</div>
-      </div>
-    `;
+    html += `<div class="ciclo-grid">
+      <div class="ciclo-cell" style="font-weight:600">${c}</div>
+      <div class="ciclo-cell ciclo-right">${mapa[c].pecas.toLocaleString('pt-BR')}</div>
+      <div class="ciclo-cell ciclo-right">${mapa[c].valor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
+      <div class="ciclo-cell ciclo-right" style="color:var(--text-3)">${mapa[c].oc}</div></div>`;
   });
-
   document.getElementById('q-tabela-ciclos').innerHTML = html;
 }
 
 function qRenderHist(dados){
   if(!dados.length){
     document.getElementById('q-tabela-hist').innerHTML =
-      `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`;
-    return;
+      `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`; return;
   }
-
-  // Badge inclui Omni
   const tClass = { Vazamento:'b-vazamento', Embalagem:'b-embalagem', Quebra:'b-quebra', Omni:'b-omni' };
-
   const linhas = [...dados].reverse().map(r=>`<tr>
     <td class="mono">${qFmtData(r.data)}</td>
     <td style="font-weight:600">${r.ciclo}</td>
@@ -1590,20 +1977,16 @@ function qRenderHist(dados){
     <td style="text-align:right" class="mono">${Number(r.valorTotal).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
     <td><span class="badge ${tClass[r.tipoAvaria]||'b-outros'}">${r.tipoAvaria}</span></td>
   </tr>`).join('');
-
   document.getElementById('q-tabela-hist').innerHTML = `
-    <div class="tscroll">
-      <table>
-        <thead><tr>
-          <th>Data</th><th>Ciclo</th><th>Código</th>
-          <th style="text-align:right">Qtd</th>
-          <th style="text-align:right">Valor</th>
-          <th>Tipo</th>
-        </tr></thead>
-        <tbody>${linhas}</tbody>
-      </table>
-    </div>
-  `;
+    <div class="tscroll"><table>
+      <thead><tr>
+        <th>Data</th><th>Ciclo</th><th>Código</th>
+        <th style="text-align:right">Qtd</th>
+        <th style="text-align:right">Valor</th>
+        <th>Tipo</th>
+      </tr></thead>
+      <tbody>${linhas}</tbody>
+    </table></div>`;
 }
 
 function qFmtData(v){
@@ -1611,63 +1994,37 @@ function qFmtData(v){
   try{ const [a,m,d]=String(v).split('-'); return `${d}/${m}/${a}`; } catch{ return v; }
 }
 
-/* MÓDULO FRETES ESPECIAIS — MADALENA | LÓGICA: | Pedidos da Madalena são detectados automaticamente ao fazer upload | do ERP (S.vdRaw filtrado por isMad === true). | O operador seleciona quais pedidos compõem UM frete (podem ser vários | pedidos em uma ou mais viagens do mesmo envio). | Ao confirmar, os dados são gravados via Apps Script na aba | "FretesMadalena" do Google Sheets. Registro é imutável. | O painel exibe histórico, custo por ciclo e KPIs. | SCHEMA do registro gravado no Sheets: | timestamp | dataEnvio | ciclo | pedidos (JSON) | nfs (JSON) | | nFretes | valorFrete | tipo | observacoes | totalPedidos */
-
+/* ═══════════════════════════════════════════════
+   MÓDULO FRETES ESPECIAIS
+═══════════════════════════════════════════════ */
 function frIniciar(){
-  // Data padr-o
   const hoje = new Date().toISOString().split('T')[0];
   document.getElementById('fr-data').value = hoje;
-
-  if(FRETES_URL === 'COLE_URL_FRETES_AQUI'){
-    document.getElementById('fr-config-warn').style.display = 'flex';
-  }
-
-  // Atualiza lista de pendentes
+  if(FRETES_URL === 'COLE_URL_FRETES_AQUI') document.getElementById('fr-config-warn').style.display = 'flex';
   frRenderPendentes();
-
-  // Carrega hist-rico do Sheets (se URL configurada)
   if(!FR.iniciado && FRETES_URL !== 'COLE_URL_FRETES_AQUI'){
-    FR.iniciado = true;
-    frCarregar();
-  } else if(FR.registros.length > 0){
-    frRender();
-  } else {
-    frRenderKPIsVazio();
-    frRenderCiclosVazio();
-    frRenderHistVazio();
-  }
+    FR.iniciado = true; frCarregar();
+  } else if(FR.registros.length > 0){ frRender(); }
+  else { frRenderKPIsVazio(); frRenderCiclosVazio(); frRenderHistVazio(); }
 }
 
-/* Lista de pedidos pendentes (detectados do upload) */
 function frRenderPendentes(){
   const el = document.getElementById('fr-lista-pedidos');
   const semUpload = document.getElementById('fr-sem-upload');
-
-  // Todos os pedidos da Madalena no upload atual
   const madPedidos = S.vdRaw.filter(r => r.isMad);
 
   if(S.vdRaw.length === 0){
-    // Nenhum upload feito ainda
     semUpload.style.display = 'flex';
     el.innerHTML = `<div class="fr-ped-empty">Carregue a planilha na aba Expedição primeiro.</div>`;
-    FR.selecionados.clear();
-    frAtualizarResumo();
-    return;
+    FR.selecionados.clear(); frAtualizarResumo(); return;
   }
-
   semUpload.style.display = 'none';
-
   if(madPedidos.length === 0){
     el.innerHTML = `<div class="fr-ped-empty">Nenhum pedido da Madalena encontrado nesta planilha.</div>`;
-    FR.selecionados.clear();
-    frAtualizarResumo();
-    return;
+    FR.selecionados.clear(); frAtualizarResumo(); return;
   }
-
-  // Limpa sele--es que n-o existem mais
   const codigos = new Set(madPedidos.map(r => String(r.CodigoPedido)));
   for(const c of FR.selecionados){ if(!codigos.has(c)) FR.selecionados.delete(c); }
-
   el.innerHTML = madPedidos.map(r => {
     const cod = String(r.CodigoPedido);
     const sel = FR.selecionados.has(cod);
@@ -1676,29 +2033,20 @@ function frRenderPendentes(){
         <input type="checkbox" ${sel?'checked':''} onclick="event.stopPropagation();frTogglePedido('${cod}',this.closest('.fr-ped-item'))">
         <div class="fr-ped-info">
           <div class="fr-ped-nome">${r.NomePessoa||'—'}</div>
-          <div class="fr-ped-detail">
-            Ped: ${cod} &nbsp;·&nbsp; NF: ${r.NotaFiscal||'—'}
-            &nbsp;·&nbsp; ${r.Bairro||'—'} &nbsp;·&nbsp; ${r.SituaçãoComercial||'—'}
-          </div>
+          <div class="fr-ped-detail">Ped: ${cod} · NF: ${r.NotaFiscal||'—'} · ${r.Bairro||'—'} · ${r.SituaçãoComercial||'—'}</div>
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
-
   frAtualizarResumo();
 }
 
 function frTogglePedido(cod, itemEl){
   if(FR.selecionados.has(cod)){
-    FR.selecionados.delete(cod);
-    itemEl.classList.remove('selected');
-    const cb = itemEl.querySelector('input[type=checkbox]');
-    if(cb) cb.checked = false;
+    FR.selecionados.delete(cod); itemEl.classList.remove('selected');
+    const cb = itemEl.querySelector('input[type=checkbox]'); if(cb) cb.checked = false;
   } else {
-    FR.selecionados.add(cod);
-    itemEl.classList.add('selected');
-    const cb = itemEl.querySelector('input[type=checkbox]');
-    if(cb) cb.checked = true;
+    FR.selecionados.add(cod); itemEl.classList.add('selected');
+    const cb = itemEl.querySelector('input[type=checkbox]'); if(cb) cb.checked = true;
   }
   frAtualizarResumo();
 }
@@ -1706,47 +2054,25 @@ function frTogglePedido(cod, itemEl){
 function frAtualizarResumo(){
   const el = document.getElementById('fr-sel-resumo');
   const n = FR.selecionados.size;
-  if(n === 0){
-    el.classList.remove('visible');
-    return;
-  }
-  // Busca NFs dos selecionados
-  const nfs = S.vdRaw
-    .filter(r => FR.selecionados.has(String(r.CodigoPedido)))
-    .map(r => r.NotaFiscal)
-    .filter(Boolean)
-    .join(', ');
+  if(n === 0){ el.classList.remove('visible'); return; }
+  const nfs = S.vdRaw.filter(r => FR.selecionados.has(String(r.CodigoPedido))).map(r => r.NotaFiscal).filter(Boolean).join(', ');
   el.classList.add('visible');
   el.innerHTML = `<strong>${n} pedido${n>1?'s':''} selecionado${n>1?'s':''}</strong> · NFs: ${nfs||'—'}`;
 }
 
-/* Valida--o e envio do frete */
 function frValidar(){
-  if(FR.selecionados.size === 0){
-    mostrarToast('Selecione ao menos 1 pedido.', 'err'); return false;
-  }
-  if(!document.getElementById('fr-data').value){
-    mostrarToast('Preencha a data de envio.', 'err'); return false;
-  }
-  const nf = parseInt(document.getElementById('fr-nfretes').value) || 0;
-  if(nf < 1){
-    mostrarToast('Informe o número de fretes (mínimo 1).', 'err'); return false;
-  }
-  const val = parseFloat(document.getElementById('fr-valor').value) || 0;
-  if(val <= 0){
-    mostrarToast('Informe o valor do frete.', 'err'); return false;
-  }
+  if(FR.selecionados.size === 0){ mostrarToast('Selecione ao menos 1 pedido.', 'err'); return false; }
+  if(!document.getElementById('fr-data').value){ mostrarToast('Preencha a data de envio.', 'err'); return false; }
+  if((parseInt(document.getElementById('fr-nfretes').value)||0) < 1){ mostrarToast('Informe o número de fretes.', 'err'); return false; }
+  if((parseFloat(document.getElementById('fr-valor').value)||0) <= 0){ mostrarToast('Informe o valor do frete.', 'err'); return false; }
   return true;
 }
 
 async function frRegistrar(){
   if(FRETES_URL === 'COLE_URL_FRETES_AQUI'){ mostrarToast('Configure a URL do Apps Script para Fretes.','err'); return; }
   if(!frValidar()) return;
-
-  // Monta dados dos pedidos selecionados
   const pedidosSel = S.vdRaw.filter(r => FR.selecionados.has(String(r.CodigoPedido)));
   const ciclos = uniq(pedidosSel.map(r=>r.Ciclo).filter(Boolean));
-
   const payload = {
     dataEnvio:    document.getElementById('fr-data').value,
     ciclo:        ciclos.join(', ') || '—',
@@ -1758,47 +2084,29 @@ async function frRegistrar(){
     tipo:         document.getElementById('fr-tipo').value,
     observacoes:  document.getElementById('fr-obs').value.trim(),
   };
-
   const btn = document.getElementById('fr-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Gravando...';
-
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Gravando...';
   try {
     const resp = await fetch(FRETES_URL, { method:'POST', body:JSON.stringify({modulo:'frete', ...payload}) });
     const json = await resp.json();
     if(json.sucesso){
       mostrarToast('✅ Frete registrado!', 'ok');
-      // Limpa sele--o e formul-rio
-      FR.selecionados.clear();
-      frRenderPendentes();
+      FR.selecionados.clear(); frRenderPendentes();
       document.getElementById('fr-nfretes').value = '1';
       document.getElementById('fr-valor').value   = '';
       document.getElementById('fr-obs').value     = '';
       document.getElementById('fr-data').value    = new Date().toISOString().split('T')[0];
-      // Recarrega hist-rico
       frCarregar();
-    } else {
-      mostrarToast('Erro: ' + json.erro, 'err');
-    }
-  } catch(err){
-    mostrarToast('Falha na conexão.', 'err');
-    console.error(err);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '✅ Confirmar Frete';
-  }
+    } else { mostrarToast('Erro: ' + json.erro, 'err'); }
+  } catch(err){ mostrarToast('Falha na conexão.', 'err'); console.error(err); }
+  finally { btn.disabled = false; btn.innerHTML = '✅ Confirmar Frete'; }
 }
 
-/* Carregar hist-rico do Sheets */
 async function frCarregar(){
   try {
     const resp = await fetch(FRETES_URL + '?modulo=frete');
     const json = await resp.json();
-    if(json.sucesso){
-      FR.registros = json.registros || [];
-      frPopularCiclos();
-      frRender();
-    }
+    if(json.sucesso){ FR.registros = json.registros || []; frPopularCiclos(); frRender(); }
   } catch(err){ console.error('Erro ao carregar fretes:', err); }
 }
 
@@ -1812,10 +2120,7 @@ function frPopularCiclos(){
 function frFiltrar(){
   const ciclo = document.getElementById('fr-fil-ciclo').value;
   const tipo  = document.getElementById('fr-fil-tipo').value;
-  return FR.registros.filter(r =>
-    (!ciclo || r.ciclo === ciclo) &&
-    (!tipo  || r.tipo === tipo)
-  );
+  return FR.registros.filter(r => (!ciclo || r.ciclo === ciclo) && (!tipo || r.tipo === tipo));
 }
 
 function frLimparFiltros(){
@@ -1826,41 +2131,23 @@ function frLimparFiltros(){
 
 function frRender(){
   const dados = frFiltrar();
-
-  // KPIs globais (sem filtro)
-  const totReg    = FR.registros.length;
-  const totValor  = FR.registros.reduce((s,r) => s + Number(r.valorFrete||0), 0);
-  const totPed    = FR.registros.reduce((s,r) => s + Number(r.totalPedidos||0), 0);
-  const medPed    = totPed > 0 ? totValor / totPed : 0;
-
+  const totReg   = FR.registros.length;
+  const totValor = FR.registros.reduce((s,r) => s + Number(r.valorFrete||0), 0);
+  const totPed   = FR.registros.reduce((s,r) => s + Number(r.totalPedidos||0), 0);
+  const medPed   = totPed > 0 ? totValor / totPed : 0;
   document.getElementById('fr-kpi-tot').textContent = totReg.toLocaleString('pt-BR');
   document.getElementById('fr-kpi-val').textContent = totValor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   document.getElementById('fr-kpi-ped').textContent = totPed.toLocaleString('pt-BR');
   document.getElementById('fr-kpi-med').textContent = medPed.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-
-  frRenderCiclos(dados);
-  frRenderHist(dados);
+  frRenderCiclos(dados); frRenderHist(dados);
 }
 
-function frRenderKPIsVazio(){
-  ['fr-kpi-tot','fr-kpi-val','fr-kpi-ped','fr-kpi-med'].forEach(id => document.getElementById(id).textContent = '—');
-}
-
-function frRenderCiclosVazio(){
-  document.getElementById('fr-tabela-ciclos').innerHTML =
-    `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum frete registrado</h3><p>Configure a URL e registre o primeiro frete.</p></div>`;
-}
-
-function frRenderHistVazio(){
-  document.getElementById('fr-tabela-hist').innerHTML =
-    `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`;
-}
+function frRenderKPIsVazio(){ ['fr-kpi-tot','fr-kpi-val','fr-kpi-ped','fr-kpi-med'].forEach(id => document.getElementById(id).textContent = '—'); }
+function frRenderCiclosVazio(){ document.getElementById('fr-tabela-ciclos').innerHTML = `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum frete registrado</h3></div>`; }
+function frRenderHistVazio(){ document.getElementById('fr-tabela-hist').innerHTML = `<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum registro</h3></div>`; }
 
 function frRenderCiclos(dados){
-  if(!dados.length){
-    frRenderCiclosVazio(); return;
-  }
-
+  if(!dados.length){ frRenderCiclosVazio(); return; }
   const mapa = {};
   dados.forEach(r=>{
     const c = r.ciclo || '—';
@@ -1870,40 +2157,27 @@ function frRenderCiclos(dados){
     mapa[c].pedidos += Number(r.totalPedidos||0);
     mapa[c].oc++;
   });
-
   const ciclos = Object.keys(mapa).sort().reverse();
-
-  let html = `
-    <div class="fr-ciclo-grid" style="border-bottom:1px solid var(--border)">
-      <div class="ciclo-cell-h">Ciclo</div>
-      <div class="ciclo-cell-h ciclo-right">Pedidos</div>
-      <div class="ciclo-cell-h ciclo-right">Viagens</div>
-      <div class="ciclo-cell-h ciclo-right">Custo Total</div>
-      <div class="ciclo-cell-h ciclo-right">Oc.</div>
-    </div>
-  `;
+  let html = `<div class="fr-ciclo-grid" style="border-bottom:1px solid var(--border)">
+    <div class="ciclo-cell-h">Ciclo</div>
+    <div class="ciclo-cell-h ciclo-right">Pedidos</div>
+    <div class="ciclo-cell-h ciclo-right">Viagens</div>
+    <div class="ciclo-cell-h ciclo-right">Custo Total</div>
+    <div class="ciclo-cell-h ciclo-right">Oc.</div></div>`;
   ciclos.forEach(c=>{
-    html += `
-      <div class="fr-ciclo-grid">
-        <div class="ciclo-cell" style="font-weight:600">${c}</div>
-        <div class="ciclo-cell ciclo-right">${mapa[c].pedidos.toLocaleString('pt-BR')}</div>
-        <div class="ciclo-cell ciclo-right">${mapa[c].viagens.toLocaleString('pt-BR')}</div>
-        <div class="ciclo-cell ciclo-right">${mapa[c].valor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
-        <div class="ciclo-cell ciclo-right" style="color:var(--text-3)">${mapa[c].oc}</div>
-      </div>
-    `;
+    html += `<div class="fr-ciclo-grid">
+      <div class="ciclo-cell" style="font-weight:600">${c}</div>
+      <div class="ciclo-cell ciclo-right">${mapa[c].pedidos.toLocaleString('pt-BR')}</div>
+      <div class="ciclo-cell ciclo-right">${mapa[c].viagens.toLocaleString('pt-BR')}</div>
+      <div class="ciclo-cell ciclo-right">${mapa[c].valor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
+      <div class="ciclo-cell ciclo-right" style="color:var(--text-3)">${mapa[c].oc}</div></div>`;
   });
-
   document.getElementById('fr-tabela-ciclos').innerHTML = html;
 }
 
 function frRenderHist(dados){
-  if(!dados.length){
-    frRenderHistVazio(); return;
-  }
-
+  if(!dados.length){ frRenderHistVazio(); return; }
   const tBadge = { PARTICULAR:'b-particular', 'EU ENTREGO':'b-euentrego' };
-
   const linhas = [...dados].reverse().map(r=>`<tr>
     <td class="mono">${frFmtData(r.dataEnvio)}</td>
     <td style="font-weight:600">${r.ciclo||'—'}</td>
@@ -1914,24 +2188,17 @@ function frRenderHist(dados){
     <td style="text-align:right" class="mono">${Number(r.valorFrete||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
     <td><span class="badge ${tBadge[r.tipo]||'b-outros'}">${r.tipo||'—'}</span></td>
   </tr>`).join('');
-
   document.getElementById('fr-tabela-hist').innerHTML = `
-    <div class="tscroll">
-      <table>
-        <thead><tr>
-          <th>Data Envio</th>
-          <th>Ciclo</th>
-          <th>Pedidos</th>
-          <th>NFs</th>
-          <th style="text-align:right">Qtd Ped.</th>
-          <th style="text-align:right">Viagens</th>
-          <th style="text-align:right">Valor Frete</th>
-          <th>Tipo</th>
-        </tr></thead>
-        <tbody>${linhas}</tbody>
-      </table>
-    </div>
-  `;
+    <div class="tscroll"><table>
+      <thead><tr>
+        <th>Data Envio</th><th>Ciclo</th><th>Pedidos</th><th>NFs</th>
+        <th style="text-align:right">Qtd Ped.</th>
+        <th style="text-align:right">Viagens</th>
+        <th style="text-align:right">Valor Frete</th>
+        <th>Tipo</th>
+      </tr></thead>
+      <tbody>${linhas}</tbody>
+    </table></div>`;
 }
 
 function frFmtData(v){
@@ -1939,42 +2206,30 @@ function frFmtData(v){
   try{ const [a,m,d]=String(v).split('-'); return `${d}/${m}/${a}`; } catch{ return String(v); }
 }
 
-/* MÓDULO VISÃO GERAL — Painel de Indicadores | FONTES: | Expedição 2026: S.vdRaw + S.omniRaw (upload atual) | Expedição 2025: upload histórico processado no browser | Avarias: qRegistros (já carregados do Sheets) | Fretes: FR.registros (já carregados do Sheets) | Armazenagem: armState.dados (já carregado do Sheets) */
+/* ═══════════════════════════════════════════════
+   MÓDULO VISÃO GERAL
+═══════════════════════════════════════════════ */
+const OV = { hist2025: [], hist2025ok: false };
 
-const OV = {
-  hist2025: [],      // pedidos 2025 processados
-  hist2025ok: false, // upload feito
-};
-
-// Chamado ao entrar na Vis-o Geral
 function ovIniciar() {
   armIniciar();
-  // Carrega hist-rico 2025 do Sheets se ainda n-o carregou
   if (!OV.hist2025ok) ovCarregarHistSheets();
   ovPopularCiclos();
   ovRender();
 }
 
-// Popula dropdown com ciclos de 2026 + 2025
 function ovPopularCiclos() {
-  const ciclos2026 = [...new Set([...S.vdRaw, ...S.omniRaw].map(r => r.Ciclo).filter(Boolean))].sort().reverse();
-  const ciclos2025 = [...new Set(OV.hist2025.map(r => r.Ciclo).filter(Boolean))].sort().reverse();
-  const todos = [...new Set([...ciclos2026, ...ciclos2025])].sort().reverse();
-
+  const ciclos2026 = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo).filter(Boolean))].sort().reverse();
+  const ciclos2025 = [...new Set(OV.hist2025.map(r=>r.ciclo).filter(Boolean))].sort().reverse();
+  const todos = [...new Set([...ciclos2026,...ciclos2025])].sort().reverse();
   const sel = document.getElementById('ov-sel-ciclo');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Selecione o ciclo...</option>';
-  todos.forEach(c => {
-    const op = document.createElement('option');
-    op.value = c; op.textContent = c;
-    sel.appendChild(op);
-  });
-  // Restaura sele--o ou seleciona o mais recente
-  if (cur && todos.includes(cur)) sel.value = cur;
-  else if (ciclos2026.length) sel.value = ciclos2026[0];
+  todos.forEach(c=>{ const op=document.createElement('option'); op.value=c; op.textContent=c; sel.appendChild(op); });
+  if(cur && todos.includes(cur)) sel.value = cur;
+  else if(ciclos2026.length) sel.value = ciclos2026[0];
 }
 
-// Render principal - chamado ao mudar ciclo ou ao entrar na p-gina
 function ovRender() {
   const cicloSel = document.getElementById('ov-sel-ciclo').value;
   const tem2026  = S.vdRaw.length > 0 || S.omniRaw.length > 0;
@@ -1983,23 +2238,24 @@ function ovRender() {
   document.getElementById('ov-sem-exp').style.display = !tem2026 ? 'flex' : 'none';
 
   if (!tem2026 && !tem2025) {
-    document.getElementById('ov-kpis-ciclo').style.display     = 'none';
-    document.getElementById('ov-grafico-wrap').style.display   = 'none';
+    document.getElementById('ov-kpis-ciclo').style.display       = 'none';
+    document.getElementById('ov-grafico-wrap').style.display     = 'none';
     document.getElementById('ov-comparativo-wrap').style.display = 'none';
+    document.getElementById('ov-indicadores').style.display      = 'none';
     return;
   }
 
   ovRenderKPIsCiclo(cicloSel);
+  ovRenderIndicadores(cicloSel);
   ovRenderGrafico();
   ovRenderComparativo();
 }
 
-// -- KPIs do ciclo selecionado --
 function ovRenderKPIsCiclo(ciclo) {
   const wrap = document.getElementById('ov-kpis-ciclo');
   if (!ciclo) { wrap.style.display = 'none'; return; }
 
-  const todos2026  = [...S.vdRaw, ...S.omniRaw].filter(r => r.Ciclo === ciclo);
+  const todos2026  = [...S.vdRaw,...S.omniRaw].filter(r => r.Ciclo === ciclo);
   const vd2026     = S.vdRaw.filter(r => r.Ciclo === ciclo);
   const omni2026   = S.omniRaw.filter(r => r.Ciclo === ciclo);
   const entg2026   = todos2026.filter(r => r.SituaçãoComercial === 'Entregue').length;
@@ -2008,17 +2264,14 @@ function ovRenderKPIsCiclo(ciclo) {
   const todos2025    = todos2025obj ? Number(todos2025obj.total)    : 0;
   const entg2025     = todos2025obj ? Number(todos2025obj.entregues): 0;
 
-  // Avarias do ciclo
-  const avCiclo    = qRegistros.filter(r => r.ciclo === ciclo);
-  const avPecas    = avCiclo.reduce((s,r) => s + Number(r.quantidade||0), 0);
-  const avValor    = avCiclo.reduce((s,r) => s + Number(r.valorTotal||0), 0);
+  const avCiclo  = qRegistros.filter(r => r.ciclo === ciclo);
+  const avPecas  = avCiclo.reduce((s,r) => s + Number(r.quantidade||0), 0);
+  const avValor  = avCiclo.reduce((s,r) => s + Number(r.valorTotal||0), 0);
 
-  // Fretes do ciclo
-  const frCiclo    = FR.registros.filter(r => r.ciclo && r.ciclo.includes(ciclo));
-  const frValor    = frCiclo.reduce((s,r) => s + Number(r.valorFrete||0), 0);
-  const frViagens  = frCiclo.reduce((s,r) => s + Number(r.nFretes||0), 0);
+  const frCiclo  = FR.registros.filter(r => r.ciclo && r.ciclo.includes(ciclo));
+  const frValor  = frCiclo.reduce((s,r) => s + Number(r.valorFrete||0), 0);
+  const frViagens= frCiclo.reduce((s,r) => s + Number(r.nFretes||0), 0);
 
-  // Delta vs 2025
   function delta(a, b) {
     if (!b) return '';
     const d = ((a - b) / b * 100).toFixed(1);
@@ -2027,7 +2280,7 @@ function ovRenderKPIsCiclo(ciclo) {
     return `<span style="font-size:12px;color:${cor};font-weight:600">${seta} ${Math.abs(d)}% vs 2025</span>`;
   }
 
-  const html = `
+  document.getElementById('ov-kpi-row').innerHTML = `
     <div class="kpi c-red">
       <div class="kpi-lbl">Total Pedidos</div>
       <div class="kpi-val">${todos2026.length.toLocaleString('pt-BR')}</div>
@@ -2049,80 +2302,44 @@ function ovRenderKPIsCiclo(ciclo) {
       <div class="kpi-lbl">Fretes Madalena</div>
       <div class="kpi-val" style="font-size:18px">${frValor.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
       <div class="kpi-sub">${frViagens} viagem${frViagens!==1?'ns':''} · ${frCiclo.length} frete${frCiclo.length!==1?'s':''}</div>
-    </div>
-  `;
-
-  document.getElementById('ov-kpi-row').innerHTML = html;
+    </div>`;
   wrap.style.display = 'block';
 }
 
-// -- Gr-fico de barras 2026 vs 2025 --
 function ovRenderGrafico() {
   const wrap = document.getElementById('ov-grafico-wrap');
-
-  // Ciclos de 2026
   const ciclos2026 = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo).filter(Boolean))].sort();
   if (!ciclos2026.length) { wrap.style.display = 'none'; return; }
 
   const tem2025 = OV.hist2025ok;
-  document.getElementById('ov-leg-2025').style.display = tem2025 ? 'flex' : 'none';
+  const leg = document.getElementById('ov-leg-2025');
+  leg.style.display = tem2025 ? 'flex' : 'none';
 
-  // Agrupa por ciclo
-  const map2026 = {};
-  [...S.vdRaw,...S.omniRaw].forEach(r => {
-    if (!r.Ciclo) return;
-    map2026[r.Ciclo] = (map2026[r.Ciclo]||0) + 1;
-  });
-  const map2025 = {};
-  OV.hist2025.forEach(r => {
-    if (!r.ciclo) return;
-    map2025[r.ciclo] = Number(r.total) || 0;
-  });
+  const map2026 = {}, map2025 = {};
+  [...S.vdRaw,...S.omniRaw].forEach(r => { if(r.Ciclo) map2026[r.Ciclo] = (map2026[r.Ciclo]||0)+1; });
+  OV.hist2025.forEach(r => { if(r.ciclo) map2025[r.ciclo] = Number(r.total)||0; });
 
-  const maxVal = Math.max(
-    ...ciclos2026.map(c => map2026[c]||0),
-    ...ciclos2026.map(c => map2025[c]||0), 1
-  );
-
-  const BAR_H    = 22;
-  const BAR_GAP  = tem2025 ? 4 : 0;
-  const GRP_GAP  = 14;
-  const GRP_H    = tem2025 ? BAR_H*2 + BAR_GAP : BAR_H;
-  const LABEL_W  = 72;
-  const CHART_W  = 520;
-  const SVG_H    = ciclos2026.length * (GRP_H + GRP_GAP) + 10;
+  const maxVal = Math.max(...ciclos2026.map(c=>map2026[c]||0), ...ciclos2026.map(c=>map2025[c]||0), 1);
+  const BAR_H=22, BAR_GAP=4, GRP_GAP=14, GRP_H=tem2025?BAR_H*2+BAR_GAP:BAR_H;
+  const LABEL_W=72, CHART_W=520, SVG_H=ciclos2026.length*(GRP_H+GRP_GAP)+10;
 
   let bars = '';
-  ciclos2026.forEach((c, i) => {
-    const y    = i * (GRP_H + GRP_GAP) + 5;
-    const v26  = map2026[c] || 0;
-    const v25  = map2025[c] || 0;
-    const w26  = Math.round((v26 / maxVal) * CHART_W);
-    const w25  = Math.round((v25 / maxVal) * CHART_W);
-    const sel  = document.getElementById('ov-sel-ciclo').value === c;
+  ciclos2026.forEach((c,i)=>{
+    const y=i*(GRP_H+GRP_GAP)+5, v26=map2026[c]||0, v25=map2025[c]||0;
+    const w26=Math.round((v26/maxVal)*CHART_W), w25=Math.round((v25/maxVal)*CHART_W);
+    const sel = document.getElementById('ov-sel-ciclo').value === c;
     const opac = sel ? '1' : '.75';
-
-    // Barra 2026
-    bars += `
-      <g opacity="${opac}" style="cursor:pointer" onclick="document.getElementById('ov-sel-ciclo').value='${c}';ovRender()">
-        <text x="${LABEL_W-6}" y="${y+BAR_H/2+4}" text-anchor="end"
-              font-size="11" fill="var(--text-2)" font-family="DM Sans,sans-serif">${c}</text>
-        <rect x="${LABEL_W}" y="${y}" width="${w26}" height="${BAR_H}"
-              rx="3" fill="${sel?'var(--accent)':'var(--accent-mid)'}"/>
-        <text x="${LABEL_W+w26+5}" y="${y+BAR_H/2+4}"
-              font-size="10.5" fill="var(--text-2)" font-family="DM Mono,monospace">${v26.toLocaleString('pt-BR')}</text>
+    bars += `<g opacity="${opac}" style="cursor:pointer" onclick="document.getElementById('ov-sel-ciclo').value='${c}';ovRender()">
+      <text x="${LABEL_W-6}" y="${y+BAR_H/2+4}" text-anchor="end" font-size="11" fill="var(--text-2)" font-family="DM Sans,sans-serif">${c}</text>
+      <rect x="${LABEL_W}" y="${y}" width="${w26}" height="${BAR_H}" rx="3" fill="${sel?'var(--accent)':'var(--accent-mid)'}"/>
+      <text x="${LABEL_W+w26+5}" y="${y+BAR_H/2+4}" font-size="10.5" fill="var(--text-2)" font-family="DM Mono,monospace">${v26.toLocaleString('pt-BR')}</text>
+    </g>`;
+    if(tem2025){
+      const y25=y+BAR_H+BAR_GAP;
+      bars += `<g opacity="${opac}">
+        <rect x="${LABEL_W}" y="${y25}" width="${w25}" height="${BAR_H}" rx="3" fill="var(--border-strong)"/>
+        <text x="${LABEL_W+w25+5}" y="${y25+BAR_H/2+4}" font-size="10.5" fill="var(--text-3)" font-family="DM Mono,monospace">${v25.toLocaleString('pt-BR')}</text>
       </g>`;
-
-    // Barra 2025 (se dispon-vel)
-    if (tem2025) {
-      const y25 = y + BAR_H + BAR_GAP;
-      bars += `
-        <g opacity="${opac}">
-          <rect x="${LABEL_W}" y="${y25}" width="${w25}" height="${BAR_H}"
-                rx="3" fill="var(--border-strong)"/>
-          <text x="${LABEL_W+w25+5}" y="${y25+BAR_H/2+4}"
-                font-size="10.5" fill="var(--text-3)" font-family="DM Mono,monospace">${v25.toLocaleString('pt-BR')}</text>
-        </g>`;
     }
   });
 
@@ -2131,11 +2348,9 @@ function ovRenderGrafico() {
   wrap.style.display = 'block';
 }
 
-// -- Comparativo acumulado --
 function ovRenderComparativo() {
   const wrap = document.getElementById('ov-comparativo-wrap');
-  const tem2025 = OV.hist2025ok;
-  if (!tem2025) { wrap.style.display = 'none'; return; }
+  if (!OV.hist2025ok) { wrap.style.display = 'none'; return; }
 
   const tot2026  = [...S.vdRaw,...S.omniRaw].length;
   const tot2025  = OV.hist2025.reduce((s,c)=>s+Number(c.total||0),0);
@@ -2143,29 +2358,24 @@ function ovRenderComparativo() {
   const entg2025 = OV.hist2025.reduce((s,c)=>s+Number(c.entregues||0),0);
   const omni2026 = S.omniRaw.length;
   const omni2025 = OV.hist2025.reduce((s,c)=>s+Number(c.omni||0),0);
+  const avVal2026 = qRegistros.reduce((s,r)=>s+Number(r.valorTotal||0),0);
+  const frVal2026 = FR.registros.reduce((s,r)=>s+Number(r.valorFrete||0),0);
 
   function compCard(lbl, v26, v25, cor, fmt) {
     const delta = v25 ? ((v26-v25)/v25*100) : 0;
-    const positivo = delta >= 0;
-    const corDelta = positivo ? 'var(--green)' : 'var(--accent)';
-    const fmtVal = fmt === 'brl'
-      ? (v) => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
-      : (v) => v.toLocaleString('pt-BR');
-    return `
-      <div class="kpi c-${cor}">
-        <div class="kpi-lbl">${lbl}</div>
-        <div class="kpi-val" style="font-size:20px">${fmtVal(v26)}</div>
-        <div class="kpi-sub" style="margin-top:6px">
-          2025: ${fmtVal(v25)}
-          <span style="margin-left:6px;font-weight:700;color:${corDelta}">
-            ${positivo?'↑':'↓'} ${Math.abs(delta).toFixed(1)}%
-          </span>
-        </div>
-      </div>`;
+    const pos = delta >= 0;
+    const fv = fmt==='brl' ? v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : v => v.toLocaleString('pt-BR');
+    return `<div class="kpi c-${cor}">
+      <div class="kpi-lbl">${lbl}</div>
+      <div class="kpi-val" style="font-size:20px">${fv(v26)}</div>
+      <div class="kpi-sub" style="margin-top:6px">
+        2025: ${fv(v25)}
+        <span style="margin-left:6px;font-weight:700;color:${pos?'var(--green)':'var(--accent)'}">
+          ${pos?'↑':'↓'} ${Math.abs(delta).toFixed(1)}%
+        </span>
+      </div>
+    </div>`;
   }
-
-  const avVal2026 = qRegistros.reduce((s,r)=>s+Number(r.valorTotal||0),0);
-  const frVal2026 = FR.registros.reduce((s,r)=>s+Number(r.valorFrete||0),0);
 
   document.getElementById('ov-comp-row').innerHTML =
     compCard('Total Pedidos', tot2026, tot2025, 'red', 'num') +
@@ -2181,315 +2391,192 @@ function ovRenderComparativo() {
       <div class="kpi-val" style="font-size:18px">${frVal2026.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
       <div class="kpi-sub">2025: sem dados ainda</div>
     </div>`;
-
   wrap.style.display = 'block';
 }
 
-// -- Carrega hist-rico 2025 - processa e grava no Sheets --
 function ovCarregarHist(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
+  const file = e.target.files[0]; if(!file) return;
   const status = document.getElementById('ov-hist-status');
   status.textContent = 'Processando...';
-
   const reader = new FileReader();
   reader.onload = async function(ev) {
     try {
-      const wb  = XLSX.read(ev.target.result, {type:'array', cellDates:true});
+      const wb  = XLSX.read(ev.target.result,{type:'array',cellDates:true});
       const ws  = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-      if (raw.length < 2) { status.textContent = '⚠️ Arquivo vazio'; return; }
-
-      const headers = raw[0].map(h => String(h).trim());
-      const idx = {};
-      headers.forEach((h,i) => idx[h]=i);
-
-      const needed = ['CodigoPedido','SituaçãoComercial','MeioCaptacao','Ciclo Captação'];
-      const miss = needed.filter(c => !(c in idx));
-      if (miss.length) { status.textContent = '⚠️ Formato inválido'; return; }
-
-      // Agrega por ciclo
-      const mapa = {};
-      for (let i=1; i<raw.length; i++) {
-        const r = raw[i];
-        if (!r || r.every(c=>c===''||c===null)) continue;
-        const sit = String(r[idx['SituaçãoComercial']]||'');
-        if (sit === 'Cancelado') continue;
-        const ciclo = String(r[idx['Ciclo Captação']]||'').trim();
-        if (!ciclo) continue;
-        if (!mapa[ciclo]) mapa[ciclo] = {ciclo, total:0, entregues:0, vd:0, omni:0};
+      const raw = XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(raw.length<2){status.textContent='⚠️ Arquivo vazio';return;}
+      const headers=raw[0].map(h=>String(h).trim());
+      const idx={}; headers.forEach((h,i)=>idx[h]=i);
+      const needed=['CodigoPedido','SituaçãoComercial','MeioCaptacao','Ciclo Captação'];
+      const miss=needed.filter(c=>!(c in idx));
+      if(miss.length){status.textContent='⚠️ Formato inválido';return;}
+      const mapa={};
+      for(let i=1;i<raw.length;i++){
+        const r=raw[i]; if(!r||r.every(c=>c===''||c===null))continue;
+        const sit=String(r[idx['SituaçãoComercial']]||'');
+        if(sit==='Cancelado')continue;
+        const ciclo=String(r[idx['Ciclo Captação']]||'').trim(); if(!ciclo)continue;
+        if(!mapa[ciclo])mapa[ciclo]={ciclo,total:0,entregues:0,vd:0,omni:0};
         mapa[ciclo].total++;
-        if (sit === 'Entregue') mapa[ciclo].entregues++;
-        const meio = String(r[idx['MeioCaptacao']]||'');
-        if (meio === 'Pedido Omnichannel') mapa[ciclo].omni++;
-        else mapa[ciclo].vd++;
+        if(sit==='Entregue')mapa[ciclo].entregues++;
+        const meio=String(r[idx['MeioCaptacao']]||'');
+        if(meio==='Pedido Omnichannel')mapa[ciclo].omni++; else mapa[ciclo].vd++;
       }
-
-      const ciclos = Object.values(mapa).sort((a,b)=>a.ciclo.localeCompare(b.ciclo));
-      const totalPed = ciclos.reduce((s,c)=>s+c.total,0);
-
-      status.textContent = '💾 Gravando no Sheets...';
-
-      // Grava no Sheets
-      const payload = { modulo: 'hist2025', ciclos };
-      const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(payload) });
-      const json = await resp.json();
-
-      if (json.sucesso) {
-        // Atualiza estado local
-        OV.hist2025   = ciclos;
-        OV.hist2025ok = true;
-        status.textContent = `✅ ${totalPed.toLocaleString('pt-BR')} pedidos · ${ciclos.length} ciclos gravados`;
-        document.getElementById('ov-hist-input').value = '';
-        ovPopularCiclos();
-        ovRender();
-      } else {
-        status.textContent = '⚠️ Erro ao gravar: ' + json.erro;
-      }
-    } catch(err) {
-      status.textContent = '⚠️ Erro ao processar';
-      console.error(err);
-    }
+      const ciclos=Object.values(mapa).sort((a,b)=>a.ciclo.localeCompare(b.ciclo));
+      const totalPed=ciclos.reduce((s,c)=>s+c.total,0);
+      status.textContent='💾 Gravando no Sheets...';
+      const resp=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({modulo:'hist2025',ciclos})});
+      const json=await resp.json();
+      if(json.sucesso){
+        OV.hist2025=ciclos; OV.hist2025ok=true;
+        status.textContent=`✅ ${totalPed.toLocaleString('pt-BR')} pedidos · ${ciclos.length} ciclos gravados`;
+        document.getElementById('ov-hist-input').value='';
+        ovPopularCiclos(); ovRender();
+      } else { status.textContent='⚠️ Erro ao gravar: '+json.erro; }
+    } catch(err){ status.textContent='⚠️ Erro ao processar'; console.error(err); }
   };
   reader.readAsArrayBuffer(file);
 }
 
-// -- Carrega hist-rico 2025 do Sheets automaticamente --
 async function ovCarregarHistSheets() {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8s max
-    const resp = await fetch(SCRIPT_URL + '?modulo=hist2025', { signal: controller.signal });
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),8000);
+    const resp=await fetch(SCRIPT_URL+'?modulo=hist2025',{signal:controller.signal});
     clearTimeout(timeout);
-    const json = await resp.json();
-    if (json.sucesso && json.ciclos && json.ciclos.length > 0) {
-      OV.hist2025   = json.ciclos;
-      OV.hist2025ok = true;
-      const status = document.getElementById('ov-hist-status');
-      if (status) {
-        const total = json.ciclos.reduce((s,c)=>s+Number(c.total||0),0);
-        status.textContent = `✅ ${total.toLocaleString('pt-BR')} pedidos 2025 · ${json.ciclos.length} ciclos`;
+    const json=await resp.json();
+    if(json.sucesso&&json.ciclos&&json.ciclos.length>0){
+      OV.hist2025=json.ciclos; OV.hist2025ok=true;
+      const status=document.getElementById('ov-hist-status');
+      if(status){
+        const total=json.ciclos.reduce((s,c)=>s+Number(c.total||0),0);
+        status.textContent=`✅ ${total.toLocaleString('pt-BR')} pedidos 2025 · ${json.ciclos.length} ciclos`;
       }
-      ovPopularCiclos();
-      ovRender();
+      ovPopularCiclos(); ovRender();
     }
-  } catch(err) {
-    // Timeout ou erro de rede - dash continua funcionando normalmente sem o hist-rico
-    console.warn('Histórico 2025 não disponível:', err.name);
-  }
+  } catch(err){ console.warn('Histórico 2025 não disponível:',err.name); }
 }
 
-/* Modulo Armazenagem - Taxa de Ocupacao */
+/* ═══════════════════════════════════════════════
+   MÓDULO ARMAZENAGEM
+═══════════════════════════════════════════════ */
+const ARM_CAPACIDADE=6000, ARM_FATOR=35, ARM_DIAS_EXPIRA=30;
+const ARM_EXCLUIR=['CATALOGO','REVISTA','EMBALAGEM','SACOLA','ENVELOPE','BOLSA','BRINDE'];
+let armState = { dados:null, iniciado:false };
 
-const ARM_CAPACIDADE  = 6000;
-const ARM_FATOR       = 35;
-const ARM_DIAS_EXPIRA = 30;
-const ARM_EXCLUIR     = ['CATALOGO','REVISTA','EMBALAGEM','SACOLA','ENVELOPE','BOLSA','BRINDE'];
+function armIniciar(){ if(armState.iniciado){armRenderEstado();return;} armState.iniciado=true; armCarregar(); }
 
-let armState = { dados: null, iniciado: false };
-
-// Chamado ao abrir Vis-o Geral
-function armIniciar() {
-  if (armState.iniciado) { armRenderEstado(); return; }
-  armState.iniciado = true;
-  armCarregar();
-}
-
-// Carrega -ltimo registro do Sheets
-async function armCarregar() {
+async function armCarregar(){
   armMostrar('loading');
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const resp = await fetch(ARMAZENAGEM_URL + '?modulo=armazenagem', { signal: controller.signal });
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),8000);
+    const resp=await fetch(ARMAZENAGEM_URL+'?modulo=armazenagem',{signal:controller.signal});
     clearTimeout(timeout);
-    const json = await resp.json();
-    if (json.sucesso && json.ultimo) {
-      armState.dados = json.ultimo;
-    } else {
-      armState.dados = null;
-    }
-  } catch(err) {
-    console.warn('Armazenagem não disponível:', err.name);
-    armState.dados = null;
-  }
+    const json=await resp.json();
+    armState.dados = (json.sucesso&&json.ultimo) ? json.ultimo : null;
+  } catch(err){ console.warn('Armazenagem não disponível:',err.name); armState.dados=null; }
   armRenderEstado();
 }
 
-// Decide qual estado mostrar
-function armRenderEstado() {
-  if (!armState.dados) {
-    // Nunca importado
-    armMostrar('vazio');
-    return;
-  }
-
-  const dataImp = new Date(armState.dados.dataImportacao || armState.dados.registradoEm);
-  const diasAtras = Math.floor((Date.now() - dataImp.getTime()) / 86400000);
-
-  if (diasAtras > ARM_DIAS_EXPIRA) {
-    // Expirado
-    armMostrar('expirado');
-    return;
-  }
-
-  // Dados v-lidos
-  armRenderDados(armState.dados, diasAtras);
-  armMostrar('dados');
+function armRenderEstado(){
+  if(!armState.dados){armMostrar('vazio');return;}
+  const dataImp=new Date(armState.dados.dataImportacao||armState.dados.registradoEm);
+  const diasAtras=Math.floor((Date.now()-dataImp.getTime())/86400000);
+  if(diasAtras>ARM_DIAS_EXPIRA){armMostrar('expirado');return;}
+  armRenderDados(armState.dados,diasAtras); armMostrar('dados');
 }
 
-function armRenderDados(d, diasAtras) {
-  const pct    = Math.round(parseFloat(d.taxaOcupacao) * 100);
-  const pecas  = parseInt(d.totalPecas);
-  const caixas = Math.round(parseFloat(d.caixasEstimadas));
-  const status = d.status;
-
-  // Gauge SVG - circumfer-ncia = 2--45 - 282.7
-  const circum = 282.7;
-  const offset = circum - (circum * pct / 100);
-  const corGauge = pct > 90 ? 'var(--accent)' : pct > 80 ? 'var(--yellow)' : 'var(--green)';
-
-  const fill = document.getElementById('arm-gauge-fill');
-  if (fill) {
-    fill.style.strokeDashoffset = offset;
-    fill.style.stroke = corGauge;
-  }
-
-  document.getElementById('arm-gauge-pct').textContent  = pct + '%';
-  document.getElementById('arm-gauge-pct').style.color  = corGauge;
-  document.getElementById('arm-stat-pecas').textContent = pecas.toLocaleString('pt-BR');
-  document.getElementById('arm-stat-caixas').textContent = caixas.toLocaleString('pt-BR');
-
-  // Badge de status
-  const badge = document.getElementById('arm-status-badge');
-  const bConf = {
-    'Sem Risco':           { bg:'var(--green-bg)',  color:'var(--green)',  txt:'✅ Sem Risco' },
-    'Atenção':             { bg:'var(--yellow-bg)', color:'var(--yellow)', txt:'⚠️ Atenção' },
-    'Risco de falta de espaço': { bg:'var(--accent-bg)', color:'var(--accent)', txt:'🔴 Risco' },
-  };
-  const bc = bConf[status] || { bg:'var(--border)', color:'var(--text-3)', txt:status };
-  badge.style.background = bc.bg;
-  badge.style.color      = bc.color;
-  badge.textContent      = bc.txt;
-
-  // Data da -ltima importa--o
-  const dataImp = new Date(d.dataImportacao || d.registradoEm);
-  document.getElementById('arm-ultima-data').textContent =
-    'Atualizado em ' + dataImp.toLocaleDateString('pt-BR');
-  document.getElementById('arm-btn-atualizar').style.display = '';
-
-  // Barra de frescor - inverte: 0 dias = 100% verde, 30 dias = 0%
-  const pctFrescor = Math.max(0, Math.round((1 - diasAtras / ARM_DIAS_EXPIRA) * 100));
-  const corFrescor = diasAtras > 20 ? 'var(--accent)' : diasAtras > 10 ? 'var(--yellow)' : 'var(--green)';
-  const diasRestam = ARM_DIAS_EXPIRA - diasAtras;
-
-  document.getElementById('arm-freshbar-fill').style.width      = pctFrescor + '%';
-  document.getElementById('arm-freshbar-fill').style.background = corFrescor;
-  document.getElementById('arm-fresh-txt').textContent =
-    `Última importação: há ${diasAtras} dia${diasAtras !== 1 ? 's' : ''}`;
-  document.getElementById('arm-fresh-dias').textContent =
-    diasRestam > 0 ? `Expira em ${diasRestam} dia${diasRestam !== 1 ? 's' : ''}` : 'Expirado';
-  document.getElementById('arm-fresh-dias').style.color = corFrescor;
+function armRenderDados(d,diasAtras){
+  const pct=Math.round(parseFloat(d.taxaOcupacao)*100);
+  const circum=282.7, offset=circum-(circum*pct/100);
+  const corGauge=pct>90?'var(--accent)':pct>80?'var(--yellow)':'var(--green)';
+  const fill=document.getElementById('arm-gauge-fill');
+  if(fill){fill.style.strokeDashoffset=offset;fill.style.stroke=corGauge;}
+  document.getElementById('arm-gauge-pct').textContent=pct+'%';
+  document.getElementById('arm-gauge-pct').style.color=corGauge;
+  document.getElementById('arm-stat-pecas').textContent=parseInt(d.totalPecas).toLocaleString('pt-BR');
+  document.getElementById('arm-stat-caixas').textContent=Math.round(parseFloat(d.caixasEstimadas)).toLocaleString('pt-BR');
+  const badge=document.getElementById('arm-status-badge');
+  const bConf={'Sem Risco':{bg:'var(--green-bg)',color:'var(--green)',txt:'✅ Sem Risco'},'Atenção':{bg:'var(--yellow-bg)',color:'var(--yellow)',txt:'⚠️ Atenção'},'Risco de falta de espaço':{bg:'var(--accent-bg)',color:'var(--accent)',txt:'🔴 Risco'}};
+  const bc=bConf[d.status]||{bg:'var(--border)',color:'var(--text-3)',txt:d.status};
+  badge.style.background=bc.bg; badge.style.color=bc.color; badge.textContent=bc.txt;
+  const dataImp=new Date(d.dataImportacao||d.registradoEm);
+  document.getElementById('arm-ultima-data').textContent='Atualizado em '+dataImp.toLocaleDateString('pt-BR');
+  document.getElementById('arm-btn-atualizar').style.display='';
+  const pctFrescor=Math.max(0,Math.round((1-diasAtras/ARM_DIAS_EXPIRA)*100));
+  const corFrescor=diasAtras>20?'var(--accent)':diasAtras>10?'var(--yellow)':'var(--green)';
+  const diasRestam=ARM_DIAS_EXPIRA-diasAtras;
+  document.getElementById('arm-freshbar-fill').style.width=pctFrescor+'%';
+  document.getElementById('arm-freshbar-fill').style.background=corFrescor;
+  document.getElementById('arm-fresh-txt').textContent=`Última importação: há ${diasAtras} dia${diasAtras!==1?'s':''}`;
+  document.getElementById('arm-fresh-dias').textContent=diasRestam>0?`Expira em ${diasRestam} dia${diasRestam!==1?'s':''}`:'Expirado';
+  document.getElementById('arm-fresh-dias').style.color=corFrescor;
 }
 
-function armMostrar(estado) {
-  // estados: 'loading' | 'vazio' | 'expirado' | 'dados'
-  document.getElementById('arm-loading').style.display  = estado === 'loading'  ? 'block' : 'none';
-  document.getElementById('arm-vazio').style.display    = estado === 'vazio'    ? 'block' : 'none';
-  document.getElementById('arm-expirado').style.display = estado === 'expirado' ? 'flex'  : 'none';
-  document.getElementById('arm-dados').style.display    = estado === 'dados'    ? 'block' : 'none';
-  // Upload aparece quando sem dados ou expirado
-  document.getElementById('arm-upload-zone').style.display =
-    (estado === 'vazio' || estado === 'expirado') ? 'block' : 'none';
+function armMostrar(estado){
+  document.getElementById('arm-loading').style.display  = estado==='loading'  ?'block':'none';
+  document.getElementById('arm-vazio').style.display    = estado==='vazio'    ?'block':'none';
+  document.getElementById('arm-expirado').style.display = estado==='expirado' ?'flex' :'none';
+  document.getElementById('arm-dados').style.display    = estado==='dados'    ?'block':'none';
+  document.getElementById('arm-upload-zone').style.display=(estado==='vazio'||estado==='expirado')?'block':'none';
 }
 
-// -- Drag & Drop upload armazenagem --
-function armDragOver(e){ e.preventDefault(); document.getElementById('arm-upload-zone').classList.add('over'); }
-function armDragLeave(){ document.getElementById('arm-upload-zone').classList.remove('over'); }
-function armDrop(e){ e.preventDefault(); armDragLeave(); const f=e.dataTransfer.files[0]; if(f)armProcessar(f); }
-function armOnFileChange(e){ const f=e.target.files[0]; if(f)armProcessar(f); }
+function armDragOver(e){e.preventDefault();document.getElementById('arm-upload-zone').classList.add('over');}
+function armDragLeave(){document.getElementById('arm-upload-zone').classList.remove('over');}
+function armDrop(e){e.preventDefault();armDragLeave();const f=e.dataTransfer.files[0];if(f)armProcessar(f);}
+function armOnFileChange(e){const f=e.target.files[0];if(f)armProcessar(f);}
 
-// -- Processa planilha PosicaoEstoque --
-function armProcessar(file) {
+function armProcessar(file){
   armMostrar('loading');
-  const reader = new FileReader();
-  reader.onload = async function(e) {
+  const reader=new FileReader();
+  reader.onload=async function(e){
     try {
-      const wb  = XLSX.read(e.target.result, {type:'array'});
-      const ws  = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:0});
-
-      if (raw.length < 2) { mostrarToast('Arquivo vazio.','err'); armMostrar('vazio'); return; }
-
-      const headers = raw[0].map(h => String(h).trim());
-
-      // Identifica coluna "23002 - ... - F-sico"
-      const col23002 = headers.findIndex(h => h.includes('23002') && h.includes('Físico'));
-      const colNome  = headers.findIndex(h => h === 'Nome Material');
-
-      if (col23002 === -1 || colNome === -1) {
-        mostrarToast('Formato não reconhecido. Verifique se é a PosicaoEstoque.','err');
-        armMostrar('vazio'); return;
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:0});
+      if(raw.length<2){mostrarToast('Arquivo vazio.','err');armMostrar('vazio');return;}
+      const headers=raw[0].map(h=>String(h).trim());
+      const col23002=headers.findIndex(h=>h.includes('23002')&&h.includes('Físico'));
+      const colNome=headers.findIndex(h=>h==='Nome Material');
+      if(col23002===-1||colNome===-1){mostrarToast('Formato não reconhecido.','err');armMostrar('vazio');return;}
+      let totalPecas=0;
+      for(let i=1;i<raw.length;i++){
+        const row=raw[i]; if(!row||!Array.isArray(row))continue;
+        const nome=String(row[colNome]==null?'':row[colNome]).toUpperCase();
+        const qtd=Number(row[col23002]==null?0:row[col23002])||0;
+        if(qtd<=0)continue;
+        if(!ARM_EXCLUIR.some(kw=>nome.includes(kw)))totalPecas+=qtd;
       }
-
-      // Filtra e soma
-      let totalPecas = 0;
-      for (let i = 1; i < raw.length; i++) {
-        const row = raw[i];
-        if (!row || !Array.isArray(row)) continue;
-        const nome = String(row[colNome] == null ? '' : row[colNome]).toUpperCase();
-        const qtd  = Number(row[col23002] == null ? 0 : row[col23002]) || 0;
-        if (qtd <= 0) continue;
-        const excluir = ARM_EXCLUIR.some(kw => nome.includes(kw));
-        if (!excluir) totalPecas += qtd;
-      }
-
-      const caixasEstimadas = totalPecas / ARM_FATOR;
-      const taxaOcupacao    = caixasEstimadas / ARM_CAPACIDADE;
-      const status =
-        taxaOcupacao > 0.90 ? 'Risco de falta de espaço' :
-        taxaOcupacao > 0.80 ? 'Atenção' : 'Sem Risco';
-
-      const hoje = new Date().toISOString().split('T')[0];
-
-      // Grava no Sheets
-      const payload = {
-        modulo: 'armazenagem',
-        dataImportacao: hoje,
-        totalPecas, caixasEstimadas, taxaOcupacao, status
-      };
-
-      const resp = await fetch(ARMAZENAGEM_URL, { method:'POST', body: JSON.stringify(payload) });
-      const json = await resp.json();
-
-      if (json.sucesso) {
-        armState.dados = { dataImportacao: hoje, totalPecas, caixasEstimadas, taxaOcupacao, status };
-        armRenderDados(armState.dados, 0);
-        armMostrar('dados');
-        mostrarToast('✅ Estoque atualizado!', 'ok');
-        // Limpa input para permitir re-upload do mesmo arquivo
-        document.getElementById('arm-file-input').value = '';
-      } else {
-        mostrarToast('Erro ao gravar: ' + json.erro, 'err');
-        armRenderEstado();
-      }
-    } catch(err) {
-      console.error(err);
-      mostrarToast('Erro ao processar o arquivo.','err');
-      armRenderEstado();
-    }
+      const caixasEstimadas=totalPecas/ARM_FATOR;
+      const taxaOcupacao=caixasEstimadas/ARM_CAPACIDADE;
+      const status=taxaOcupacao>0.90?'Risco de falta de espaço':taxaOcupacao>0.80?'Atenção':'Sem Risco';
+      const hoje=new Date().toISOString().split('T')[0];
+      const payload={modulo:'armazenagem',dataImportacao:hoje,totalPecas,caixasEstimadas,taxaOcupacao,status};
+      const resp=await fetch(ARMAZENAGEM_URL,{method:'POST',body:JSON.stringify(payload)});
+      const json=await resp.json();
+      if(json.sucesso){
+        armState.dados={dataImportacao:hoje,totalPecas,caixasEstimadas,taxaOcupacao,status};
+        armRenderDados(armState.dados,0); armMostrar('dados');
+        mostrarToast('✅ Estoque atualizado!','ok');
+        document.getElementById('arm-file-input').value='';
+      } else {mostrarToast('Erro ao gravar: '+json.erro,'err');armRenderEstado();}
+    } catch(err){console.error(err);mostrarToast('Erro ao processar o arquivo.','err');armRenderEstado();}
   };
   reader.readAsArrayBuffer(file);
 }
 
-/* Toast global */
-function mostrarToast(msg, tipo='ok'){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast toast-${tipo} show`;
-  setTimeout(()=>{ t.className='toast'; }, 3500);
+/* Toast */
+function mostrarToast(msg,tipo='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast toast-${tipo} show`;
+  setTimeout(()=>{t.className='toast';},3500);
 }
+
+/* Auto-inicializa Visão Geral (aba padrão ao abrir) */
+window.addEventListener('DOMContentLoaded', ()=>{
+  ovIniciar();
+});
 </script>
 </body>
 </html>
