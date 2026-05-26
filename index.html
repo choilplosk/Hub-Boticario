@@ -1561,10 +1561,81 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
      FINANCEIRO (era Ciclos)
 ═══════════════════════════════════════════════ -->
 <div class="page" id="page-financeiro">
-  <div class="placeholder">
-    <div class="ph-ico">💰</div><span class="ptag">Em construção — Parte 3</span>
-    <h2>Módulo Financeiro</h2>
-    <p>Autorização de cartão, devoluções Omni e controle financeiro por ciclo.</p>
+  <div class="ph">
+    <div><h1>💰 Financeiro</h1><p>Resumo financeiro por ciclo</p></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn btn-ghost" style="font-size:12px" onclick="finCarregar()">↺ Atualizar</button>
+      <select class="fsel" id="fin-sel-ciclo" onchange="finRender()" style="font-weight:600">
+        <option value="">Selecione o ciclo...</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- KPIs do ciclo -->
+  <div id="fin-kpis-row" class="kpi-row" style="margin-bottom:20px"></div>
+
+  <!-- Layout: cartões + resumo geral -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+
+    <!-- Cartões do ciclo -->
+    <div class="tcard">
+      <div class="tcard-head">
+        <span class="tcard-title">💳 Cartões — Pagamento na Central</span>
+        <span class="tcard-count" id="fin-cartao-count">—</span>
+      </div>
+      <div id="fin-cartao-lista" style="max-height:400px;overflow-y:auto">
+        <div class="empty"><div class="empty-ico">💳</div><h3>Selecione um ciclo</h3></div>
+      </div>
+    </div>
+
+    <!-- Resumo financeiro do ciclo -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Fretes -->
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">🚚 Fretes Madalena</span>
+          <span class="tcard-count" id="fin-fretes-count">—</span>
+        </div>
+        <div id="fin-fretes-lista" style="max-height:180px;overflow-y:auto">
+          <div class="empty" style="padding:24px"><div class="empty-ico">🚚</div><h3>Selecione um ciclo</h3></div>
+        </div>
+      </div>
+
+      <!-- Avarias -->
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">🚨 Avarias</span>
+          <span class="tcard-count" id="fin-avarias-count">—</span>
+        </div>
+        <div id="fin-avarias-lista" style="max-height:180px;overflow-y:auto">
+          <div class="empty" style="padding:24px"><div class="empty-ico">🚨</div><h3>Selecione um ciclo</h3></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela consolidada por ciclo -->
+  <div class="tcard">
+    <div class="tcard-head">
+      <span class="tcard-title">📊 Consolidado por Ciclo</span>
+      <span class="tcard-count" id="fin-consol-count">—</span>
+    </div>
+    <div class="tscroll">
+      <table>
+        <thead><tr>
+          <th>Ciclo</th>
+          <th style="text-align:right">Pedidos Cartão</th>
+          <th style="text-align:right">Valor Cartão</th>
+          <th style="text-align:right">Autorizados</th>
+          <th style="text-align:right">Pendentes</th>
+          <th style="text-align:right">Fretes (R$)</th>
+          <th style="text-align:right">Avarias (R$)</th>
+          <th style="text-align:right">Total Custos</th>
+        </tr></thead>
+        <tbody id="fin-consol-tbody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -1899,7 +1970,7 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 // ============================================================
 // URLs Apps Script
 // ============================================================
-const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbzc9R6oV1kdBxxXGrCOXcJhS623HGVsGQ8WLZMyTDkpgHEG3B8X8tSnpbGw3j4qlAgQ7w/exec";
+const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbyJCP0OWrhHwvv76aRktHkF94OF7LQ9T9Mwp7VI22fKBphGhUtlN6S4RXjSszz83seGTQ/exec";
 const AVARIAS_URL     = SCRIPT_URL;
 const FRETES_URL      = SCRIPT_URL;
 const ARMAZENAGEM_URL = SCRIPT_URL;
@@ -1951,6 +2022,7 @@ function goPage(id, btn) {
   if (id === 'expedicao')  expIniciar();
   if (id === 'pendencias') pendIniciar();
   if (id === 'comercial')  comIniciar();
+  if (id === 'financeiro') finIniciar();
 }
 
 /* Relógio */
@@ -2021,6 +2093,7 @@ function processFile(file){
           Pagamento:         r[idx['PlanoPagamento']],
           TipoEntrega:       r[idx['Tipo de Entrega']],
           Recebedor:         r[idx['Nome do Recebedor']],
+          ValorLiquido:      parseFloat(r[idx['ValorLiquido']]||0) || 0,
           isMad:             MADALENA.has(String(r[idx['Pessoa']]||'').trim()),
           _dataAprovacaoRaw: r[idx['Data Aprovação']],
           _dataFaturamentoRaw: r[idx['DataFaturamento']],
@@ -4764,6 +4837,254 @@ async function comResponderDev(id) {
       PEND.iniciado = false;
     } else { mostrarToast(json.erro||'Erro.','err'); }
   } catch(err) { mostrarToast('Falha na conexão.','err'); }
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO FINANCEIRO
+═══════════════════════════════════════════════ */
+
+const FIN = {
+  cartoes:  [],
+  iniciado: false,
+};
+
+function finIniciar() {
+  if (!FIN.iniciado) {
+    FIN.iniciado = true;
+    finCarregar();
+  } else {
+    finPopularCiclos();
+    finRender();
+  }
+}
+
+async function finCarregar() {
+  try {
+    // Carrega cartões do Sheets em paralelo com avarias e fretes
+    const [rCart, rAv, rFr] = await Promise.all([
+      fetch(SCRIPT_URL + '?modulo=getAllCartoes'),
+      fetch(SCRIPT_URL + '?modulo=avarias'),
+      fetch(SCRIPT_URL + '?modulo=frete'),
+    ]);
+    const [jCart, jAv, jFr] = await Promise.all([rCart.json(), rAv.json(), rFr.json()]);
+
+    if (jCart.sucesso) FIN.cartoes   = jCart.cartoes   || [];
+    if (jAv.sucesso)   qRegistros    = jAv.registros   || [];
+    if (jFr.sucesso)   FR.registros  = jFr.registros   || [];
+
+    finPopularCiclos();
+    finRender();
+  } catch(err) {
+    console.error('Erro ao carregar financeiro:', err);
+  }
+}
+
+function finPopularCiclos() {
+  // Ciclos do upload local
+  const ciclosExp = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo).filter(Boolean))].sort().reverse();
+  // Ciclos dos cartões no Sheets
+  const ciclosCart = [...new Set(FIN.cartoes.map(c=>c.ciclo).filter(Boolean))].sort().reverse();
+  // Ciclos de fretes e avarias
+  const ciclosFr = [...new Set(FR.registros.map(r=>r.ciclo).filter(Boolean))].sort().reverse();
+  const ciclosAv = [...new Set(qRegistros.map(r=>r.ciclo).filter(Boolean))].sort().reverse();
+
+  const todos = [...new Set([...ciclosExp,...ciclosCart,...ciclosFr,...ciclosAv])].sort().reverse();
+
+  const sel = document.getElementById('fin-sel-ciclo');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Selecione o ciclo...</option>';
+  todos.forEach(c => {
+    const op = document.createElement('option');
+    op.value = c; op.textContent = c;
+    sel.appendChild(op);
+  });
+  if (cur && todos.includes(cur)) sel.value = cur;
+  else if (todos.length) sel.value = todos[0];
+
+  finRender();
+}
+
+function finRender() {
+  const ciclo = document.getElementById('fin-sel-ciclo').value;
+  if (!ciclo) {
+    finRenderVazio();
+    return;
+  }
+
+  // Dados do ciclo
+  const pedCiclo    = [...S.vdRaw,...S.omniRaw].filter(r => r.Ciclo === ciclo);
+  const cartCiclo   = FIN.cartoes.filter(c => c.ciclo === ciclo);
+  const frCiclo     = FR.registros.filter(r => r.ciclo && r.ciclo.includes(ciclo));
+  const avCiclo     = qRegistros.filter(r => r.ciclo === ciclo);
+
+  // Pedidos cartão do upload local (tem ValorLiquido)
+  const pedCartao   = pedCiclo.filter(r => r.Pagamento === CARTAO_CENTRAL);
+  const valCartao   = pedCartao.reduce((s,r) => s + (r.ValorLiquido||0), 0);
+
+  // Autorizados vs pendentes
+  const autorizados = cartCiclo.filter(c => c.status === 'autorizado').length;
+  const pendentes   = cartCiclo.filter(c => c.status === 'pendente').length;
+
+  // Fretes
+  const valFretes   = frCiclo.reduce((s,r) => s + Number(r.valorFrete||0), 0);
+  const nViagens    = frCiclo.reduce((s,r) => s + Number(r.nFretes||0), 0);
+
+  // Avarias
+  const valAvarias  = avCiclo.reduce((s,r) => s + Number(r.valorTotal||0), 0);
+  const nAvarias    = avCiclo.length;
+
+  const totalCustos = valFretes + valAvarias;
+  const brl = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+  // KPIs
+  document.getElementById('fin-kpis-row').innerHTML = `
+    <div class="kpi c-blue">
+      <div class="kpi-lbl">Pedidos Cartão</div>
+      <div class="kpi-val">${pedCartao.length.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">${brl(valCartao)} valor líquido</div>
+    </div>
+    <div class="kpi c-green">
+      <div class="kpi-lbl">Autorizados</div>
+      <div class="kpi-val">${autorizados.toLocaleString('pt-BR')}</div>
+      <div class="kpi-sub">${pendentes} pendente${pendentes!==1?'s':''}</div>
+    </div>
+    <div class="kpi c-purple">
+      <div class="kpi-lbl">Fretes Madalena</div>
+      <div class="kpi-val" style="font-size:20px">${brl(valFretes)}</div>
+      <div class="kpi-sub">${nViagens} viagem${nViagens!==1?'ns':''}</div>
+    </div>
+    <div class="kpi c-yellow">
+      <div class="kpi-lbl">Avarias</div>
+      <div class="kpi-val" style="font-size:20px">${brl(valAvarias)}</div>
+      <div class="kpi-sub">${nAvarias} ocorrência${nAvarias!==1?'s':''}</div>
+    </div>
+    <div class="kpi c-red">
+      <div class="kpi-lbl">Total Custos</div>
+      <div class="kpi-val" style="font-size:20px">${brl(totalCustos)}</div>
+      <div class="kpi-sub">Fretes + Avarias</div>
+    </div>
+  `;
+
+  // Lista cartões
+  const cartCount = document.getElementById('fin-cartao-count');
+  const cartLista = document.getElementById('fin-cartao-lista');
+  cartCount.textContent = pedCartao.length + ' pedido' + (pedCartao.length!==1?'s':'');
+
+  if (!pedCartao.length) {
+    cartLista.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-ico">💳</div><h3>Nenhum pedido com cartão</h3></div>';
+  } else {
+    cartLista.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead style="position:sticky;top:0;background:var(--surface-2)">
+          <tr>
+            <th style="padding:8px 13px;text-align:left;font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)">Pedido</th>
+            <th style="padding:8px 13px;text-align:left;font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)">Revendedor</th>
+            <th style="padding:8px 13px;text-align:right;font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)">Valor Líq.</th>
+            <th style="padding:8px 13px;text-align:center;font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pedCartao.map(p => {
+            const auth = CARTOES_AUTORIZADOS[String(p.CodigoPedido)];
+            const statusHtml = auth
+              ? `<span class="flag-cartao-ok">✅ ${auth.codigo}</span>`
+              : `<span class="flag-cartao-pend">🔴 Pendente</span>`;
+            return `<tr>
+              <td style="padding:8px 13px;border-bottom:1px solid var(--border)" class="mono">${p.CodigoPedido||'—'}</td>
+              <td style="padding:8px 13px;border-bottom:1px solid var(--border);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.NomePessoa||'—'}</td>
+              <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right" class="mono">${brl(p.ValorLiquido||0)}</td>
+              <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:center">${statusHtml}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // Lista fretes
+  const frCount = document.getElementById('fin-fretes-count');
+  const frLista = document.getElementById('fin-fretes-lista');
+  frCount.textContent = brl(valFretes);
+  frLista.innerHTML = frCiclo.length
+    ? frCiclo.map(r => `
+        <div style="padding:9px 14px;border-bottom:1px solid var(--border);font-size:12.5px;display:flex;justify-content:space-between;align-items:center">
+          <span>${frFmtData(r.dataEnvio)} · ${r.nFretes} viagem${r.nFretes!=='1'?'ns':''}</span>
+          <span class="mono" style="font-weight:700">${brl(Number(r.valorFrete||0))}</span>
+        </div>`).join('')
+    : '<div class="empty" style="padding:20px"><h3 style="font-size:13px;color:var(--text-3)">Nenhum frete no ciclo</h3></div>';
+
+  // Lista avarias
+  const avCount = document.getElementById('fin-avarias-count');
+  const avLista = document.getElementById('fin-avarias-lista');
+  avCount.textContent = brl(valAvarias);
+  avLista.innerHTML = avCiclo.length
+    ? avCiclo.map(r => `
+        <div style="padding:9px 14px;border-bottom:1px solid var(--border);font-size:12.5px;display:flex;justify-content:space-between;align-items:center">
+          <span>${r.codigo||'—'} · ${r.tipoAvaria||'—'} · ${Number(r.quantidade||0)} un.</span>
+          <span class="mono" style="font-weight:700;color:var(--accent)">${brl(Number(r.valorTotal||0))}</span>
+        </div>`).join('')
+    : '<div class="empty" style="padding:20px"><h3 style="font-size:13px;color:var(--text-3)">Nenhuma avaria no ciclo</h3></div>';
+
+  // Tabela consolidada todos os ciclos
+  finRenderConsolidado();
+}
+
+function finRenderVazio() {
+  document.getElementById('fin-kpis-row').innerHTML = '';
+  document.getElementById('fin-cartao-lista').innerHTML = '<div class="empty"><div class="empty-ico">💳</div><h3>Selecione um ciclo</h3></div>';
+  document.getElementById('fin-fretes-lista').innerHTML = '<div class="empty" style="padding:24px"><div class="empty-ico">🚚</div><h3>Selecione um ciclo</h3></div>';
+  document.getElementById('fin-avarias-lista').innerHTML = '<div class="empty" style="padding:24px"><div class="empty-ico">🚨</div><h3>Selecione um ciclo</h3></div>';
+  document.getElementById('fin-consol-tbody').innerHTML = '';
+  document.getElementById('fin-consol-count').textContent = '—';
+}
+
+function finRenderConsolidado() {
+  const brl = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+  // Agrupa todos os ciclos conhecidos
+  const todosCiclos = [...new Set([
+    ...[...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo),
+    ...FIN.cartoes.map(c=>c.ciclo),
+    ...FR.registros.map(r=>r.ciclo),
+    ...qRegistros.map(r=>r.ciclo),
+  ].filter(Boolean))].sort().reverse();
+
+  if (!todosCiclos.length) {
+    document.getElementById('fin-consol-tbody').innerHTML =
+      `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Sem dados</td></tr>`;
+    return;
+  }
+
+  document.getElementById('fin-consol-count').textContent = todosCiclos.length + ' ciclo' + (todosCiclos.length!==1?'s':'');
+
+  const cicloSel = document.getElementById('fin-sel-ciclo').value;
+
+  const linhas = todosCiclos.map(ciclo => {
+    const pedCiclo  = [...S.vdRaw,...S.omniRaw].filter(r => r.Ciclo === ciclo);
+    const pedCart   = pedCiclo.filter(r => r.Pagamento === CARTAO_CENTRAL);
+    const valCart   = pedCart.reduce((s,r) => s + (r.ValorLiquido||0), 0);
+    const cartSheets= FIN.cartoes.filter(c => c.ciclo === ciclo);
+    const autorizados = cartSheets.filter(c => c.status === 'autorizado').length;
+    const pendentes   = cartSheets.filter(c => c.status === 'pendente').length;
+    const valFr     = FR.registros.filter(r => r.ciclo && r.ciclo.includes(ciclo)).reduce((s,r)=>s+Number(r.valorFrete||0),0);
+    const valAv     = qRegistros.filter(r => r.ciclo === ciclo).reduce((s,r)=>s+Number(r.valorTotal||0),0);
+    const total     = valFr + valAv;
+    const ativo     = ciclo === cicloSel;
+
+    return `<tr style="${ativo?'background:var(--accent-bg)':''}">
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);font-weight:${ativo?700:400}">${ciclo}</td>
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right" class="mono">${pedCart.length}</td>
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right" class="mono">${brl(valCart)}</td>
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right;color:var(--green)">${autorizados}</td>
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right;color:${pendentes>0?'var(--accent)':'var(--text-3)'}">${pendentes}</td>
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right" class="mono">${brl(valFr)}</td>
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right;color:var(--accent)" class="mono">${brl(valAv)}</td>
+      <td style="padding:8px 13px;border-bottom:1px solid var(--border);text-align:right;font-weight:700" class="mono">${brl(total)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('fin-consol-tbody').innerHTML = linhas;
 }
 
 </script>
