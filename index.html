@@ -814,6 +814,69 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 
 /* Modal resposta cancelamento/devolução */
 .resp-modal-body { padding:18px; display:flex; flex-direction:column; gap:12px; }
+
+/* ═══════════════════════════════════════════════
+   AVISO DIÁRIO DE OCUPAÇÃO
+═══════════════════════════════════════════════ */
+.aviso-ocupacao {
+  background:var(--yellow-bg); border:1px solid #f0d070;
+  border-radius:var(--r); padding:14px 18px; margin-bottom:20px;
+  display:flex; align-items:center; gap:14px;
+}
+.aviso-ocupacao-ico { font-size:26px; flex-shrink:0; }
+.aviso-ocupacao-txt { flex:1; }
+.aviso-ocupacao-txt strong { display:block; font-size:13px; font-weight:700; color:var(--yellow); }
+.aviso-ocupacao-txt span   { font-size:12px; color:#7a5000; }
+.btn-dispensar {
+  padding:6px 14px; border-radius:var(--r-sm); font-size:12px; font-weight:600;
+  border:1px solid #f0d070; background:var(--yellow-bg); color:var(--yellow);
+  cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; white-space:nowrap;
+}
+.btn-dispensar:hover { background:var(--yellow); color:#fff; }
+
+/* ═══════════════════════════════════════════════
+   ABA COMERCIAL
+═══════════════════════════════════════════════ */
+.com-layout { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:900px){ .com-layout { grid-template-columns:1fr; } }
+
+.com-tabs { display:flex; gap:4px; margin-bottom:16px; }
+.com-tab {
+  padding:7px 18px; border-radius:var(--r-sm); font-size:13px; font-weight:500;
+  cursor:pointer; border:1px solid var(--border-strong);
+  background:var(--surface); color:var(--text-2); transition:all .15s;
+}
+.com-tab.active { background:var(--text-1); color:#fff; border-color:var(--text-1); }
+
+/* Card de devolução comercial */
+.dev-item {
+  padding:14px 18px; border-bottom:1px solid var(--border);
+  display:flex; flex-direction:column; gap:8px;
+}
+.dev-item:last-child { border-bottom:none; }
+.dev-item-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.dev-item-title { font-size:13px; font-weight:600; }
+.dev-item-meta  { font-size:11px; color:var(--text-3); font-family:'DM Mono',monospace; }
+.dev-item-motivo {
+  font-size:12px; color:var(--text-2); padding:7px 10px;
+  background:var(--surface-2); border-radius:var(--r-sm);
+  border-left:3px solid var(--accent-mid);
+}
+.dev-item-resposta {
+  font-size:12px; color:var(--text-2); padding:7px 10px;
+  background:var(--green-bg); border-radius:var(--r-sm);
+  border-left:3px solid var(--green);
+}
+.dev-resp-inline {
+  display:flex; gap:8px; margin-top:4px;
+}
+.dev-resp-inline textarea {
+  flex:1; padding:7px 10px; font-size:12.5px;
+  border:1px solid var(--border-strong); border-radius:var(--r-sm);
+  font-family:'DM Sans',sans-serif; resize:none; min-height:56px;
+  background:var(--surface); outline:none;
+}
+.dev-resp-inline textarea:focus { border-color:var(--green); }
 </style>
 </head>
 <body>
@@ -867,6 +930,7 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
     <button class="nav-tab" id="nav-pendencias" data-perfis="admin,operador,financeiro,comercial_consultor,comercial_gerente" onclick="goPage('pendencias',this)">
       🔔 Pendências <span class="pend-badge" id="nav-pend-badge" style="display:none">0</span>
     </button>
+    <button class="nav-tab" data-perfis="admin,comercial_consultor,comercial_gerente" onclick="goPage('comercial',this)">🛒 Comercial</button>
   </div>
   <div class="nav-right" style="display:flex;align-items:center;gap:12px">
     <span class="nav-clock" id="clock"></span>
@@ -977,6 +1041,16 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
         <option value="">Selecione o ciclo...</option>
       </select>
     </div>
+  </div>
+
+  <!-- Aviso diário de ocupação -->
+  <div id="aviso-ocupacao" class="aviso-ocupacao" style="display:none">
+    <div class="aviso-ocupacao-ico">🏭</div>
+    <div class="aviso-ocupacao-txt">
+      <strong>Atualização de estoque pendente</strong>
+      <span id="aviso-ocupacao-txt">A planilha de ocupação do estoque ainda não foi atualizada hoje. Importe a <strong>PosicaoEstoque</strong> do VD+ para manter o indicador atualizado.</span>
+    </div>
+    <button class="btn-dispensar" onclick="dispensarAvisoOcupacao()">Dispensar hoje</button>
   </div>
 
   <div id="ov-sem-exp" class="alert alert-warning" style="display:none">
@@ -1740,6 +1814,83 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════
+     COMERCIAL
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-comercial">
+  <div class="ph">
+    <div><h1>🛒 Comercial</h1><p>Devoluções e cancelamentos — visão do time comercial</p></div>
+    <button class="btn btn-ghost" style="font-size:12px" onclick="comCarregar()">↺ Atualizar</button>
+  </div>
+
+  <div class="com-tabs">
+    <button class="com-tab active" id="com-tab-dev"  onclick="comSwitchTab('dev',this)">↩ Devoluções</button>
+    <button class="com-tab"        id="com-tab-canc" onclick="comSwitchTab('canc',this)">❌ Cancelamentos</button>
+  </div>
+
+  <div id="com-loading" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px;display:none">
+    <span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--accent);width:20px;height:20px"></span>
+    <div style="margin-top:10px">Carregando...</div>
+  </div>
+
+  <!-- Devoluções -->
+  <div id="com-dev-panel">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+      <!-- Pendentes de resposta -->
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">↩ Aguardando sua resposta</span>
+          <span class="tcard-count" id="com-dev-pend-count">—</span>
+        </div>
+        <div id="com-dev-pend-list" style="max-height:520px;overflow-y:auto">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+
+      <!-- Respondidas -->
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">✅ Respondidas</span>
+          <span class="tcard-count" id="com-dev-resp-count">—</span>
+        </div>
+        <div id="com-dev-resp-list" style="max-height:520px;overflow-y:auto">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancelamentos -->
+  <div id="com-canc-panel" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+      <!-- Pendentes -->
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">❌ Aguardando operador</span>
+          <span class="tcard-count" id="com-canc-pend-count">—</span>
+        </div>
+        <div id="com-canc-pend-list" style="max-height:520px;overflow-y:auto">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+
+      <!-- Respondidos -->
+      <div class="tcard">
+        <div class="tcard-head">
+          <span class="tcard-title">📋 Respondidos</span>
+          <span class="tcard-count" id="com-canc-resp-count">—</span>
+        </div>
+        <div id="com-canc-resp-list" style="max-height:520px;overflow-y:auto">
+          <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <div class="toast" id="toast"></div>
@@ -1799,6 +1950,7 @@ function goPage(id, btn) {
   if (id === 'visao-geral') ovIniciar();
   if (id === 'expedicao')  expIniciar();
   if (id === 'pendencias') pendIniciar();
+  if (id === 'comercial')  comIniciar();
 }
 
 /* Relógio */
@@ -2816,6 +2968,8 @@ function ovIniciar() {
   if (!OV.hist2025ok) ovCarregarHistSheets();
   ovPopularCiclos();
   ovRender();
+  // Aviso diário de ocupação
+  setTimeout(verificarAvisoOcupacao, 500);
 }
 
 function ovPopularCiclos() {
@@ -3159,6 +3313,9 @@ function armProcessar(file){
         armState.dados={dataImportacao:hoje,totalPecas,caixasEstimadas,taxaOcupacao,status};
         armRenderDados(armState.dados,0); armMostrar('dados');
         mostrarToast('✅ Estoque atualizado!','ok');
+        // Esconde aviso diário pois acabou de atualizar
+        const avisoEl = document.getElementById('aviso-ocupacao');
+        if (avisoEl) avisoEl.style.display = 'none';
         document.getElementById('arm-file-input').value='';
       } else {mostrarToast('Erro ao gravar: '+json.erro,'err');armRenderEstado();}
     } catch(err){console.error(err);mostrarToast('Erro ao processar o arquivo.','err');armRenderEstado();}
@@ -3195,11 +3352,11 @@ const PERFIL_LABEL = {
 
 // Permissões por perfil: quais páginas pode acessar
 const PERFIL_PAGINAS = {
-  admin:               ['visao-geral','expedicao','producao','avarias','financeiro','fretes','pendencias'],
+  admin:               ['visao-geral','expedicao','producao','avarias','financeiro','fretes','pendencias','comercial'],
   operador:            ['visao-geral','expedicao','producao','avarias','fretes','pendencias'],
   financeiro:          ['visao-geral','expedicao','financeiro','pendencias'],
-  comercial_consultor: ['visao-geral','expedicao','pendencias'],
-  comercial_gerente:   ['visao-geral','expedicao','pendencias'],
+  comercial_consultor: ['visao-geral','expedicao','pendencias','comercial'],
+  comercial_gerente:   ['visao-geral','expedicao','pendencias','comercial'],
 };
 
 // Páginas somente leitura por perfil (sem upload, sem botões de ação)
@@ -4410,6 +4567,203 @@ async function confirmarCartao() {
     } else { mostrarToast(json.erro||'Erro.','err'); }
   } catch(err) { mostrarToast('Falha na conexão.','err'); }
   finally { btn.disabled=false; btn.innerHTML='💳 Confirmar autorização'; }
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   AVISO DIÁRIO DE OCUPAÇÃO
+═══════════════════════════════════════════════ */
+
+const AVISO_KEY = 'hub_aviso_ocupacao_dispensado';
+
+function verificarAvisoOcupacao() {
+  // Só mostra para admin e operador
+  if (!['admin','operador'].includes(SESSAO.perfil)) return;
+
+  const el = document.getElementById('aviso-ocupacao');
+  if (!el) return;
+
+  // Verifica se já foi dispensado HOJE
+  const dispensado = localStorage.getItem(AVISO_KEY);
+  const hoje = new Date().toISOString().split('T')[0];
+  if (dispensado === hoje) { el.style.display = 'none'; return; }
+
+  // Verifica se a armazenagem foi atualizada hoje
+  if (armState.dados) {
+    const dataImp = new Date(armState.dados.dataImportacao || armState.dados.registradoEm);
+    const dataImpStr = dataImp.toISOString().split('T')[0];
+    if (dataImpStr === hoje) { el.style.display = 'none'; return; }
+
+    // Calcula há quantos dias
+    const diasAtras = Math.floor((Date.now() - dataImp.getTime()) / 86400000);
+    const txt = document.getElementById('aviso-ocupacao-txt');
+    if (txt) {
+      txt.innerHTML = `A planilha de ocupação do estoque não é atualizada há <strong>${diasAtras} dia${diasAtras!==1?'s':''}</strong>. Importe a <strong>PosicaoEstoque</strong> do VD+ para manter o indicador atualizado.`;
+    }
+  }
+
+  el.style.display = 'flex';
+}
+
+function dispensarAvisoOcupacao() {
+  const hoje = new Date().toISOString().split('T')[0];
+  localStorage.setItem(AVISO_KEY, hoje);
+  document.getElementById('aviso-ocupacao').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════
+   ABA COMERCIAL
+═══════════════════════════════════════════════ */
+
+const COM = {
+  iniciado:  false,
+  tab:       'dev',
+};
+
+function comIniciar() {
+  if (!COM.iniciado) {
+    COM.iniciado = true;
+    comCarregar();
+  } else {
+    comRender();
+  }
+}
+
+function comSwitchTab(tab, btn) {
+  COM.tab = tab;
+  document.querySelectorAll('.com-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('com-dev-panel').style.display  = tab === 'dev'  ? 'block' : 'none';
+  document.getElementById('com-canc-panel').style.display = tab === 'canc' ? 'block' : 'none';
+}
+
+async function comCarregar() {
+  document.getElementById('com-loading').style.display = 'block';
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getPendencias');
+    const json = await resp.json();
+    if (json.sucesso) {
+      // Reutiliza os registros de PEND
+      PEND.registros = json.pendencias || [];
+      comRender();
+    }
+  } catch(err) {
+    console.error('Erro ao carregar comercial:', err);
+  } finally {
+    document.getElementById('com-loading').style.display = 'none';
+  }
+}
+
+function comRender() {
+  const devs  = PEND.registros.filter(p => p.tipo === 'devolucao');
+  const cancs = PEND.registros.filter(p => p.tipo === 'cancelamento');
+
+  // Devoluções
+  const devPend = devs.filter(p => p.status === 'pendente');
+  const devResp = devs.filter(p => p.status !== 'pendente');
+
+  document.getElementById('com-dev-pend-count').textContent = devPend.length + ' pendente' + (devPend.length!==1?'s':'');
+  document.getElementById('com-dev-resp-count').textContent = devResp.length + ' respondida' + (devResp.length!==1?'s':'');
+  document.getElementById('com-dev-pend-list').innerHTML = devPend.length
+    ? devPend.map(d => comRenderDevItem(d, true)).join('')
+    : '<div class="empty"><div class="empty-ico">✅</div><h3>Nenhuma pendente</h3></div>';
+  document.getElementById('com-dev-resp-list').innerHTML = devResp.length
+    ? devResp.map(d => comRenderDevItem(d, false)).join('')
+    : '<div class="empty"><div class="empty-ico">📋</div><h3>Nenhuma respondida ainda</h3></div>';
+
+  // Cancelamentos
+  const cancPend = cancs.filter(p => p.status === 'pendente');
+  const cancResp = cancs.filter(p => p.status !== 'pendente');
+
+  document.getElementById('com-canc-pend-count').textContent = cancPend.length + ' pendente' + (cancPend.length!==1?'s':'');
+  document.getElementById('com-canc-resp-count').textContent = cancResp.length + ' respondido' + (cancResp.length!==1?'s':'');
+  document.getElementById('com-canc-pend-list').innerHTML = cancPend.length
+    ? cancPend.map(c => comRenderCancItem(c)).join('')
+    : '<div class="empty"><div class="empty-ico">✅</div><h3>Nenhum pendente</h3></div>';
+  document.getElementById('com-canc-resp-list').innerHTML = cancResp.length
+    ? cancResp.map(c => comRenderCancItem(c)).join('')
+    : '<div class="empty"><div class="empty-ico">📋</div><h3>Nenhum respondido ainda</h3></div>';
+}
+
+function comRenderDevItem(d, podeResponder) {
+  const perfil = SESSAO.perfil;
+  const podeAcao = podeResponder && ['comercial_gerente','admin'].includes(perfil);
+
+  const respostaHtml = d.resposta
+    ? `<div class="dev-item-resposta">💬 <strong>${d.respondidoPor||'—'}:</strong> ${d.resposta} <span style="color:var(--text-3);font-size:10px">· ${fmtDataHoraBrasilia(d.respondidoEm)}</span></div>`
+    : '';
+
+  const formResp = podeAcao ? `
+    <div class="dev-resp-inline" id="dev-form-${d.id}" style="display:none">
+      <textarea placeholder="Digite sua resposta para o operador..." id="dev-resp-txt-${d.id}"></textarea>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="btn-pend ok" onclick="comResponderDev('${d.id}')">✅ Enviar</button>
+        <button class="btn-pend" onclick="document.getElementById('dev-form-${d.id}').style.display='none'">✕</button>
+      </div>
+    </div>` : '';
+
+  const btnResponder = podeAcao
+    ? `<button class="btn-pend ok" onclick="document.getElementById('dev-form-${d.id}').style.display='flex'">💬 Responder</button>`
+    : '';
+
+  const statusHtml = `<span class="pend-status ps-${d.status||'pendente'}">${d.status||'pendente'}</span>`;
+
+  return `
+    <div class="dev-item">
+      <div class="dev-item-head">
+        <div>
+          <div class="dev-item-title">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'} ${statusHtml}</div>
+          <div class="dev-item-meta">NF: ${d.notaFiscal||'—'} · Ciclo: ${d.ciclo||'—'} · Registrado por: ${d.solicitadoPor||'—'} · ${fmtDataHoraBrasilia(d.registradoEm)}</div>
+        </div>
+        ${btnResponder}
+      </div>
+      <div class="dev-item-motivo">📋 ${d.motivo||'—'}</div>
+      ${respostaHtml}
+      ${formResp}
+    </div>`;
+}
+
+function comRenderCancItem(c) {
+  const statusHtml = `<span class="pend-status ps-${c.status||'pendente'}">${c.status||'pendente'}</span>`;
+  const respostaHtml = c.resposta
+    ? `<div class="dev-item-resposta">💬 <strong>${c.respondidoPor||'—'}:</strong> ${c.resposta}</div>`
+    : '';
+  return `
+    <div class="dev-item">
+      <div class="dev-item-head">
+        <div>
+          <div class="dev-item-title">Pedido <span class="mono">${c.codigoPedido||'—'}</span> · ${c.nomePessoa||'—'} ${statusHtml}</div>
+          <div class="dev-item-meta">NF: ${c.notaFiscal||'—'} · Ciclo: ${c.ciclo||'—'} · Por: ${c.solicitadoPor||'—'} · ${fmtDataHoraBrasilia(c.registradoEm)}</div>
+        </div>
+      </div>
+      <div class="dev-item-motivo">📋 ${c.motivo||'—'}</div>
+      ${respostaHtml}
+    </div>`;
+}
+
+async function comResponderDev(id) {
+  const txt = document.getElementById('dev-resp-txt-' + id)?.value.trim();
+  if (!txt) { mostrarToast('Digite uma resposta.','err'); return; }
+
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
+      modulo:        'responderPendencia',
+      id,
+      status:        'aprovado',
+      resposta:      txt,
+      respondidoPor: SESSAO.nome,
+      respondidoEm:  agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('✅ Resposta enviada!','ok');
+      COM.iniciado = false;
+      comCarregar();
+      // Atualiza pendências também
+      PEND.iniciado = false;
+    } else { mostrarToast(json.erro||'Erro.','err'); }
+  } catch(err) { mostrarToast('Falha na conexão.','err'); }
 }
 
 </script>
