@@ -722,6 +722,9 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
   padding:12px 18px; border-top:1px solid var(--border);
   display:flex; gap:8px; justify-content:flex-end;
 }
+
+/* Sync expedição */
+.btn-sync-loading { opacity:.6; cursor:not-allowed; }
 </style>
 </head>
 <body>
@@ -1132,8 +1135,23 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 ═══════════════════════════════════════════════ -->
 <div class="page" id="page-expedicao">
   <div class="ph">
-    <div><h1>Expedição</h1><p>Carregue o arquivo <strong>ConsultaPedidos</strong> exportado do ERP VD+</p></div>
-    <button class="btn btn-ghost" id="btn-reload" style="display:none" onclick="resetUpload()">↩ Nova planilha</button>
+    <div>
+      <h1>Expedição</h1>
+      <p id="exp-subtitulo">Carregue o arquivo <strong>ConsultaPedidos</strong> exportado do ERP VD+</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="exp-sync-status" style="font-size:11px;color:var(--text-3)"></span>
+      <button class="btn btn-ghost" id="btn-sincronizar" style="display:none;font-size:12px;background:var(--green-bg);border-color:#9fd4b8;color:var(--green)" onclick="sincronizarExpedicao()">
+        ☁️ Sincronizar com Sheets
+      </button>
+      <button class="btn btn-ghost" id="btn-reload" style="display:none" onclick="resetUpload()">↩ Nova planilha</button>
+    </div>
+  </div>
+
+  <!-- Banner: dados carregados do Sheets -->
+  <div id="exp-banner-sheets" class="alert alert-success" style="display:none">
+    <span class="alert-ico">☁️</span>
+    <span id="exp-banner-txt">Dados carregados do Sheets.</span>
   </div>
 
   <div id="exp-alert"></div>
@@ -1524,7 +1542,7 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 // ============================================================
 // URLs Apps Script
 // ============================================================
-const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbzWA76r-iBq5MZe9MX9CfFfhpbQ0LtiV6bEc7iPzgJA3d6Af6zbzG0y5CZlaDVmjP6OGQ/exec";
+const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbzAzZpDfw6igItDKFXa1r6vLD07_h2O9DT1Sq7r1Sd-KayZiCchqo_X0klyeAwO8lOlVQ/exec";
 const AVARIAS_URL     = SCRIPT_URL;
 const FRETES_URL      = SCRIPT_URL;
 const ARMAZENAGEM_URL = SCRIPT_URL;
@@ -1569,6 +1587,7 @@ function goPage(id, btn) {
   if (id === 'avarias')    qIniciar();
   if (id === 'fretes')     frIniciar();
   if (id === 'visao-geral') ovIniciar();
+  if (id === 'expedicao')  expIniciar();
 }
 
 /* Relógio */
@@ -1657,6 +1676,16 @@ function processFile(file){
       document.getElementById('upload-zone').style.display = 'none';
       document.getElementById('exp-content').style.display = 'block';
       document.getElementById('btn-reload').style.display = '';
+
+      // Mostra botão de sincronização para admin e operador
+      if (['admin','operador'].includes(SESSAO.perfil)) {
+        const btnSync = document.getElementById('btn-sincronizar');
+        if (btnSync) { btnSync.style.display = ''; }
+      }
+
+      // Esconde banner do Sheets (dados locais têm prioridade)
+      const bannerSheets = document.getElementById('exp-banner-sheets');
+      if (bannerSheets) bannerSheets.style.display = 'none';
 
       populateFilters();
       applyFilters();
@@ -3528,6 +3557,171 @@ async function carregarCodigosAtencaoInicial() {
 }
 
 /* Códigos de atenção aplicados diretamente no renderVD abaixo */
+
+
+
+/* ═══════════════════════════════════════════════
+   PERSISTÊNCIA CENTRAL — EXPEDIÇÃO
+═══════════════════════════════════════════════ */
+
+const EXP_SHEET = {
+  sincronizando: false,
+  ultimaSync: null,
+  totalSheets: 0,
+};
+
+/* Chamado ao entrar na aba Expedição */
+function expIniciar() {
+  // Só carrega do Sheets se não tiver dados locais ainda
+  if (S.vdRaw.length === 0 && S.omniRaw.length === 0) {
+    expCarregarDoSheets();
+  }
+}
+
+/* Carrega dados do Sheets automaticamente */
+async function expCarregarDoSheets() {
+  const banner = document.getElementById('exp-banner-sheets');
+  const bannerTxt = document.getElementById('exp-banner-txt');
+  const subtitulo = document.getElementById('exp-subtitulo');
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const resp = await fetch(SCRIPT_URL + '?modulo=expedicao', { signal: controller.signal });
+    clearTimeout(timeout);
+    const json = await resp.json();
+
+    if (json.sucesso && json.pedidos && json.pedidos.length > 0) {
+      // Converte registros do Sheets para o formato interno
+      const pedidos = json.pedidos.map(p => ({
+        CodigoPedido:       p.CodigoPedido,
+        CodExterno:         p.CodExterno,
+        NomePessoa:         p.NomePessoa,
+        Pessoa:             String(p.Pessoa||'').trim(),
+        SituaçãoComercial:  p.SituacaoComercial,
+        MeioCaptacao:       p.MeioCaptacao,
+        NotaFiscal:         p.NotaFiscal,
+        PrevisaoEntrega:    p.PrevisaoEntrega,
+        DataEntrega:        p.DataEntrega,
+        DataAprovacao:      p.DataAprovacao,
+        DataFaturamento:    p.DataFaturamento,
+        Lote:               p.Lote,
+        Ciclo:              p.Ciclo,
+        Bairro:             p.Bairro,
+        Estrutura:          p.Estrutura,
+        Pagamento:          p.Pagamento,
+        TipoEntrega:        p.TipoEntrega,
+        Recebedor:          p.Recebedor,
+        isMad:              MADALENA.has(String(p.Pessoa||'').trim()),
+        _dataAprovacaoRaw:  p.DataAprovacao,
+        _dataFaturamentoRaw:p.DataFaturamento,
+        _dataEntregaRaw:    p.DataEntrega,
+      }));
+
+      const ativos = pedidos.filter(r => r.SituaçãoComercial !== 'Cancelado');
+      S.allRaw  = ativos;
+      S.vdRaw   = ativos.filter(r => r.MeioCaptacao !== 'Pedido Omnichannel');
+      S.omniRaw = ativos.filter(r => r.MeioCaptacao === 'Pedido Omnichannel');
+
+      EXP_SHEET.ultimaSync   = json.ultimaSync;
+      EXP_SHEET.totalSheets  = ativos.length;
+
+      // Esconde upload, mostra dados
+      document.getElementById('upload-zone').style.display = 'none';
+      document.getElementById('exp-content').style.display = 'block';
+
+      // Mostra banner com info da última sync
+      const dataSync = json.ultimaSync ? new Date(json.ultimaSync).toLocaleString('pt-BR') : '—';
+      bannerTxt.innerHTML = `Dados carregados do Sheets — <strong>${ativos.length.toLocaleString('pt-BR')} pedidos</strong> · Última sincronização: ${dataSync}`;
+      banner.style.display = 'flex';
+
+      // Atualiza subtítulo
+      if (subtitulo) subtitulo.innerHTML = `Dados sincronizados do Sheets · ${dataSync}`;
+
+      // Se for operador ou admin, mostra botão de nova planilha
+      if (['admin','operador'].includes(SESSAO.perfil)) {
+        document.getElementById('btn-reload').style.display = '';
+      }
+
+      populateFilters();
+      applyFilters();
+      frRenderPendentes();
+
+      // Atualiza visão geral se estiver ativa
+      ovPopularCiclos();
+    }
+  } catch(err) {
+    console.warn('Expedição Sheets não disponível:', err.name);
+    // Mostra upload normalmente se não conseguir carregar
+  }
+}
+
+/* Sincroniza pedidos locais com o Sheets (merge incremental) */
+async function sincronizarExpedicao() {
+  if (EXP_SHEET.sincronizando) return;
+  if (S.allRaw.length === 0) { mostrarToast('Carregue uma planilha primeiro.', 'err'); return; }
+
+  EXP_SHEET.sincronizando = true;
+  const btn = document.getElementById('btn-sincronizar');
+  btn.classList.add('btn-sync-loading');
+  btn.innerHTML = '<span class="spin" style="border-top-color:var(--green)"></span> Sincronizando...';
+
+  try {
+    // Prepara payload — apenas os campos necessários
+    const pedidos = S.allRaw.map(p => ({
+      CodigoPedido:      p.CodigoPedido,
+      CodExterno:        p.CodExterno       || '',
+      NomePessoa:        p.NomePessoa       || '',
+      Pessoa:            p.Pessoa           || '',
+      SituacaoComercial: p.SituaçãoComercial|| '',
+      MeioCaptacao:      p.MeioCaptacao     || '',
+      NotaFiscal:        p.NotaFiscal       || '',
+      PrevisaoEntrega:   p.PrevisaoEntrega  || '',
+      DataEntrega:       p.DataEntrega      || '',
+      DataAprovacao:     p.DataAprovacao    || '',
+      DataFaturamento:   p.DataFaturamento  || '',
+      Lote:              p.Lote             || '',
+      Ciclo:             p.Ciclo            || '',
+      Bairro:            p.Bairro           || '',
+      Estrutura:         p.Estrutura        || '',
+      Pagamento:         p.Pagamento        || '',
+      TipoEntrega:       p.TipoEntrega      || '',
+      Recebedor:         p.Recebedor        || '',
+    }));
+
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ modulo: 'sincronizarExpedicao', pedidos }),
+    });
+    const json = await resp.json();
+
+    if (json.sucesso) {
+      const msg = json.novos > 0
+        ? `☁️ ${json.novos.toLocaleString('pt-BR')} pedidos novos sincronizados · ${json.total.toLocaleString('pt-BR')} total`
+        : `☁️ Tudo atualizado — nenhum pedido novo`;
+      mostrarToast('✅ Sincronizado!', 'ok');
+
+      // Atualiza banner
+      const dataSync = new Date().toLocaleString('pt-BR');
+      document.getElementById('exp-banner-txt').innerHTML =
+        `Dados sincronizados — <strong>${S.allRaw.length.toLocaleString('pt-BR')} pedidos</strong> · Última sincronização: ${dataSync}`;
+      document.getElementById('exp-banner-sheets').style.display = 'flex';
+      document.getElementById('exp-sync-status').textContent = `${json.novos} novos · ${json.atualizados} atualizados`;
+
+      // Esconde botão sync após sincronizar
+      btn.style.display = 'none';
+    } else {
+      mostrarToast('Erro: ' + json.erro, 'err');
+    }
+  } catch(err) {
+    mostrarToast('Falha na conexão.', 'err');
+    console.error(err);
+  } finally {
+    EXP_SHEET.sincronizando = false;
+    btn.classList.remove('btn-sync-loading');
+    btn.innerHTML = '☁️ Sincronizar com Sheets';
+  }
+}
 
 </script>
 </body>
