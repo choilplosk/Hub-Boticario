@@ -3565,7 +3565,7 @@ function entrarNoDashboard() {
     try {
       const r = await fetch(SCRIPT_URL + '?modulo=getPendencias');
       const j = await r.json();
-      if (j.sucesso) { PEND.registros = j.pendencias || []; atualizarBadgePend(); }
+      if (j.sucesso) { PEND.registros = (j.pendencias || []).map(r=>({...r,ciclo:normalizarCiclo(r.ciclo)||r.ciclo})); atualizarBadgePend(); }
     } catch(e) {}
   }, 2000);
 }
@@ -4297,7 +4297,7 @@ async function pendCarregar() {
     ]);
     const [jPend, jAutoriz] = await Promise.all([rPend.json(), rAutoriz.json()]);
 
-    if (jPend.sucesso)   PEND.registros = jPend.pendencias || [];
+    if (jPend.sucesso)   PEND.registros = (jPend.pendencias || []).map(r=>({...r,ciclo:normalizarCiclo(r.ciclo)||r.ciclo}));
     if (jAutoriz.sucesso) {
       jAutoriz.autoriz.forEach(a => {
         CARTOES_AUTORIZADOS[String(a.codigoPedido)] = {
@@ -4461,7 +4461,7 @@ function renderItemPend(item, tipo) {
           ${statusHtml}
         </div>
         <div class="pend-item-meta">
-          NF: ${item.notaFiscal||'—'} · Ciclo: ${item.ciclo||'—'} · ${fmtDataHoraBrasilia(item.registradoEm)}
+          NF: ${item.notaFiscal||'—'} · Ciclo: ${normalizarCiclo(item.ciclo)||item.ciclo||'—'} · ${fmtDataHoraBrasilia(item.registradoEm)}
           ${item.solicitadoPor ? ` · Por: ${item.solicitadoPor}` : ''}
         </div>
         ${item.motivo ? `<div class="pend-item-obs">${item.motivo}</div>` : ''}
@@ -4739,7 +4739,7 @@ async function comCarregar() {
     const json = await resp.json();
     if (json.sucesso) {
       // Reutiliza os registros de PEND
-      PEND.registros = json.pendencias || [];
+      PEND.registros = (json.pendencias || []).map(r=>({...r,ciclo:normalizarCiclo(r.ciclo)||r.ciclo}));
       comRender();
     }
   } catch(err) {
@@ -4808,7 +4808,7 @@ function comRenderDevItem(d, podeResponder) {
       <div class="dev-item-head">
         <div>
           <div class="dev-item-title">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'} ${statusHtml}</div>
-          <div class="dev-item-meta">NF: ${d.notaFiscal||'—'} · Ciclo: ${d.ciclo||'—'} · Registrado por: ${d.solicitadoPor||'—'} · ${fmtDataHoraBrasilia(d.registradoEm)}</div>
+          <div class="dev-item-meta">NF: ${d.notaFiscal||'—'} · Ciclo: ${normalizarCiclo(d.ciclo)||d.ciclo||'—'} · Registrado por: ${d.solicitadoPor||'—'} · ${fmtDataHoraBrasilia(d.registradoEm)}</div>
         </div>
         ${btnResponder}
       </div>
@@ -4828,7 +4828,7 @@ function comRenderCancItem(c) {
       <div class="dev-item-head">
         <div>
           <div class="dev-item-title">Pedido <span class="mono">${c.codigoPedido||'—'}</span> · ${c.nomePessoa||'—'} ${statusHtml}</div>
-          <div class="dev-item-meta">NF: ${c.notaFiscal||'—'} · Ciclo: ${c.ciclo||'—'} · Por: ${c.solicitadoPor||'—'} · ${fmtDataHoraBrasilia(c.registradoEm)}</div>
+          <div class="dev-item-meta">NF: ${c.notaFiscal||'—'} · Ciclo: ${normalizarCiclo(c.ciclo)||c.ciclo||'—'} · Por: ${c.solicitadoPor||'—'} · ${fmtDataHoraBrasilia(c.registradoEm)}</div>
         </div>
       </div>
       <div class="dev-item-motivo">📋 ${c.motivo||'—'}</div>
