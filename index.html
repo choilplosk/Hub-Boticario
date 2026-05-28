@@ -2146,10 +2146,14 @@ function processFile(file){
 function fmtDate(v){
   if(!v) return '';
   if(v instanceof Date) return v.toLocaleDateString('pt-BR');
-  const s = String(v);
+  const s = String(v).trim();
+  if(!s || s === 'null' || s === 'undefined') return '';
+  // Já formatado dd/mm/aaaa
   if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s.slice(0,10);
-  if(s.includes('-')||s.includes('T')){ const d=new Date(s); if(!isNaN(d)) return d.toLocaleDateString('pt-BR'); }
-  return s;
+  // Tentar parsear qualquer formato (ISO, GMT, Date string)
+  const d = new Date(s);
+  if(!isNaN(d)) return d.toLocaleDateString('pt-BR', {timeZone:'America/Sao_Paulo'});
+  return '';
 }
 
 /* Converte string dd/mm/aaaa ou Date para objeto Date */
@@ -2723,7 +2727,7 @@ async function qCarregar(){
   try {
     const resp = await fetch(AVARIAS_URL);
     const json = await resp.json();
-    if(json.sucesso){ qRegistros = json.registros; qPopularCiclos(); qRender(); }
+    if(json.sucesso){ qRegistros = (json.registros || []).map(r => ({...r, ciclo: normalizarCiclo(r.ciclo) || r.ciclo})); qPopularCiclos(); qRender(); }
   } catch(err){ console.error('Erro ao carregar avarias:', err); }
 }
 
@@ -2940,7 +2944,7 @@ async function frCarregar(){
   try {
     const resp = await fetch(FRETES_URL + '?modulo=frete');
     const json = await resp.json();
-    if(json.sucesso){ FR.registros = json.registros || []; frPopularCiclos(); frRender(); }
+    if(json.sucesso){ FR.registros = (json.registros || []).map(r => ({...r, ciclo: normalizarCiclo(r.ciclo) || r.ciclo})); frPopularCiclos(); frRender(); }
   } catch(err){ console.error('Erro ao carregar fretes:', err); }
 }
 
@@ -4073,15 +4077,16 @@ async function expCarregarDoSheets() {
         SituaçãoComercial:  p.SituacaoComercial,
         MeioCaptacao:       p.MeioCaptacao,
         NotaFiscal:         p.NotaFiscal,
-        PrevisaoEntrega:    p.PrevisaoEntrega,
-        DataEntrega:        p.DataEntrega,
-        DataAprovacao:      p.DataAprovacao,
-        DataFaturamento:    p.DataFaturamento,
+        PrevisaoEntrega:    fmtDate(p.PrevisaoEntrega),
+        DataEntrega:        fmtDate(p.DataEntrega),
+        DataAprovacao:      fmtDate(p.DataAprovacao),
+        DataFaturamento:    fmtDate(p.DataFaturamento),
         Lote:               p.Lote,
         Ciclo:              normalizarCiclo(p.Ciclo) || String(p.Ciclo||''),
         Bairro:             p.Bairro,
         Estrutura:          p.Estrutura,
         Pagamento:          p.Pagamento,
+        ValorLiquido:       parseFloat(p.ValorLiquido||p.valorLiquido||0)||0,
         TipoEntrega:        p.TipoEntrega,
         Recebedor:          p.Recebedor,
         isMad:              MADALENA.has(String(p.Pessoa||'').trim()),
@@ -4894,9 +4899,9 @@ async function finCarregar() {
     safe(SCRIPT_URL + '?modulo=frete'),
   ]);
 
-  if (jCart.sucesso) FIN.cartoes  = jCart.cartoes   || [];
-  if (jAv.sucesso)   qRegistros   = jAv.registros   || [];
-  if (jFr.sucesso)   FR.registros = jFr.registros   || [];
+  if (jCart.sucesso) FIN.cartoes  = (jCart.cartoes  || []).map(r => ({...r, ciclo: normalizarCiclo(r.ciclo) || r.ciclo}));
+  if (jAv.sucesso)   qRegistros   = (jAv.registros  || []).map(r => ({...r, ciclo: normalizarCiclo(r.ciclo) || r.ciclo}));
+  if (jFr.sucesso)   FR.registros = (jFr.registros  || []).map(r => ({...r, ciclo: normalizarCiclo(r.ciclo) || r.ciclo}));
 
   finPopularCiclos();
   finRender();
@@ -5092,12 +5097,12 @@ function finRenderVazio() {
 function finRenderConsolidado() {
   const brl = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
-  // Agrupa todos os ciclos conhecidos
+  // Agrupa todos os ciclos conhecidos (normalizados)
   const todosCiclos = [...new Set([
-    ...[...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo),
-    ...FIN.cartoes.map(c=>c.ciclo),
-    ...FR.registros.map(r=>r.ciclo),
-    ...qRegistros.map(r=>r.ciclo),
+    ...[...S.vdRaw,...S.omniRaw].map(r=>normalizarCiclo(r.Ciclo)||r.Ciclo),
+    ...FIN.cartoes.map(c=>normalizarCiclo(c.ciclo)||c.ciclo),
+    ...FR.registros.map(r=>normalizarCiclo(r.ciclo)||r.ciclo),
+    ...qRegistros.map(r=>normalizarCiclo(r.ciclo)||r.ciclo),
   ].filter(Boolean))].sort().reverse();
 
   if (!todosCiclos.length) {
