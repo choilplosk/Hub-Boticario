@@ -2310,9 +2310,10 @@ function ovRenderEntregues(ciclo, pedidos){
   const tot2026  = pedidos.length;
   const pct2026  = tot2026 ? (entg2026/tot2026*100).toFixed(1) : 0;
 
-  // Busca dados 2025 para o ciclo
+  // Busca dados 2025 para o ciclo (comparação normalizada)
+  const normCiclo = v => String(v||'').trim().toUpperCase();
   const d2025 = OV.hist2025ok && ciclo
-    ? OV.hist2025.find(c => String(c.ciclo) === ciclo)
+    ? OV.hist2025.find(c => normCiclo(c.ciclo) === normCiclo(ciclo))
     : null;
 
   const entg2025 = d2025 ? Number(d2025.entregues) : null;
@@ -2819,7 +2820,12 @@ function qRenderHist(dados){
 
 function qFmtData(v){
   if(!v) return '—';
-  try{ const [a,m,d]=String(v).split('-'); return `${d}/${m}/${a}`; } catch{ return v; }
+  try{
+    const s = String(v).split('T')[0];
+    const [a,m,d] = s.split('-');
+    if(a && m && d) return `${d.padStart(2,'0')}/${m.padStart(2,'0')}/${a}`;
+  } catch(e){}
+  return String(v).replace(/\s*GMT[+-]\d+/gi,'').trim();
 }
 
 /* ═══════════════════════════════════════════════
@@ -3031,7 +3037,12 @@ function frRenderHist(dados){
 
 function frFmtData(v){
   if(!v) return '—';
-  try{ const [a,m,d]=String(v).split('-'); return `${d}/${m}/${a}`; } catch{ return String(v); }
+  try{
+    const s = String(v).split('T')[0]; // remove parte de hora se vier ISO
+    const [a,m,d] = s.split('-');
+    if(a && m && d) return `${d.padStart(2,'0')}/${m.padStart(2,'0')}/${a}`;
+  } catch(e){}
+  return String(v).replace(/\s*GMT[+-]\d+/gi,'').trim();
 }
 
 /* ═══════════════════════════════════════════════
@@ -3049,8 +3060,8 @@ function ovIniciar() {
 }
 
 function ovPopularCiclos() {
-  const ciclos2026 = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo).filter(Boolean))].sort().reverse();
-  const ciclos2025 = [...new Set(OV.hist2025.map(r=>r.ciclo).filter(Boolean))].sort().reverse();
+  const ciclos2026 = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>normalizarCiclo(r.Ciclo)).filter(Boolean))].sort().reverse();
+  const ciclos2025 = [...new Set(OV.hist2025.map(r=>normalizarCiclo(r.ciclo)).filter(Boolean))].sort().reverse();
   const todos = [...new Set([...ciclos2026,...ciclos2025])].sort().reverse();
   const sel = document.getElementById('ov-sel-ciclo');
   const cur = sel.value;
@@ -3090,7 +3101,8 @@ function ovRenderKPIsCiclo(ciclo) {
   const omni2026   = S.omniRaw.filter(r => r.Ciclo === ciclo);
   const entg2026   = todos2026.filter(r => r.SituaçãoComercial === 'Entregue').length;
 
-  const todos2025obj = OV.hist2025.find(c => String(c.ciclo) === ciclo);
+  const _normC = v => String(v||'').trim().toUpperCase();
+  const todos2025obj = OV.hist2025.find(c => _normC(c.ciclo) === _normC(ciclo));
   const todos2025    = todos2025obj ? Number(todos2025obj.total)    : 0;
   const entg2025     = todos2025obj ? Number(todos2025obj.entregues): 0;
 
@@ -3180,7 +3192,8 @@ function ovRenderGrafico() {
 
 function ovRenderComparativo() {
   const wrap = document.getElementById('ov-comparativo-wrap');
-  if (!OV.hist2025ok) { wrap.style.display = 'none'; return; }
+  // Mostra 2026 mesmo sem histórico 2025; oculta só se não houver dado algum
+  if (!S.vdRaw.length && !S.omniRaw.length && !OV.hist2025ok) { wrap.style.display = 'none'; return; }
 
   const tot2026  = [...S.vdRaw,...S.omniRaw].length;
   const tot2025  = OV.hist2025.reduce((s,c)=>s+Number(c.total||0),0);
@@ -3192,18 +3205,18 @@ function ovRenderComparativo() {
   const frVal2026 = FR.registros.reduce((s,r)=>s+Number(r.valorFrete||0),0);
 
   function compCard(lbl, v26, v25, cor, fmt) {
-    const delta = v25 ? ((v26-v25)/v25*100) : 0;
-    const pos = delta >= 0;
     const fv = fmt==='brl' ? v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : v => v.toLocaleString('pt-BR');
+    const sub2025 = OV.hist2025ok
+      ? (() => {
+          const delta = v25 ? ((v26-v25)/v25*100) : 0;
+          const pos = delta >= 0;
+          return `2025: ${fv(v25)} <span style="margin-left:6px;font-weight:700;color:${pos?'var(--green)':'var(--accent)'}">${pos?'↑':'↓'} ${Math.abs(delta).toFixed(1)}%</span>`;
+        })()
+      : `<span style="color:var(--text-3);font-style:italic">2025: carregando...</span>`;
     return `<div class="kpi c-${cor}">
       <div class="kpi-lbl">${lbl}</div>
       <div class="kpi-val" style="font-size:20px">${fv(v26)}</div>
-      <div class="kpi-sub" style="margin-top:6px">
-        2025: ${fv(v25)}
-        <span style="margin-left:6px;font-weight:700;color:${pos?'var(--green)':'var(--accent)'}">
-          ${pos?'↑':'↓'} ${Math.abs(delta).toFixed(1)}%
-        </span>
-      </div>
+      <div class="kpi-sub" style="margin-top:6px">${sub2025}</div>
     </div>`;
   }
 
@@ -3430,7 +3443,7 @@ const PERFIL_LABEL = {
 const PERFIL_PAGINAS = {
   admin:               ['visao-geral','expedicao','producao','avarias','financeiro','fretes','pendencias','comercial'],
   operador:            ['visao-geral','expedicao','producao','avarias','fretes','pendencias'],
-  financeiro:          ['visao-geral','expedicao','financeiro','pendencias'],
+  financeiro:          ['expedicao','financeiro','pendencias'],
   comercial_consultor: ['visao-geral','expedicao','pendencias','comercial'],
   comercial_gerente:   ['visao-geral','expedicao','pendencias','comercial'],
 };
@@ -4884,14 +4897,26 @@ async function finCarregar() {
   }
 }
 
+function normalizarCiclo(v) {
+  if (!v) return null;
+  const s = String(v);
+  // Se for data ISO completa (ex: 2025-12-01T03:00:00.000Z) — descarta
+  if (s.includes('T') || s.includes('Z')) return null;
+  // Se for só data YYYY-MM-DD — descarta
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  // Outros formatos inválidos
+  if (s.length < 3) return null;
+  return s.trim();
+}
+
 function finPopularCiclos() {
   // Ciclos do upload local
-  const ciclosExp = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo).filter(Boolean))].sort().reverse();
+  const ciclosExp = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>normalizarCiclo(r.Ciclo)).filter(Boolean))].sort().reverse();
   // Ciclos dos cartões no Sheets
-  const ciclosCart = [...new Set(FIN.cartoes.map(c=>c.ciclo).filter(Boolean))].sort().reverse();
+  const ciclosCart = [...new Set(FIN.cartoes.map(c=>normalizarCiclo(c.ciclo)).filter(Boolean))].sort().reverse();
   // Ciclos de fretes e avarias
-  const ciclosFr = [...new Set(FR.registros.map(r=>r.ciclo).filter(Boolean))].sort().reverse();
-  const ciclosAv = [...new Set(qRegistros.map(r=>r.ciclo).filter(Boolean))].sort().reverse();
+  const ciclosFr = [...new Set(FR.registros.map(r=>normalizarCiclo(r.ciclo)).filter(Boolean))].sort().reverse();
+  const ciclosAv = [...new Set(qRegistros.map(r=>normalizarCiclo(r.ciclo)).filter(Boolean))].sort().reverse();
 
   const todos = [...new Set([...ciclosExp,...ciclosCart,...ciclosFr,...ciclosAv])].sort().reverse();
 
@@ -4922,8 +4947,14 @@ function finRender() {
   const frCiclo     = FR.registros.filter(r => r.ciclo && r.ciclo.includes(ciclo));
   const avCiclo     = qRegistros.filter(r => r.ciclo === ciclo);
 
-  // Pedidos cartão do upload local (tem ValorLiquido)
-  const pedCartao   = pedCiclo.filter(r => r.Pagamento === CARTAO_CENTRAL);
+  // Pedidos cartão — upload local tem ValorLiquido; cartões do Sheets são cruzados
+  const pedCartaoLocal = pedCiclo.filter(r => r.Pagamento === CARTAO_CENTRAL);
+  // Cartões do Sheets que não estão no upload: gera objeto sintético
+  const codsLocal = new Set(pedCartaoLocal.map(p=>String(p.CodigoPedido)));
+  const cartaoSemUpload = cartCiclo
+    .filter(c => !codsLocal.has(String(c.pedido)))
+    .map(c => ({ CodigoPedido: c.pedido, NomePessoa: c.revendedor||'—', ValorLiquido: Number(c.valorLiquido||c.valor||0), Pagamento: CARTAO_CENTRAL }));
+  const pedCartao   = [...pedCartaoLocal, ...cartaoSemUpload];
   const valCartao   = pedCartao.reduce((s,r) => s + (r.ValorLiquido||0), 0);
 
   // Autorizados vs pendentes
@@ -4949,7 +4980,7 @@ function finRender() {
       <div class="kpi-sub">${brl(valCartao)} valor líquido</div>
     </div>
     <div class="kpi c-green">
-      <div class="kpi-lbl">Autorizados</div>
+      <div class="kpi-lbl">Cartões Autorizados</div>
       <div class="kpi-val">${autorizados.toLocaleString('pt-BR')}</div>
       <div class="kpi-sub">${pendentes} pendente${pendentes!==1?'s':''}</div>
     </div>
