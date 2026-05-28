@@ -4877,24 +4877,29 @@ function finIniciar() {
 }
 
 async function finCarregar() {
-  try {
-    // Carrega cartões do Sheets em paralelo com avarias e fretes
-    const [rCart, rAv, rFr] = await Promise.all([
-      fetch(SCRIPT_URL + '?modulo=getAllCartoes'),
-      fetch(SCRIPT_URL + '?modulo=avarias'),
-      fetch(SCRIPT_URL + '?modulo=frete'),
-    ]);
-    const [jCart, jAv, jFr] = await Promise.all([rCart.json(), rAv.json(), rFr.json()]);
+  // Fetches independentes: falha em um não derruba os outros
+  const safe = async (url) => {
+    try {
+      const r = await fetch(url);
+      return await r.json();
+    } catch(e) {
+      console.warn('finCarregar fetch falhou:', url, e.message);
+      return { sucesso: false };
+    }
+  };
 
-    if (jCart.sucesso) FIN.cartoes   = jCart.cartoes   || [];
-    if (jAv.sucesso)   qRegistros    = jAv.registros   || [];
-    if (jFr.sucesso)   FR.registros  = jFr.registros   || [];
+  const [jCart, jAv, jFr] = await Promise.all([
+    safe(SCRIPT_URL + '?modulo=getAllCartoes'),
+    safe(SCRIPT_URL + '?modulo=avarias'),
+    safe(SCRIPT_URL + '?modulo=frete'),
+  ]);
 
-    finPopularCiclos();
-    finRender();
-  } catch(err) {
-    console.error('Erro ao carregar financeiro:', err);
-  }
+  if (jCart.sucesso) FIN.cartoes  = jCart.cartoes   || [];
+  if (jAv.sucesso)   qRegistros   = jAv.registros   || [];
+  if (jFr.sucesso)   FR.registros = jFr.registros   || [];
+
+  finPopularCiclos();
+  finRender();
 }
 
 function normalizarCiclo(v) {
