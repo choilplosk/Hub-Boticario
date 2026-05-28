@@ -4078,7 +4078,7 @@ async function expCarregarDoSheets() {
         DataAprovacao:      p.DataAprovacao,
         DataFaturamento:    p.DataFaturamento,
         Lote:               p.Lote,
-        Ciclo:              p.Ciclo,
+        Ciclo:              normalizarCiclo(p.Ciclo) || String(p.Ciclo||''),
         Bairro:             p.Bairro,
         Estrutura:          p.Estrutura,
         Pagamento:          p.Pagamento,
@@ -4904,14 +4904,25 @@ async function finCarregar() {
 
 function normalizarCiclo(v) {
   if (!v) return null;
-  const s = String(v);
-  // Se for data ISO completa (ex: 2025-12-01T03:00:00.000Z) — descarta
-  if (s.includes('T') || s.includes('Z')) return null;
-  // Se for só data YYYY-MM-DD — descarta
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  const s = String(v).trim();
+
+  // Formato "Wed Jul 01 2026 00:00:00 GMT-0300 ..." — primeiro dia do mês = ciclo MM/AAAA
+  const meses = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',
+                 Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  const mDate = s.match(/^\w{3}\s+(\w{3})\s+\d{2}\s+(\d{4})/);
+  if (mDate && meses[mDate[1]]) return meses[mDate[1]] + '/' + mDate[2];
+
+  // Formato ISO completa (ex: 2025-12-01T03:00:00.000Z) — converte para MM/AAAA
+  const mISO = s.match(/^(\d{4})-(\d{2})-\d{2}T/);
+  if (mISO) return mISO[2] + '/' + mISO[1];
+
+  // Formato só data YYYY-MM-DD — converte para MM/AAAA
+  const mYMD = s.match(/^(\d{4})-(\d{2})-\d{2}$/);
+  if (mYMD) return mYMD[2] + '/' + mYMD[1];
+
   // Outros formatos inválidos
   if (s.length < 3) return null;
-  return s.trim();
+  return s;
 }
 
 function finPopularCiclos() {
