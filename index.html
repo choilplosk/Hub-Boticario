@@ -1536,19 +1536,6 @@ function estatFinRender(ranking) {
     <!-- Linha: Pedidos entregues + Bairros -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" id="ov-ind-grid-2">
 
-      <!-- Pedidos entregues vs 2025 -->
-      <div class="ind-card">
-        <div class="ind-card-head">
-          <div>
-            <div class="ind-card-title">📦 Pedidos Entregues</div>
-            <div class="ind-card-sub">Ciclo selecionado — 2026 vs 2025</div>
-          </div>
-        </div>
-        <div class="ind-card-body" id="ov-entregues-body">
-          <div class="ind-vazio"><span>📊</span>Selecione um ciclo acima</div>
-        </div>
-      </div>
-
       <!-- Distribuição por bairro VD+ -->
       <div class="ind-card">
         <div class="ind-card-head">
@@ -1577,22 +1564,6 @@ function estatFinRender(ranking) {
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- Gráfico barras 2026 vs 2025 -->
-  <div id="ov-grafico-wrap" style="display:none;margin-bottom:20px">
-    <div class="tcard">
-      <div class="tcard-head">
-        <span class="tcard-title">📊 Pedidos por Ciclo — 2026 vs 2025</span>
-        <div style="display:flex;gap:14px;align-items:center;font-size:11px">
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>2026</span>
-          <span id="ov-leg-2025" style="display:none;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--border-strong);display:inline-block"></span>2025</span>
-        </div>
-      </div>
-      <div style="padding:16px 18px;overflow-x:auto">
-        <div id="ov-grafico" style="min-width:600px"></div>
-      </div>
     </div>
   </div>
 
@@ -2820,94 +2791,12 @@ function ovRenderIndicadores(ciclo){
     badge.style.background='var(--border)'; badge.style.color='var(--text-3)'; badge.textContent='Sem dados';
   }
 
-  // ── Pedidos entregues vs 2025 ──
-  ovRenderEntregues(ciclo, pedCiclo);
-
   // ── Distribuição por bairro (sem Omni) ──
   const pedCicloVD   = pedCiclo.filter(r => r.MeioCaptacao !== 'Pedido Omnichannel');
   const pedCicloOmni = pedCiclo.filter(r => r.MeioCaptacao === 'Pedido Omnichannel');
   ovRenderBairros(pedCicloVD, pedCicloOmni);
 }
 
-function ovRenderEntregues(ciclo, pedidos){
-  const el = document.getElementById('ov-entregues-body');
-  const entg2026 = pedidos.filter(r => r.SituaçãoComercial === 'Entregue').length;
-  const tot2026  = pedidos.length;
-  const pct2026  = tot2026 ? (entg2026/tot2026*100).toFixed(1) : 0;
-
-  // Busca dados 2025 para o ciclo (comparação normalizada)
-  const normCiclo = v => String(v||'').trim().toUpperCase();
-  const d2025 = OV.hist2025ok && ciclo
-    ? OV.hist2025.find(c => normCiclo(c.ciclo) === normCiclo(ciclo))
-    : null;
-
-  const entg2025 = d2025 ? Number(d2025.entregues) : null;
-  const tot2025  = d2025 ? Number(d2025.total)      : null;
-  const pct2025  = tot2025 ? (entg2025/tot2025*100).toFixed(1) : null;
-
-  const maxVal = Math.max(entg2026, entg2025||0, 1);
-
-  let html = `
-    <div style="margin-bottom:14px">
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px;display:flex;gap:16px">
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:4px;border-radius:2px;background:var(--accent);display:inline-block"></span>2026</span>
-        ${entg2025!==null?`<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:4px;border-radius:2px;background:var(--border-strong);display:inline-block"></span>2025</span>`:''}
-      </div>
-    </div>
-    <div style="display:flex;gap:24px;align-items:flex-end;margin-bottom:16px">
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);margin-bottom:3px">Entregues 2026</div>
-        <div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-2px;line-height:1;color:var(--accent)">${entg2026.toLocaleString('pt-BR')}</div>
-        <div style="font-size:11px;color:var(--text-2);margin-top:3px">${pct2026}% de ${tot2026.toLocaleString('pt-BR')} pedidos</div>
-      </div>
-      ${entg2025!==null?`
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-3);margin-bottom:3px">Entregues 2025</div>
-        <div style="font-size:28px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-1px;line-height:1;color:var(--text-2)">${entg2025.toLocaleString('pt-BR')}</div>
-        <div style="font-size:11px;color:var(--text-2);margin-top:3px">${pct2025}% de ${tot2025.toLocaleString('pt-BR')} pedidos</div>
-      </div>
-      `:''}
-    </div>
-  `;
-
-  // Barras comparativas
-  html += `<div style="display:flex;flex-direction:column;gap:8px">`;
-  html += `
-    <div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
-        <span style="font-weight:600">2026</span>
-        <span style="color:var(--text-3);font-family:'DM Mono',monospace">${entg2026.toLocaleString('pt-BR')}</span>
-      </div>
-      <div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden">
-        <div style="width:${Math.round(entg2026/maxVal*100)}%;height:100%;background:var(--accent);border-radius:5px;transition:width .5s ease"></div>
-      </div>
-    </div>
-  `;
-  if(entg2025 !== null){
-    html += `
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
-          <span style="font-weight:600;color:var(--text-2)">2025</span>
-          <span style="color:var(--text-3);font-family:'DM Mono',monospace">${entg2025.toLocaleString('pt-BR')}</span>
-        </div>
-        <div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden">
-          <div style="width:${Math.round(entg2025/maxVal*100)}%;height:100%;background:var(--border-strong);border-radius:5px;transition:width .5s ease"></div>
-        </div>
-      </div>
-    `;
-    // Delta
-    const delta = entg2025 > 0 ? ((entg2026-entg2025)/entg2025*100) : 0;
-    const pos = delta >= 0;
-    html += `
-      <div style="margin-top:6px;padding:8px 12px;border-radius:var(--r-sm);background:${pos?'var(--green-bg)':'var(--accent-bg)'};display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:${pos?'var(--green)':'var(--accent)'}">
-        ${pos?'↑':'↓'} ${Math.abs(delta).toFixed(1)}% vs 2025
-      </div>
-    `;
-  }
-  html += '</div>';
-
-  el.innerHTML = html;
-}
 
 function ovRenderBairros(pedidos, pedidosOmni){
   const el    = document.getElementById('ov-bairros-body');
@@ -3646,7 +3535,7 @@ function ovRender() {
 
   if (!tem2026 && !tem2025) {
     document.getElementById('ov-kpis-ciclo').style.display       = 'none';
-    document.getElementById('ov-grafico-wrap').style.display     = 'none';
+    // ov-grafico-wrap removido
     document.getElementById('ov-comparativo-wrap').style.display = 'none';
     document.getElementById('ov-indicadores').style.display      = 'none';
     return;
@@ -3654,7 +3543,6 @@ function ovRender() {
 
   ovRenderKPIsCiclo(cicloSel);
   ovRenderIndicadores(cicloSel);
-  ovRenderGrafico();
   ovRenderComparativo();
 }
 
@@ -3714,69 +3602,21 @@ function ovRenderKPIsCiclo(ciclo) {
   wrap.style.display = 'block';
 }
 
-function ovRenderGrafico() {
-  const wrap = document.getElementById('ov-grafico-wrap');
-  const ciclos2026 = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>r.Ciclo).filter(Boolean))].sort();
-  if (!ciclos2026.length) { wrap.style.display = 'none'; return; }
-
-  const tem2025 = OV.hist2025ok;
-  const leg = document.getElementById('ov-leg-2025');
-  leg.style.display = tem2025 ? 'flex' : 'none';
-
-  const map2026 = {}, map2025 = {};
-  [...S.vdRaw,...S.omniRaw].forEach(r => {
-    const c = normalizarCiclo(r.Ciclo) || r.Ciclo;
-    if(c) map2026[c] = (map2026[c]||0)+1;
-  });
-  OV.hist2025.forEach(r => {
-    const c = normalizarCiclo(r.ciclo) || r.ciclo;
-    if(c) map2025[c] = Number(r.total)||0;
-  });
-
-  const todos2025ciclos = sortCiclos([...new Set(OV.hist2025.map(r=>normalizarCiclo(r.ciclo)||r.ciclo).filter(Boolean))]);
-  const maxVal = Math.max(...ciclos2026.map(c=>map2026[c]||0), ...ciclos2026.map(c=>map2025[c]||0), ...todos2025ciclos.map(c=>map2025[c]||0), 1);
-  const BAR_H=22, BAR_GAP=4, GRP_GAP=14, GRP_H=tem2025?BAR_H*2+BAR_GAP:BAR_H;
-  const LABEL_W=72, CHART_W=520, SVG_H=ciclos2026.length*(GRP_H+GRP_GAP)+10;
-
-  // Combinar ciclos: 2026 primeiro, depois ciclos de 2025 não presentes em 2026
-  const todosGraf = [...ciclos2026, ...todos2025ciclos.filter(c => !ciclos2026.includes(c))];
-  const SVG_H_corr = todosGraf.length*(GRP_H+GRP_GAP)+10;
-
-  let bars = '';
-  todosGraf.forEach((c,i)=>{
-    const y=i*(GRP_H+GRP_GAP)+5, v26=map2026[c]||0, v25=map2025[c]||0;
-    const w26=Math.round((v26/maxVal)*CHART_W), w25=Math.round((v25/maxVal)*CHART_W);
-    const sel = document.getElementById('ov-sel-ciclo').value === c;
-    const opac = sel ? '1' : '.75';
-    bars += `<g opacity="${opac}" style="cursor:pointer" onclick="document.getElementById('ov-sel-ciclo').value='${c}';ovRender()">
-      <text x="${LABEL_W-6}" y="${y+BAR_H/2+4}" text-anchor="end" font-size="11" fill="var(--text-2)" font-family="DM Sans,sans-serif">${c}</text>
-      <rect x="${LABEL_W}" y="${y}" width="${w26}" height="${BAR_H}" rx="3" fill="${sel?'var(--accent)':'var(--accent-mid)'}"/>
-      <text x="${LABEL_W+w26+5}" y="${y+BAR_H/2+4}" font-size="10.5" fill="var(--text-2)" font-family="DM Mono,monospace">${v26.toLocaleString('pt-BR')}</text>
-    </g>`;
-    if(tem2025){
-      const y25=y+BAR_H+BAR_GAP;
-      bars += `<g opacity="${opac}">
-        <rect x="${LABEL_W}" y="${y25}" width="${w25}" height="${BAR_H}" rx="3" fill="var(--border-strong)"/>
-        <text x="${LABEL_W+w25+5}" y="${y25+BAR_H/2+4}" font-size="10.5" fill="var(--text-3)" font-family="DM Mono,monospace">${v25.toLocaleString('pt-BR')}</text>
-      </g>`;
-    }
-  });
-
-  document.getElementById('ov-grafico').innerHTML =
-    `<svg viewBox="0 0 ${LABEL_W+CHART_W+80} ${SVG_H_corr}" style="width:100%;height:${SVG_H_corr}px">${bars}</svg>`;
-  wrap.style.display = 'block';
-}
 
 function ovRenderComparativo() {
   const wrap = document.getElementById('ov-comparativo-wrap');
   // Mostra 2026 mesmo sem histórico 2025; oculta só se não houver dado algum
   if (!S.vdRaw.length && !S.omniRaw.length && !OV.hist2025ok) { wrap.style.display = 'none'; return; }
 
-  // Filtrar somente pedidos de 2026 (ciclo contém "/2026")
-  const ped2026all = [...S.vdRaw,...S.omniRaw].filter(r => {
+  // Filtrar somente pedidos de 2026 (ciclo contém "/2026"), deduplica por CodigoPedido
+  const _map2026 = new Map();
+  [...S.vdRaw,...S.omniRaw].forEach(r => {
     const c = normalizarCiclo(r.Ciclo) || String(r.Ciclo||'');
-    return c.includes('/2026') || c.endsWith('2026');
+    if ((c.includes('/2026') || c.endsWith('2026')) && r.CodigoPedido) {
+      _map2026.set(String(r.CodigoPedido), r);
+    }
   });
+  const ped2026all = [..._map2026.values()];
   const tot2026  = ped2026all.length;
   const tot2025  = OV.hist2025.reduce((s,c)=>s+Number(c.total||0),0);
   const entg2026 = ped2026all.filter(r=>r.SituaçãoComercial==='Entregue').length;
@@ -4750,7 +4590,7 @@ async function expCarregarDoSheets() {
         TipoEntrega:        p.TipoEntrega,
         Recebedor:          p.Recebedor,
         isMad:              MADALENA.has(String(p.Pessoa||'').trim()),
-        _dataAprovacaoRaw:  p.DataAprovacao,
+        _dataAprovacaoRaw:  p.DataAprovacaoRaw || p.DataAprovacao,
         _dataFaturamentoRaw:p.DataFaturamento,
         _dataEntregaRaw:    p.DataEntrega,
       }));
@@ -4918,6 +4758,11 @@ async function carregarAutoriz() {
       });
     }
   } catch(err) { console.warn('Autorizações não disponíveis:', err.name); }
+  // Após carregar autorizações, re-renderizar tabela se expedição estiver ativa
+  if (S.vdRaw.length || S.omniRaw.length) {
+    renderVD();
+    renderOmni();
+  }
 }
 
 /* Detecta pedidos cartão ao processar planilha e envia para Sheets */
@@ -4937,7 +4782,7 @@ async function processarCartoes(pedidos) {
           ciclo:         p.Ciclo           || '',
           bairro:        p.Bairro          || '',
           valorLiquido:  p.ValorLiquido    || 0,
-          dataAprovacao: p._dataAprovacaoRaw ? String(p._dataAprovacaoRaw) : '',
+          dataAprovacao: p._dataAprovacaoRaw ? (p._dataAprovacaoRaw instanceof Date ? fmtDataHoraBrasilia(p._dataAprovacaoRaw) : String(p._dataAprovacaoRaw)) : '',
           estrutura:     p.Estrutura || '',
           registradoEm:  agoraBrasilia().toISOString(),
         })),
