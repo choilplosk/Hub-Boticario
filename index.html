@@ -818,6 +818,317 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 /* Modal resposta cancelamento/devolução */
 .resp-modal-body { padding:18px; display:flex; flex-direction:column; gap:12px; }
 
+
+
+/* ═══════════════════════════════════════════════
+   CARTÕES — REVISÃO E CANCELAMENTO DEFINITIVO
+═══════════════════════════════════════════════ */
+
+let _revisaoCartaoAtivo = null;
+let _cancCartaoAtivo    = null;
+let _respRevCartaoAtivo = null;
+
+/* === Enviar para revisão === */
+function abrirModalRevisaoCartao(id, codigoPedido, nomePessoa) {
+  _revisaoCartaoAtivo = { id, codigoPedido, nomePessoa };
+  document.getElementById('modal-revisao-cartao-info').textContent =
+    'Pedido ' + codigoPedido + ' · ' + nomePessoa;
+  document.getElementById('modal-revisao-obs').value = '';
+  document.getElementById('modal-revisao-cartao').classList.add('visible');
+}
+function fecharModalRevisaoCartao() {
+  document.getElementById('modal-revisao-cartao').classList.remove('visible');
+  _revisaoCartaoAtivo = null;
+}
+async function confirmarRevisaoCartao() {
+  if (!_revisaoCartaoAtivo) return;
+  const dest = document.getElementById('modal-revisao-dest').value;
+  const obs  = document.getElementById('modal-revisao-obs').value.trim();
+  const btn  = document.getElementById('modal-revisao-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Enviando...';
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'enviarParaRevisao',
+      id: _revisaoCartaoAtivo.id,
+      destinatario: dest,
+      observacao: obs,
+      enviadoPor: SESSAO.nome,
+      enviadoEm: agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('📤 Enviado para revisão!', 'ok');
+      fecharModalRevisaoCartao();
+      PEND.iniciado = false; pendCarregar();
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '📤 Enviar'; }
+}
+
+/* === Responder revisão === */
+function abrirModalResponderRevisaoCartao(id, codigoPedido, nomePessoa) {
+  _respRevCartaoAtivo = { id, codigoPedido, nomePessoa };
+  document.getElementById('modal-resp-rev-info').textContent =
+    'Pedido ' + codigoPedido + ' · ' + nomePessoa;
+  document.getElementById('modal-resp-rev-txt').value = '';
+  document.getElementById('modal-resp-revisao-cartao').classList.add('visible');
+}
+function fecharModalResponderRevisaoCartao() {
+  document.getElementById('modal-resp-revisao-cartao').classList.remove('visible');
+  _respRevCartaoAtivo = null;
+}
+async function confirmarResponderRevisaoCartao() {
+  if (!_respRevCartaoAtivo) return;
+  const txt = document.getElementById('modal-resp-rev-txt').value.trim();
+  if (!txt) { mostrarToast('Informe a resposta.', 'err'); return; }
+  const btn = document.getElementById('modal-resp-rev-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Enviando...';
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'responderRevisaoCartao',
+      id: _respRevCartaoAtivo.id,
+      resposta: txt,
+      respondidoPor: SESSAO.nome,
+      respondidoEm: agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('💬 Resposta enviada!', 'ok');
+      fecharModalResponderRevisaoCartao();
+      PEND.iniciado = false; pendCarregar();
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '💬 Enviar resposta'; }
+}
+
+/* === Cancelar definitivamente === */
+async function abrirModalCancelarCartao(id, codigoPedido, nomePessoa) {
+  _cancCartaoAtivo = { id, codigoPedido, nomePessoa };
+  document.getElementById('modal-canc-cartao-info').textContent =
+    'Pedido ' + codigoPedido + ' · ' + nomePessoa;
+  // Carregar motivos
+  const sel = document.getElementById('modal-canc-cartao-motivo');
+  sel.innerHTML = '<option value="">Selecione o motivo...</option>';
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getMotivosCancelamento');
+    const json = await resp.json();
+    if (json.sucesso && json.motivos) {
+      json.motivos.forEach(m => {
+        const op = document.createElement('option');
+        op.value = m; op.textContent = m;
+        sel.appendChild(op);
+      });
+    }
+  } catch(e) { /* usa o select vazio */ }
+  document.getElementById('modal-cancelar-cartao').classList.add('visible');
+}
+function fecharModalCancelarCartao() {
+  document.getElementById('modal-cancelar-cartao').classList.remove('visible');
+  _cancCartaoAtivo = null;
+}
+async function confirmarCancelarCartao() {
+  if (!_cancCartaoAtivo) return;
+  const motivo = document.getElementById('modal-canc-cartao-motivo').value.trim();
+  if (!motivo) { mostrarToast('Selecione um motivo.', 'err'); return; }
+  const btn = document.getElementById('modal-canc-cartao-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Cancelando...';
+  const finalizadoEm = agoraBrasilia().toISOString();
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'cancelarCartao',
+      id: _cancCartaoAtivo.id,
+      codigoPedido: _cancCartaoAtivo.codigoPedido,
+      motivoCancelamento: motivo,
+      canceladoPor: SESSAO.nome,
+      canceladoEm: finalizadoEm,
+      finalizadoEm,
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      // Atualiza cache local para mostrar tag na expedição
+      CARTOES_AUTORIZADOS[String(_cancCartaoAtivo.codigoPedido)] = {
+        status: 'cancelado', motivo, dataHora: finalizadoEm
+      };
+      mostrarToast('✕ Cartão cancelado. Operador deve cancelar no ERP.', 'ok');
+      fecharModalCancelarCartao();
+      PEND.iniciado = false; pendCarregar();
+      if (document.getElementById('page-expedicao').classList.contains('active')) renderVD();
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '✕ Confirmar cancelamento'; }
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO FINANCEIRO — VISÃO COMERCIAL
+═══════════════════════════════════════════════ */
+
+const FIN_COM = { iniciado: false };
+
+function finComIniciar() {
+  if (!FIN_COM.iniciado) {
+    FIN_COM.iniciado = true;
+    finComCarregar();
+  }
+}
+
+async function finComCarregar() {
+  document.getElementById('fin-com-loading').style.display = 'block';
+  document.getElementById('fin-com-layout').innerHTML = '';
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getCartoesComercial');
+    const json = await resp.json();
+    if (json.sucesso) {
+      finComRender(json.dados || []);
+    } else {
+      document.getElementById('fin-com-layout').innerHTML =
+        '<div class="empty"><div class="empty-ico">⚠️</div><h3>Erro ao carregar</h3></div>';
+    }
+  } catch(e) {
+    document.getElementById('fin-com-layout').innerHTML =
+      '<div class="empty"><div class="empty-ico">⚠️</div><h3>Falha na conexão</h3></div>';
+  } finally {
+    document.getElementById('fin-com-loading').style.display = 'none';
+  }
+}
+
+function finComRender(dados) {
+  const el = document.getElementById('fin-com-layout');
+  if (!dados.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">✅</div><h3>Sem pendências de cartão</h3><p>Nenhum cartão pendente ou cancelado no período.</p></div>';
+    return;
+  }
+
+  // Agrupar por estrutura
+  const grupos = {};
+  dados.forEach(d => {
+    const est = d.estrutura || 'Sem estrutura';
+    if (!grupos[est]) grupos[est] = { pendentes: [], cancelados: [] };
+    if (d.status === 'cancelado') grupos[est].cancelados.push(d);
+    else grupos[est].pendentes.push(d);
+  });
+
+  let html = '';
+  Object.keys(grupos).sort().forEach(est => {
+    const g = grupos[est];
+    const totalPend = g.pendentes.length;
+    const totalCanc = g.cancelados.length;
+    html += `
+      <div class="tcard" style="margin-bottom:16px">
+        <div class="tcard-head">
+          <span class="tcard-title" style="font-size:13px">🏢 ${est}</span>
+          <span class="tcard-count">${totalPend > 0 ? `<span style="color:var(--accent);font-weight:700">${totalPend} pendente${totalPend!==1?'s':''}</span>` : ''}${totalPend>0&&totalCanc>0?' · ':''}${totalCanc > 0 ? `${totalCanc} cancelado${totalCanc!==1?'s':''}` : ''}</span>
+        </div>
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">`;
+
+    if (g.pendentes.length) {
+      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:2px">💳 Pendentes de autorização</div>`;
+      g.pendentes.forEach(d => {
+        html += `
+          <div class="fincom-item fincom-pend">
+            <div class="fincom-ico">💳</div>
+            <div class="fincom-body">
+              <div class="fincom-titulo">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'}</div>
+              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Aprovado: ${d.dataAprovacao ? fmtDataHoraBrasilia(d.dataAprovacao) : '—'} · ${d.status === 'em_revisao' ? '📤 Em revisão' : '⏳ Aguardando'}</div>
+            </div>
+          </div>`;
+      });
+    }
+
+    if (g.cancelados.length) {
+      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-top:6px;margin-bottom:2px">✕ Cancelados</div>`;
+      g.cancelados.forEach(d => {
+        html += `
+          <div class="fincom-item fincom-canc">
+            <div class="fincom-ico" style="color:var(--accent)">✕</div>
+            <div class="fincom-body">
+              <div class="fincom-titulo">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'}</div>
+              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Motivo: <strong>${d.motivoCancelamento||'—'}</strong> · ${fmtDataHoraBrasilia(d.canceladoEm)}</div>
+            </div>
+          </div>`;
+      });
+    }
+
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO ESTATÍSTICAS FINANCEIRO
+═══════════════════════════════════════════════ */
+
+const ESTAT_FIN = { iniciado: false };
+
+function estatFinIniciar() {
+  if (!ESTAT_FIN.iniciado) {
+    ESTAT_FIN.iniciado = true;
+    estatFinCarregar();
+  }
+}
+
+async function estatFinCarregar() {
+  document.getElementById('estat-fin-loading').style.display = 'block';
+  document.getElementById('estat-canc-lista').innerHTML =
+    '<div class="empty"><div class="empty-ico">⏳</div><h3>Carregando...</h3></div>';
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getEstatisticasCancelamento');
+    const json = await resp.json();
+    if (json.sucesso) {
+      estatFinRender(json.ranking || []);
+    } else {
+      document.getElementById('estat-canc-lista').innerHTML =
+        '<div class="empty"><div class="empty-ico">⚠️</div><h3>Erro ao carregar</h3></div>';
+    }
+  } catch(e) {
+    document.getElementById('estat-canc-lista').innerHTML =
+      '<div class="empty"><div class="empty-ico">⚠️</div><h3>Falha na conexão</h3></div>';
+  } finally {
+    document.getElementById('estat-fin-loading').style.display = 'none';
+  }
+}
+
+function estatFinRender(ranking) {
+  const count = document.getElementById('estat-canc-count');
+  const lista = document.getElementById('estat-canc-lista');
+
+  if (!ranking.length) {
+    count.textContent = '0 revendedores';
+    lista.innerHTML = '<div class="empty"><div class="empty-ico">✅</div><h3>Nenhum cancelamento registrado</h3></div>';
+    return;
+  }
+
+  count.textContent = ranking.length + ' revendedor' + (ranking.length !== 1 ? 'es' : '');
+  const maxQtd = ranking[0].qtd || 1;
+
+  let html = '<div class="estat-ranking">';
+  ranking.forEach((r, i) => {
+    const pct = Math.round((r.qtd / maxQtd) * 100);
+    const cor = r.qtd >= 5 ? 'var(--accent)' : r.qtd >= 3 ? 'var(--yellow)' : 'var(--blue)';
+    html += `
+      <div class="estat-rank-item">
+        <div class="estat-rank-pos">${i + 1}</div>
+        <div class="estat-rank-body">
+          <div class="estat-rank-nome">
+            <span>${r.nomePessoa || '—'}</span>
+            <span class="mono" style="color:var(--text-3);font-size:11px">${r.codigoPessoa || ''}</span>
+          </div>
+          <div class="estat-rank-bar-wrap">
+            <div class="estat-rank-bar" style="width:${pct}%;background:${cor}"></div>
+          </div>
+        </div>
+        <div class="estat-rank-qtd" style="color:${cor}">${r.qtd}</div>
+      </div>`;
+  });
+  html += '</div>';
+  lista.innerHTML = html;
+}
+
+
 /* ═══════════════════════════════════════════════
    AVISO DIÁRIO DE OCUPAÇÃO
 ═══════════════════════════════════════════════ */
@@ -880,6 +1191,74 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
   background:var(--surface); outline:none;
 }
 .dev-resp-inline textarea:focus { border-color:var(--green); }
+
+/* === Botões de ação pendências === */
+.btn-pend.warn   { background:var(--yellow-bg); color:#7a5c00; border-color:var(--yellow); }
+.btn-pend.warn:hover { background:var(--yellow); color:#000; }
+.btn-pend.danger { background:var(--accent-bg); color:var(--accent); border-color:var(--accent); }
+.btn-pend.danger:hover { background:var(--accent); color:#fff; }
+
+/* === Tags de cartão na expedição === */
+.flag-cartao-canc {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10.5px; font-weight:700; padding:2px 7px;
+  border-radius:20px; background:#fdf0f0; color:var(--accent);
+  border:1px solid var(--accent); margin-left:4px;
+}
+.flag-cartao-rev {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10.5px; font-weight:700; padding:2px 7px;
+  border-radius:20px; background:var(--yellow-bg); color:#7a5c00;
+  border:1px solid var(--yellow); margin-left:4px;
+}
+
+/* === Timeline do card de revisão === */
+.cartao-timeline {
+  display:flex; flex-direction:column; gap:6px;
+  margin-top:8px; padding-top:8px;
+  border-top:1px solid var(--border);
+}
+.cartao-tl-item {
+  display:flex; align-items:flex-start; gap:8px;
+  font-size:11.5px; color:var(--text-2); line-height:1.4;
+}
+.cartao-tl-ico { font-size:14px; margin-top:1px; flex-shrink:0; }
+.cartao-tl-txt strong { color:var(--text-1); }
+
+
+/* === Cards Financeiro Comercial === */
+.fincom-item {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 12px; border-radius:var(--r-sm);
+  border:1px solid var(--border);
+}
+.fincom-pend { background:var(--accent-bg); border-color:var(--accent); }
+.fincom-canc { background:var(--surface-2); }
+.fincom-ico  { font-size:16px; margin-top:1px; flex-shrink:0; }
+.fincom-body { display:flex; flex-direction:column; gap:3px; flex:1; }
+.fincom-titulo { font-size:12.5px; font-weight:600; color:var(--text-1); }
+.fincom-meta   { font-size:11.5px; color:var(--text-2); }
+
+
+/* === Estatísticas Financeiro === */
+.estat-ranking { display:flex; flex-direction:column; gap:10px; }
+.estat-rank-item {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 12px; border-radius:var(--r-sm);
+  background:var(--surface-2); border:1px solid var(--border);
+}
+.estat-rank-pos {
+  width:24px; height:24px; border-radius:50%;
+  background:var(--border); display:flex; align-items:center;
+  justify-content:center; font-size:11px; font-weight:700;
+  color:var(--text-2); flex-shrink:0;
+}
+.estat-rank-body { flex:1; display:flex; flex-direction:column; gap:5px; }
+.estat-rank-nome { display:flex; justify-content:space-between; font-size:12.5px; font-weight:600; }
+.estat-rank-bar-wrap { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
+.estat-rank-bar { height:100%; border-radius:3px; transition:width .4s ease; }
+.estat-rank-qtd { font-size:18px; font-weight:800; font-family:'DM Mono',monospace; flex-shrink:0; min-width:28px; text-align:right; }
+
 </style>
 </head>
 <body>
@@ -926,7 +1305,6 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
   <div class="nav-tabs" id="nav-tabs">
     <button class="nav-tab" data-perfis="admin,operador,financeiro,comercial_consultor,comercial_gerente" onclick="goPage('visao-geral',this)">◈ Visão Geral</button>
     <button class="nav-tab" data-perfis="admin,operador,financeiro,comercial_consultor,comercial_gerente" onclick="goPage('expedicao',this)">📦 Expedição</button>
-    <button class="nav-tab" data-perfis="admin,operador" onclick="goPage('producao',this)">⚙️ Produção <span class="tag-wms">WMS</span></button>
     <button class="nav-tab" data-perfis="admin,operador" onclick="goPage('avarias',this)">🚨 Avarias</button>
     <button class="nav-tab" data-perfis="admin,financeiro" onclick="goPage('financeiro',this)">💰 Financeiro</button>
     <button class="nav-tab" data-perfis="admin,operador" onclick="goPage('fretes',this)">🚚 Fretes Especiais</button>
@@ -934,6 +1312,8 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
       🔔 Pendências <span class="pend-badge" id="nav-pend-badge" style="display:none">0</span>
     </button>
     <button class="nav-tab" data-perfis="admin,comercial_consultor,comercial_gerente" onclick="goPage('comercial',this)">🛒 Comercial</button>
+    <button class="nav-tab" data-perfis="comercial_consultor,comercial_gerente" onclick="goPage('fin-comercial',this)">💳 Financeiro</button>
+    <button class="nav-tab" data-perfis="admin,financeiro" onclick="goPage('estatisticas-fin',this)">📊 Estatísticas</button>
   </div>
   <div class="nav-right" style="display:flex;align-items:center;gap:12px">
     <span class="nav-clock" id="clock"></span>
@@ -1349,6 +1729,7 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
       <select class="fsel" id="f-estrt"   onchange="applyFilters()"><option value="">Todas as estruturas</option></select>
       <select class="fsel" id="f-status"  onchange="applyFilters()"><option value="">Todos os status</option></select>
       <select class="fsel" id="f-entrega" onchange="applyFilters()"><option value="">Tipo de entrega</option></select>
+      <select class="fsel" id="f-pgto"    onchange="applyFilters()"><option value="">Pagamento</option></select>
       <button class="btn btn-mad" id="btn-mad" onclick="toggleMad()">⭐ Madalena</button>
       <button class="btn-clear" onclick="clearFilters()">✕ Limpar</button>
     </div>
@@ -1965,6 +2346,133 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
   </div>
 </div>
 
+
+
+
+<!-- ESTATÍSTICAS FINANCEIRO -->
+<div class="page" id="page-estatisticas-fin">
+  <div class="ph">
+    <div>
+      <h1>📊 Estatísticas</h1>
+      <p>Análise de cancelamentos de cartão</p>
+    </div>
+    <button class="btn btn-ghost" style="font-size:12px" onclick="estatFinCarregar()">↺ Atualizar</button>
+  </div>
+
+  <div id="estat-fin-loading" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px;display:none">
+    <span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--accent);width:20px;height:20px"></span>
+    <div style="margin-top:10px">Carregando...</div>
+  </div>
+
+  <!-- Cancelamento de cartões -->
+  <div id="estat-fin-layout">
+    <div class="tcard">
+      <div class="tcard-head">
+        <span class="tcard-title">✕ Cancelamentos de Cartão — Histórico</span>
+        <span class="tcard-count" id="estat-canc-count">—</span>
+      </div>
+      <div id="estat-canc-lista" style="padding:16px">
+        <div class="empty"><div class="empty-ico">📊</div><h3>Carregando...</h3></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINANCEIRO — Visão Comercial -->
+<div class="page" id="page-fin-comercial">
+  <div class="ph">
+    <div>
+      <h1>💳 Financeiro</h1>
+      <p>Cartões pendentes e cancelados por estrutura</p>
+    </div>
+    <button class="btn btn-ghost" style="font-size:12px" onclick="finComCarregar()">↺ Atualizar</button>
+  </div>
+
+  <div id="fin-com-loading" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px;display:none">
+    <span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--accent);width:20px;height:20px"></span>
+    <div style="margin-top:10px">Carregando...</div>
+  </div>
+
+  <div id="fin-com-layout"></div>
+</div>
+
+<!-- Modal: Enviar cartão para revisão -->
+<div class="modal-overlay" id="modal-revisao-cartao">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>📤 Enviar para Revisão</span>
+      <button class="config-close" onclick="fecharModalRevisaoCartao()">✕</button>
+    </div>
+    <div class="resp-modal-body">
+      <div id="modal-revisao-cartao-info" style="font-size:12.5px;color:var(--text-2);padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm);margin-bottom:4px"></div>
+      <div>
+        <label class="flabel">Enviar para</label>
+        <select class="fsel-q" id="modal-revisao-dest">
+          <option value="operador">Operador</option>
+          <option value="comercial_consultor">Comercial Consultor</option>
+          <option value="comercial_gerente">Comercial Gerente</option>
+          <option value="financeiro">Financeiro</option>
+        </select>
+      </div>
+      <div>
+        <label class="flabel">Observação (opcional)</label>
+        <textarea class="finput-q" id="modal-revisao-obs" rows="3" placeholder="Descreva o motivo da revisão..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalRevisaoCartao()">Cancelar</button>
+      <button class="btn-config-save" style="background:var(--yellow);color:#000" id="modal-revisao-btn" onclick="confirmarRevisaoCartao()">📤 Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Responder revisão de cartão -->
+<div class="modal-overlay" id="modal-resp-revisao-cartao">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>💬 Responder Revisão de Cartão</span>
+      <button class="config-close" onclick="fecharModalResponderRevisaoCartao()">✕</button>
+    </div>
+    <div class="resp-modal-body">
+      <div id="modal-resp-rev-info" style="font-size:12.5px;color:var(--text-2);padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm);margin-bottom:4px"></div>
+      <div>
+        <label class="flabel">Sua resposta</label>
+        <textarea class="finput-q" id="modal-resp-rev-txt" rows="4" placeholder="Informe o resultado da revisão..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalResponderRevisaoCartao()">Cancelar</button>
+      <button class="btn-config-save" style="background:var(--blue)" id="modal-resp-rev-btn" onclick="confirmarResponderRevisaoCartao()">💬 Enviar resposta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Cancelar cartão definitivamente -->
+<div class="modal-overlay" id="modal-cancelar-cartao">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>✕ Cancelar Pagamento com Cartão</span>
+      <button class="config-close" onclick="fecharModalCancelarCartao()">✕</button>
+    </div>
+    <div class="resp-modal-body">
+      <div id="modal-canc-cartao-info" style="font-size:12.5px;color:var(--text-2);padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm);margin-bottom:4px"></div>
+      <div style="font-size:11.5px;color:var(--accent);background:var(--accent-bg);padding:8px 10px;border-radius:var(--r-sm);border:1px solid var(--accent)">
+        ⚠️ O cancelamento é definitivo. O operador deverá cancelar o pedido no ERP.
+      </div>
+      <div>
+        <label class="flabel">Motivo do cancelamento</label>
+        <select class="fsel-q" id="modal-canc-cartao-motivo">
+          <option value="">Selecione o motivo...</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-config-cancel" onclick="fecharModalCancelarCartao()">Voltar</button>
+      <button class="btn-config-save" style="background:var(--accent)" id="modal-canc-cartao-btn" onclick="confirmarCancelarCartao()">✕ Confirmar cancelamento</button>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <div class="toast" id="toast"></div>
@@ -2019,7 +2527,9 @@ function goPage(id, btn) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'avarias')    qIniciar();
+  if (id === 'avarias')      qIniciar();
+  if (id === 'fin-comercial')    finComIniciar();
+  if (id === 'estatisticas-fin') estatFinIniciar();
   if (id === 'fretes')     frIniciar();
   if (id === 'visao-geral') ovIniciar();
   if (id === 'expedicao')  expIniciar();
@@ -2445,6 +2955,7 @@ function populateFilters(){
   fill('f-estrt',   uniq(all.map(r=>r.Estrutura).filter(Boolean)).sort(), 'Todas as estruturas');
   fill('f-status',  uniq(all.map(r=>r.SituaçãoComercial).filter(Boolean)).sort(), 'Todos os status');
   fill('f-entrega', uniq(all.map(r=>r.TipoEntrega).filter(Boolean)).sort(), 'Tipo de entrega');
+  fill('f-pgto',    uniq(all.map(r=>r.Pagamento).filter(Boolean)).sort(), 'Pagamento');
 }
 function uniq(a){ return [...new Set(a)]; }
 function fill(id, opts, ph){
@@ -2459,12 +2970,14 @@ function applyFilters(){
   const estrt = document.getElementById('f-estrt').value;
   const stat  = document.getElementById('f-status').value;
   const ent   = document.getElementById('f-entrega').value;
+  const pgto  = document.getElementById('f-pgto').value;
 
   function match(r){
     if(lote  && String(r.Lote||'') !== lote) return false;
     if(estrt && r.Estrutura !== estrt) return false;
     if(stat  && r.SituaçãoComercial !== stat) return false;
     if(ent   && r.TipoEntrega !== ent) return false;
+    if(pgto  && r.Pagamento !== pgto) return false;
     if(S.madOn && !r.isMad) return false;
     if(q){
       const hay = [r.NomePessoa,r.CodigoPedido,r.NotaFiscal,r.Bairro,r.Pessoa,r.CodExterno]
@@ -2483,7 +2996,7 @@ function applyFilters(){
 
 function clearFilters(){
   document.getElementById('f-search').value = '';
-  ['f-lote','f-estrt','f-status','f-entrega'].forEach(id => document.getElementById(id).value = '');
+  ['f-lote','f-estrt','f-status','f-entrega','f-pgto'].forEach(id => document.getElementById(id).value = '');
   S.madOn = false; document.getElementById('btn-mad').classList.remove('on');
   applyFilters();
 }
@@ -3445,11 +3958,11 @@ const PERFIL_LABEL = {
 
 // Permissões por perfil: quais páginas pode acessar
 const PERFIL_PAGINAS = {
-  admin:               ['visao-geral','expedicao','producao','avarias','financeiro','fretes','pendencias','comercial'],
-  operador:            ['visao-geral','expedicao','producao','avarias','fretes','pendencias'],
-  financeiro:          ['expedicao','financeiro','pendencias'],
-  comercial_consultor: ['visao-geral','expedicao','pendencias','comercial'],
-  comercial_gerente:   ['visao-geral','expedicao','pendencias','comercial'],
+  admin:               ['visao-geral','expedicao','avarias','financeiro','fretes','pendencias','comercial','fin-comercial','estatisticas-fin'],
+  operador:            ['visao-geral','expedicao','avarias','fretes','pendencias'],
+  financeiro:          ['expedicao','financeiro','pendencias','estatisticas-fin'],
+  comercial_consultor: ['visao-geral','expedicao','pendencias','comercial','fin-comercial'],
+  comercial_gerente:   ['visao-geral','expedicao','pendencias','comercial','fin-comercial'],
 };
 
 // Páginas somente leitura por perfil (sem upload, sem botões de ação)
@@ -3542,6 +4055,12 @@ function entrarNoDashboard() {
 
   // Aplica visibilidade das abas
   aplicarPermissoes(SESSAO.perfil);
+
+  // Renomeia "Visão Geral" para "Visão Logística" no perfil comercial
+  if (['comercial_consultor','comercial_gerente'].includes(SESSAO.perfil)) {
+    const btnVG = document.querySelector('.nav-tab[onclick*="visao-geral"]');
+    if (btnVG) btnVG.innerHTML = '◈ Visão Logística';
+  }
 
   // Ativa a primeira aba permitida
   const paginasPermitidas = PERFIL_PAGINAS[SESSAO.perfil] || [];
@@ -3664,8 +4183,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Estado dos códigos de atenção (carregados do Sheets)
 const CONFIG = {
-  codigosAtencao: [], // [{codigo, nome}]
-  usuarios: [],       // lista de usuários (só admin)
+  codigosAtencao: [],       // [{codigo, nome}]
+  motivosCancelamento: [],  // lista de motivos para cancelar cartão
+  usuarios: [],             // lista de usuários (só admin)
   carregado: false,
 };
 
@@ -3693,6 +4213,15 @@ async function carregarConfig() {
     const r1 = await fetch(SCRIPT_URL + '?modulo=codigosAtencao');
     const j1 = await r1.json();
     if (j1.sucesso) CONFIG.codigosAtencao = j1.codigos || [];
+
+    // Financeiro/Admin carrega motivos de cancelamento
+    if (['admin','financeiro'].includes(SESSAO.perfil)) {
+      try {
+        const rm = await fetch(SCRIPT_URL + '?modulo=getMotivosCancelamento');
+        const jm = await rm.json();
+        if (jm.sucesso) CONFIG.motivosCancelamento = jm.motivos || [];
+      } catch(e) { CONFIG.motivosCancelamento = []; }
+    }
 
     // Admin carrega lista de usuários
     if (SESSAO.perfil === 'admin') {
@@ -3758,6 +4287,31 @@ function renderConfig() {
             <input class="finput-q" type="text" id="cfg-atencao-cod" placeholder="Código do revendedor" style="width:160px;font-family:'DM Mono',monospace">
             <input class="finput-q" type="text" id="cfg-atencao-nome" placeholder="Nome (opcional)" style="flex:1">
             <button class="btn-config-save" onclick="adicionarCodigoAtencao()" style="padding:7px 14px;white-space:nowrap">+ Adicionar</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Seção: Motivos de cancelamento de cartão (financeiro + admin)
+  if (['admin','financeiro'].includes(SESSAO.perfil)) {
+    const motivosHtml = (CONFIG.motivosCancelamento || []).length
+      ? (CONFIG.motivosCancelamento || []).map(m => `
+          <div class="atencao-item">
+            <span class="atencao-item-nome" style="flex:1">${m}</span>
+            <button class="btn-rm-atencao" onclick="removerMotivoCancelamento('${m.replace(/'/g,"\'")}')" title="Remover">✕</button>
+          </div>`).join('')
+      : '<div style="text-align:center;padding:12px;color:var(--text-3);font-size:12px">Nenhum motivo cadastrado</div>';
+    html += `
+      <div class="config-section">
+        <div class="config-section-head">
+          <span class="config-section-ico">✕</span>
+          <span>Motivos de cancelamento de cartão</span>
+        </div>
+        <div class="config-section-body">
+          <div class="atencao-list" id="cfg-motivos-list">${motivosHtml}</div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <input class="finput-q" type="text" id="cfg-motivo-txt" placeholder="Ex: Inadimplência, Pedido duplicado..." style="flex:1">
+            <button class="btn-config-save" onclick="adicionarMotivoCancelamento()" style="padding:7px 14px;white-space:nowrap">+ Adicionar</button>
           </div>
         </div>
       </div>`;
@@ -4032,6 +4586,47 @@ async function carregarCodigosAtencaoInicial() {
   } catch(err) { console.warn('Códigos de atenção não disponíveis:', err.name); }
 }
 
+
+/* Motivos de cancelamento de cartão */
+async function adicionarMotivoCancelamento() {
+  const txt = document.getElementById('cfg-motivo-txt').value.trim();
+  if (!txt) { mostrarToast('Informe o motivo.', 'err'); return; }
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'salvarMotivoCancelamento', motivo: txt
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      if (!CONFIG.motivosCancelamento) CONFIG.motivosCancelamento = [];
+      CONFIG.motivosCancelamento.push(txt);
+      document.getElementById('cfg-motivo-txt').value = '';
+      document.getElementById('cfg-motivos-list').innerHTML = (CONFIG.motivosCancelamento || []).map(m => `
+        <div class="atencao-item">
+          <span class="atencao-item-nome" style="flex:1">${m}</span>
+          <button class="btn-rm-atencao" onclick="removerMotivoCancelamento('${m.replace(/'/g,"\'")}')" title="Remover">✕</button>
+        </div>`).join('');
+      mostrarToast('✅ Motivo adicionado!', 'ok');
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+}
+
+async function removerMotivoCancelamento(motivo) {
+  if (!confirm('Remover motivo "' + motivo + '"?')) return;
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'removerMotivoCancelamento', motivo
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      CONFIG.motivosCancelamento = (CONFIG.motivosCancelamento || []).filter(m => m !== motivo);
+      CONFIG.carregado = false;
+      renderConfig();
+      mostrarToast('Motivo removido.', 'ok');
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+}
+
+
 /* Códigos de atenção aplicados diretamente no renderVD abaixo */
 
 
@@ -4230,6 +4825,12 @@ function flagCartao(codigoPedido) {
   const cod = String(codigoPedido);
   const auth = CARTOES_AUTORIZADOS[cod];
   if (auth) {
+    if (auth.status === 'cancelado') {
+      return `<span class="flag-cartao-canc" title="Cancelado: ${auth.motivo||'—'} · ${fmtDataHoraBrasilia(auth.dataHora)}">✕ Cancelado</span>`;
+    }
+    if (auth.status === 'em_revisao') {
+      return `<span class="flag-cartao-rev" title="Em revisão com ${auth.destinatario||'—'}">📤 Em Revisão</span>`;
+    }
     return `<span class="flag-cartao-ok" title="Autorizado em ${fmtDataHoraBrasilia(auth.dataHora)}">✅ ${auth.codigo}</span>`;
   }
   return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">🔴 Cartão</span>`;
@@ -4262,13 +4863,14 @@ async function processarCartoes(pedidos) {
       body: JSON.stringify({
         modulo: 'registrarCartoes',
         pedidos: cartoes.map(p => ({
-          codigoPedido: String(p.CodigoPedido),
-          nomePessoa:   p.NomePessoa   || '',
-          notaFiscal:   p.NotaFiscal   || '',
-          ciclo:        p.Ciclo        || '',
-          bairro:       p.Bairro       || '',
-          valorLiquido: p.ValorLiquido || 0,
-          registradoEm: agoraBrasilia().toISOString(),
+          codigoPedido:  String(p.CodigoPedido),
+          nomePessoa:    p.NomePessoa      || '',
+          notaFiscal:    p.NotaFiscal      || '',
+          ciclo:         p.Ciclo           || '',
+          bairro:        p.Bairro          || '',
+          valorLiquido:  p.ValorLiquido    || 0,
+          dataAprovacao: p._dataAprovacaoRaw ? String(p._dataAprovacaoRaw) : '',
+          registradoEm:  agoraBrasilia().toISOString(),
         })),
       }),
     });
@@ -4298,7 +4900,15 @@ async function pendCarregar() {
     ]);
     const [jPend, jAutoriz] = await Promise.all([rPend.json(), rAutoriz.json()]);
 
-    if (jPend.sucesso)   PEND.registros = (jPend.pendencias || []).map(r=>({...r,ciclo:normalizarCiclo(r.ciclo)||r.ciclo}));
+    if (jPend.sucesso) {
+      PEND.registros = (jPend.pendencias || [])
+        .map(r => ({...r, ciclo: normalizarCiclo(r.ciclo)||r.ciclo}))
+        .sort((a, b) => {
+          const da = a.dataAprovacao || a.registradoEm || '';
+          const db = b.dataAprovacao || b.registradoEm || '';
+          return db.localeCompare(da);
+        });
+    }
     if (jAutoriz.sucesso) {
       jAutoriz.autoriz.forEach(a => {
         CARTOES_AUTORIZADOS[String(a.codigoPedido)] = {
@@ -4318,6 +4928,25 @@ async function pendCarregar() {
   }
 }
 
+
+/* Filtra cartões: corte em 20/05/2026 e some 3 dias após finalização */
+function filtrarCartoes(lista) {
+  const corte = new Date('2026-05-20T00:00:00-03:00');
+  const agora = agoraBrasilia();
+  return lista.filter(p => {
+    // Corte de data de aprovação
+    const dtAprov = p.dataAprovacao ? new Date(p.dataAprovacao) : null;
+    if (dtAprov && dtAprov < corte) return false;
+    // Some 3 dias após finalizadoEm
+    if (p.finalizadoEm) {
+      const dtFin = new Date(p.finalizadoEm);
+      const dias = (agora - dtFin) / (1000 * 60 * 60 * 24);
+      if (dias > 3) return false;
+    }
+    return true;
+  });
+}
+
 /* Render das pendências conforme perfil */
 function pendRender() {
   const el = document.getElementById('pend-layout');
@@ -4326,12 +4955,15 @@ function pendRender() {
 
   // ── Cartões aguardando autorização (Financeiro + Admin + Operador vê status) ──
   if (['admin','financeiro','operador'].includes(perfil)) {
-    const cartoesNaoAutorizados = PEND.registros.filter(p =>
+    const cartoesNaoAutorizados = filtrarCartoes(PEND.registros.filter(p =>
       p.tipo === 'cartao' && p.status === 'pendente'
-    );
-    const cartoesAutorizados = PEND.registros.filter(p =>
-      p.tipo === 'cartao' && p.status === 'autorizado'
-    );
+    ));
+    const cartoesAutorizados = filtrarCartoes(PEND.registros.filter(p =>
+      p.tipo === 'cartao' && (p.status === 'autorizado' || p.status === 'em_revisao')
+    ));
+    const cartoesCancelados = filtrarCartoes(PEND.registros.filter(p =>
+      p.tipo === 'cartao' && p.status === 'cancelado'
+    ));
 
     if (perfil === 'financeiro' || perfil === 'admin') {
       html += renderSecaoPend(
@@ -4340,6 +4972,19 @@ function pendRender() {
         'cartao_pend',
         cartoesNaoAutorizados.length
       );
+    }
+
+    // Cartões em revisão — visível para quem enviou (financeiro) e quem recebeu
+    const cartoesRevisao = filtrarCartoes(PEND.registros.filter(p =>
+      p.tipo === 'cartao' && p.status === 'em_revisao'
+    ));
+    if (cartoesRevisao.length > 0) {
+      html += renderSecaoPend('📤 Cartões — Em Revisão', cartoesRevisao, 'cartao_revisao', cartoesRevisao.length);
+    }
+
+    // Cartões cancelados definitivamente
+    if (cartoesCancelados.length > 0) {
+      html += renderSecaoPend('✕ Cartões — Cancelados', cartoesCancelados, 'cartao_cancelado', null);
     }
 
     html += renderSecaoPend(
@@ -4419,8 +5064,24 @@ function renderItemPend(item, tipo) {
   if (tipo === 'cartao_pend') {
     ico = '💳';
     if (['financeiro','admin'].includes(perfil)) {
-      acoes = `<button class="btn-pend blue" onclick="abrirModalCartao('${item.id}','${esc2(item.codigoPedido)}','${esc2(item.nomePessoa)}','${esc2(item.notaFiscal)}')">💳 Autorizar</button>`;
+      acoes = `
+        <button class="btn-pend blue" onclick="abrirModalCartao('${item.id}','${esc2(item.codigoPedido)}','${esc2(item.nomePessoa)}','${esc2(item.notaFiscal)}')">💳 Autorizar</button>
+        <button class="btn-pend warn" onclick="abrirModalRevisaoCartao('${item.id}','${esc2(item.codigoPedido)}','${esc2(item.nomePessoa)}')">📤 Enviar p/ revisão</button>
+        <button class="btn-pend danger" onclick="abrirModalCancelarCartao('${item.id}','${esc2(item.codigoPedido)}','${esc2(item.nomePessoa)}')">✕ Cancelar</button>`;
     }
+  } else if (tipo === 'cartao_revisao') {
+    ico = '📤';
+    // Quem recebeu a revisão pode responder
+    if (perfil === 'admin' || (item.destinatarioRevisao && (
+      (item.destinatarioRevisao === 'operador' && ['operador','admin'].includes(perfil)) ||
+      (item.destinatarioRevisao === 'comercial_gerente' && ['comercial_gerente','admin'].includes(perfil)) ||
+      (item.destinatarioRevisao === 'comercial_consultor' && ['comercial_consultor','comercial_gerente','admin'].includes(perfil)) ||
+      (item.destinatarioRevisao === 'financeiro' && ['financeiro','admin'].includes(perfil))
+    ))) {
+      acoes = `<button class="btn-pend ok" onclick="abrirModalResponderRevisaoCartao('${item.id}','${esc2(item.codigoPedido)}','${esc2(item.nomePessoa)}')">💬 Responder</button>`;
+    }
+  } else if (tipo === 'cartao_cancelado') {
+    ico = '✕';
   } else if (tipo === 'cartao_ok') {
     ico = '✅';
   } else if (tipo === 'cancelamento_pend') {
@@ -4452,6 +5113,14 @@ function renderItemPend(item, tipo) {
     ? `<div class="pend-item-obs">✅ Autorizado: <strong>${item.codigoAutoriz}</strong> · ${fmtDataHoraBrasilia(item.dataHora)}</div>`
     : '';
 
+  // Timeline para cartões em revisão
+  const timelineHtml = (tipo === 'cartao_revisao') ? `
+    <div class="cartao-timeline">
+      ${item.enviadoPor ? `<div class="cartao-tl-item"><span class="cartao-tl-ico">📤</span><div class="cartao-tl-txt">Enviado por <strong>${item.enviadoPor}</strong> para <strong>${item.destinatarioRevisao||'—'}</strong> · ${fmtDataHoraBrasilia(item.enviadoEm)}</div></div>` : ''}
+      ${item.observacao ? `<div class="cartao-tl-item"><span class="cartao-tl-ico">💬</span><div class="cartao-tl-txt">${item.observacao}</div></div>` : ''}
+      ${item.resposta ? `<div class="cartao-tl-item"><span class="cartao-tl-ico">↩</span><div class="cartao-tl-txt">Resposta de <strong>${item.respondidoPor||'—'}</strong>: ${item.resposta} · ${fmtDataHoraBrasilia(item.respondidoEm)}</div></div>` : ''}
+    </div>` : '';
+
   return `
     <div class="pend-item">
       <div class="pend-item-ico">${ico}</div>
@@ -4462,12 +5131,13 @@ function renderItemPend(item, tipo) {
           ${statusHtml}
         </div>
         <div class="pend-item-meta">
-          NF: ${item.notaFiscal||'—'} · Ciclo: ${normalizarCiclo(item.ciclo)||item.ciclo||'—'} · ${fmtDataHoraBrasilia(item.registradoEm)}
+          NF: ${item.notaFiscal||'—'} · Ciclo: ${normalizarCiclo(item.ciclo)||item.ciclo||'—'} · Aprovado: ${item.dataAprovacao ? fmtDataHoraBrasilia(item.dataAprovacao) : fmtDataHoraBrasilia(item.registradoEm)}
           ${item.solicitadoPor ? ` · Por: ${item.solicitadoPor}` : ''}
         </div>
         ${item.motivo ? `<div class="pend-item-obs">${item.motivo}</div>` : ''}
         ${respostaHtml}
         ${authHtml}
+        ${timelineHtml}
       </div>
       ${acoes ? `<div class="pend-item-actions">${acoes}</div>` : ''}
     </div>`;
@@ -4664,6 +5334,317 @@ async function confirmarCartao() {
   finally { btn.disabled=false; btn.innerHTML='💳 Confirmar autorização'; }
 }
 
+
+
+
+
+/* ═══════════════════════════════════════════════
+   CARTÕES — REVISÃO E CANCELAMENTO DEFINITIVO
+═══════════════════════════════════════════════ */
+
+let _revisaoCartaoAtivo = null;
+let _cancCartaoAtivo    = null;
+let _respRevCartaoAtivo = null;
+
+/* === Enviar para revisão === */
+function abrirModalRevisaoCartao(id, codigoPedido, nomePessoa) {
+  _revisaoCartaoAtivo = { id, codigoPedido, nomePessoa };
+  document.getElementById('modal-revisao-cartao-info').textContent =
+    'Pedido ' + codigoPedido + ' · ' + nomePessoa;
+  document.getElementById('modal-revisao-obs').value = '';
+  document.getElementById('modal-revisao-cartao').classList.add('visible');
+}
+function fecharModalRevisaoCartao() {
+  document.getElementById('modal-revisao-cartao').classList.remove('visible');
+  _revisaoCartaoAtivo = null;
+}
+async function confirmarRevisaoCartao() {
+  if (!_revisaoCartaoAtivo) return;
+  const dest = document.getElementById('modal-revisao-dest').value;
+  const obs  = document.getElementById('modal-revisao-obs').value.trim();
+  const btn  = document.getElementById('modal-revisao-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Enviando...';
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'enviarParaRevisao',
+      id: _revisaoCartaoAtivo.id,
+      destinatario: dest,
+      observacao: obs,
+      enviadoPor: SESSAO.nome,
+      enviadoEm: agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('📤 Enviado para revisão!', 'ok');
+      fecharModalRevisaoCartao();
+      PEND.iniciado = false; pendCarregar();
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '📤 Enviar'; }
+}
+
+/* === Responder revisão === */
+function abrirModalResponderRevisaoCartao(id, codigoPedido, nomePessoa) {
+  _respRevCartaoAtivo = { id, codigoPedido, nomePessoa };
+  document.getElementById('modal-resp-rev-info').textContent =
+    'Pedido ' + codigoPedido + ' · ' + nomePessoa;
+  document.getElementById('modal-resp-rev-txt').value = '';
+  document.getElementById('modal-resp-revisao-cartao').classList.add('visible');
+}
+function fecharModalResponderRevisaoCartao() {
+  document.getElementById('modal-resp-revisao-cartao').classList.remove('visible');
+  _respRevCartaoAtivo = null;
+}
+async function confirmarResponderRevisaoCartao() {
+  if (!_respRevCartaoAtivo) return;
+  const txt = document.getElementById('modal-resp-rev-txt').value.trim();
+  if (!txt) { mostrarToast('Informe a resposta.', 'err'); return; }
+  const btn = document.getElementById('modal-resp-rev-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Enviando...';
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'responderRevisaoCartao',
+      id: _respRevCartaoAtivo.id,
+      resposta: txt,
+      respondidoPor: SESSAO.nome,
+      respondidoEm: agoraBrasilia().toISOString(),
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      mostrarToast('💬 Resposta enviada!', 'ok');
+      fecharModalResponderRevisaoCartao();
+      PEND.iniciado = false; pendCarregar();
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '💬 Enviar resposta'; }
+}
+
+/* === Cancelar definitivamente === */
+async function abrirModalCancelarCartao(id, codigoPedido, nomePessoa) {
+  _cancCartaoAtivo = { id, codigoPedido, nomePessoa };
+  document.getElementById('modal-canc-cartao-info').textContent =
+    'Pedido ' + codigoPedido + ' · ' + nomePessoa;
+  // Carregar motivos
+  const sel = document.getElementById('modal-canc-cartao-motivo');
+  sel.innerHTML = '<option value="">Selecione o motivo...</option>';
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getMotivosCancelamento');
+    const json = await resp.json();
+    if (json.sucesso && json.motivos) {
+      json.motivos.forEach(m => {
+        const op = document.createElement('option');
+        op.value = m; op.textContent = m;
+        sel.appendChild(op);
+      });
+    }
+  } catch(e) { /* usa o select vazio */ }
+  document.getElementById('modal-cancelar-cartao').classList.add('visible');
+}
+function fecharModalCancelarCartao() {
+  document.getElementById('modal-cancelar-cartao').classList.remove('visible');
+  _cancCartaoAtivo = null;
+}
+async function confirmarCancelarCartao() {
+  if (!_cancCartaoAtivo) return;
+  const motivo = document.getElementById('modal-canc-cartao-motivo').value.trim();
+  if (!motivo) { mostrarToast('Selecione um motivo.', 'err'); return; }
+  const btn = document.getElementById('modal-canc-cartao-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Cancelando...';
+  const finalizadoEm = agoraBrasilia().toISOString();
+  try {
+    const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+      modulo: 'cancelarCartao',
+      id: _cancCartaoAtivo.id,
+      codigoPedido: _cancCartaoAtivo.codigoPedido,
+      motivoCancelamento: motivo,
+      canceladoPor: SESSAO.nome,
+      canceladoEm: finalizadoEm,
+      finalizadoEm,
+    })});
+    const json = await resp.json();
+    if (json.sucesso) {
+      // Atualiza cache local para mostrar tag na expedição
+      CARTOES_AUTORIZADOS[String(_cancCartaoAtivo.codigoPedido)] = {
+        status: 'cancelado', motivo, dataHora: finalizadoEm
+      };
+      mostrarToast('✕ Cartão cancelado. Operador deve cancelar no ERP.', 'ok');
+      fecharModalCancelarCartao();
+      PEND.iniciado = false; pendCarregar();
+      if (document.getElementById('page-expedicao').classList.contains('active')) renderVD();
+    } else { mostrarToast(json.erro || 'Erro.', 'err'); }
+  } catch(e) { mostrarToast('Falha na conexão.', 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '✕ Confirmar cancelamento'; }
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO FINANCEIRO — VISÃO COMERCIAL
+═══════════════════════════════════════════════ */
+
+const FIN_COM = { iniciado: false };
+
+function finComIniciar() {
+  if (!FIN_COM.iniciado) {
+    FIN_COM.iniciado = true;
+    finComCarregar();
+  }
+}
+
+async function finComCarregar() {
+  document.getElementById('fin-com-loading').style.display = 'block';
+  document.getElementById('fin-com-layout').innerHTML = '';
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getCartoesComercial');
+    const json = await resp.json();
+    if (json.sucesso) {
+      finComRender(json.dados || []);
+    } else {
+      document.getElementById('fin-com-layout').innerHTML =
+        '<div class="empty"><div class="empty-ico">⚠️</div><h3>Erro ao carregar</h3></div>';
+    }
+  } catch(e) {
+    document.getElementById('fin-com-layout').innerHTML =
+      '<div class="empty"><div class="empty-ico">⚠️</div><h3>Falha na conexão</h3></div>';
+  } finally {
+    document.getElementById('fin-com-loading').style.display = 'none';
+  }
+}
+
+function finComRender(dados) {
+  const el = document.getElementById('fin-com-layout');
+  if (!dados.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">✅</div><h3>Sem pendências de cartão</h3><p>Nenhum cartão pendente ou cancelado no período.</p></div>';
+    return;
+  }
+
+  // Agrupar por estrutura
+  const grupos = {};
+  dados.forEach(d => {
+    const est = d.estrutura || 'Sem estrutura';
+    if (!grupos[est]) grupos[est] = { pendentes: [], cancelados: [] };
+    if (d.status === 'cancelado') grupos[est].cancelados.push(d);
+    else grupos[est].pendentes.push(d);
+  });
+
+  let html = '';
+  Object.keys(grupos).sort().forEach(est => {
+    const g = grupos[est];
+    const totalPend = g.pendentes.length;
+    const totalCanc = g.cancelados.length;
+    html += `
+      <div class="tcard" style="margin-bottom:16px">
+        <div class="tcard-head">
+          <span class="tcard-title" style="font-size:13px">🏢 ${est}</span>
+          <span class="tcard-count">${totalPend > 0 ? `<span style="color:var(--accent);font-weight:700">${totalPend} pendente${totalPend!==1?'s':''}</span>` : ''}${totalPend>0&&totalCanc>0?' · ':''}${totalCanc > 0 ? `${totalCanc} cancelado${totalCanc!==1?'s':''}` : ''}</span>
+        </div>
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">`;
+
+    if (g.pendentes.length) {
+      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:2px">💳 Pendentes de autorização</div>`;
+      g.pendentes.forEach(d => {
+        html += `
+          <div class="fincom-item fincom-pend">
+            <div class="fincom-ico">💳</div>
+            <div class="fincom-body">
+              <div class="fincom-titulo">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'}</div>
+              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Aprovado: ${d.dataAprovacao ? fmtDataHoraBrasilia(d.dataAprovacao) : '—'} · ${d.status === 'em_revisao' ? '📤 Em revisão' : '⏳ Aguardando'}</div>
+            </div>
+          </div>`;
+      });
+    }
+
+    if (g.cancelados.length) {
+      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-top:6px;margin-bottom:2px">✕ Cancelados</div>`;
+      g.cancelados.forEach(d => {
+        html += `
+          <div class="fincom-item fincom-canc">
+            <div class="fincom-ico" style="color:var(--accent)">✕</div>
+            <div class="fincom-body">
+              <div class="fincom-titulo">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'}</div>
+              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Motivo: <strong>${d.motivoCancelamento||'—'}</strong> · ${fmtDataHoraBrasilia(d.canceladoEm)}</div>
+            </div>
+          </div>`;
+      });
+    }
+
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+
+
+/* ═══════════════════════════════════════════════
+   MÓDULO ESTATÍSTICAS FINANCEIRO
+═══════════════════════════════════════════════ */
+
+const ESTAT_FIN = { iniciado: false };
+
+function estatFinIniciar() {
+  if (!ESTAT_FIN.iniciado) {
+    ESTAT_FIN.iniciado = true;
+    estatFinCarregar();
+  }
+}
+
+async function estatFinCarregar() {
+  document.getElementById('estat-fin-loading').style.display = 'block';
+  document.getElementById('estat-canc-lista').innerHTML =
+    '<div class="empty"><div class="empty-ico">⏳</div><h3>Carregando...</h3></div>';
+  try {
+    const resp = await fetch(SCRIPT_URL + '?modulo=getEstatisticasCancelamento');
+    const json = await resp.json();
+    if (json.sucesso) {
+      estatFinRender(json.ranking || []);
+    } else {
+      document.getElementById('estat-canc-lista').innerHTML =
+        '<div class="empty"><div class="empty-ico">⚠️</div><h3>Erro ao carregar</h3></div>';
+    }
+  } catch(e) {
+    document.getElementById('estat-canc-lista').innerHTML =
+      '<div class="empty"><div class="empty-ico">⚠️</div><h3>Falha na conexão</h3></div>';
+  } finally {
+    document.getElementById('estat-fin-loading').style.display = 'none';
+  }
+}
+
+function estatFinRender(ranking) {
+  const count = document.getElementById('estat-canc-count');
+  const lista = document.getElementById('estat-canc-lista');
+
+  if (!ranking.length) {
+    count.textContent = '0 revendedores';
+    lista.innerHTML = '<div class="empty"><div class="empty-ico">✅</div><h3>Nenhum cancelamento registrado</h3></div>';
+    return;
+  }
+
+  count.textContent = ranking.length + ' revendedor' + (ranking.length !== 1 ? 'es' : '');
+  const maxQtd = ranking[0].qtd || 1;
+
+  let html = '<div class="estat-ranking">';
+  ranking.forEach((r, i) => {
+    const pct = Math.round((r.qtd / maxQtd) * 100);
+    const cor = r.qtd >= 5 ? 'var(--accent)' : r.qtd >= 3 ? 'var(--yellow)' : 'var(--blue)';
+    html += `
+      <div class="estat-rank-item">
+        <div class="estat-rank-pos">${i + 1}</div>
+        <div class="estat-rank-body">
+          <div class="estat-rank-nome">
+            <span>${r.nomePessoa || '—'}</span>
+            <span class="mono" style="color:var(--text-3);font-size:11px">${r.codigoPessoa || ''}</span>
+          </div>
+          <div class="estat-rank-bar-wrap">
+            <div class="estat-rank-bar" style="width:${pct}%;background:${cor}"></div>
+          </div>
+        </div>
+        <div class="estat-rank-qtd" style="color:${cor}">${r.qtd}</div>
+      </div>`;
+  });
+  html += '</div>';
+  lista.innerHTML = html;
+}
 
 
 /* ═══════════════════════════════════════════════
