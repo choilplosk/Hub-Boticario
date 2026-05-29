@@ -4787,6 +4787,16 @@ async function processarCartoes(pedidos) {
   const cartoes = pedidos.filter(p => p.Pagamento === CARTAO_CENTRAL);
   if (!cartoes.length) return;
 
+  // Popular tags imediatamente (antes do fetch) para exibição instantânea
+  cartoes.forEach(p => {
+    const cod = String(p.CodigoPedido);
+    if (!CARTOES_AUTORIZADOS[cod]) {
+      CARTOES_AUTORIZADOS[cod] = { status: 'pendente' };
+    }
+  });
+  renderVD();
+  renderOmni();
+
   try {
     await fetch(SCRIPT_URL, {
       method: 'POST',
@@ -4814,7 +4824,20 @@ async function processarCartoes(pedidos) {
       }),
     });
     mostrarToast(`💳 ${cartoes.length} pedido${cartoes.length>1?'s':''} com cartão enviado${cartoes.length>1?'s':''} ao Financeiro.`, 'ok');
-  } catch(err) { console.error('Erro ao registrar cartões:', err); }
+    // Recarregar autorizações do Sheets e re-renderizar tabela
+    await carregarAutoriz();
+  } catch(err) {
+    console.error('Erro ao registrar cartões:', err);
+    // Mesmo com erro no Sheets, popular tags localmente
+    cartoes.forEach(p => {
+      const cod = String(p.CodigoPedido);
+      if (!CARTOES_AUTORIZADOS[cod]) {
+        CARTOES_AUTORIZADOS[cod] = { status: 'pendente' };
+      }
+    });
+    renderVD();
+    renderOmni();
+  }
 }
 
 /* Inicializa aba pendências */
