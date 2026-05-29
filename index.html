@@ -4717,9 +4717,26 @@ let _pendItemAtivo = null; // item em edição no modal
 function agoraBrasilia() {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
 }
+function parseDateBR(d) {
+  // Parseia dd/mm/aaaa hh:mm:ss ou dd/mm/aaaa (formato brasileiro)
+  if (!d) return null;
+  if (d instanceof Date) return d;
+  const s = String(d).trim();
+  // Formato dd/mm/aaaa hh:mm:ss ou dd/mm/aaaa hh:mm
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) {
+    const [,dd,mm,aaaa,hh='00',min='00',ss='00'] = m;
+    return new Date(`${aaaa}-${mm}-${dd}T${hh}:${min}:${ss}-03:00`);
+  }
+  // Tentar ISO ou outros formatos
+  const dt = new Date(s);
+  return isNaN(dt) ? null : dt;
+}
+
 function fmtDataHoraBrasilia(d) {
   if (!d) return '—';
-  const dt = d instanceof Date ? d : new Date(d);
+  const dt = parseDateBR(d);
+  if (!dt || isNaN(dt)) return '—';
   return dt.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo',
     day:'2-digit', month:'2-digit', year:'numeric',
     hour:'2-digit', minute:'2-digit' });
@@ -4782,7 +4799,15 @@ async function processarCartoes(pedidos) {
           ciclo:         p.Ciclo           || '',
           bairro:        p.Bairro          || '',
           valorLiquido:  p.ValorLiquido    || 0,
-          dataAprovacao: p._dataAprovacaoRaw ? (p._dataAprovacaoRaw instanceof Date ? fmtDataHoraBrasilia(p._dataAprovacaoRaw) : String(p._dataAprovacaoRaw)) : '',
+          dataAprovacao: (()=>{
+            const raw = p._dataAprovacaoRaw;
+            if (!raw) return '';
+            const dt = raw instanceof Date ? raw : parseDateBR(raw);
+            if (!dt || isNaN(dt)) return String(raw);
+            return dt.toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo',
+              day:'2-digit',month:'2-digit',year:'numeric',
+              hour:'2-digit',minute:'2-digit',second:'2-digit'});
+          })(),
           estrutura:     p.Estrutura || '',
           registradoEm:  agoraBrasilia().toISOString(),
         })),
