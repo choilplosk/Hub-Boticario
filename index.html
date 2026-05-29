@@ -2616,10 +2616,17 @@ function processFile(file){
       const bannerSheets = document.getElementById('exp-banner-sheets');
       if (bannerSheets) bannerSheets.style.display = 'none';
 
+      // Popular tags de cartão ANTES de renderizar a tabela
+      S.allRaw.forEach(p => {
+        if (p.Pagamento === CARTAO_CENTRAL && !CARTOES_AUTORIZADOS[String(p.CodigoPedido)]) {
+          CARTOES_AUTORIZADOS[String(p.CodigoPedido)] = { status: 'pendente' };
+        }
+      });
+
       populateFilters();
       applyFilters();
       frRenderPendentes();
-      // Processa pedidos com cartão e envia ao Financeiro
+      // Processa pedidos com cartão e envia ao Financeiro (em background)
       if (['admin','operador'].includes(SESSAO.perfil)) {
         processarCartoes(S.allRaw);
       }
@@ -4798,8 +4805,11 @@ async function processarCartoes(pedidos) {
   renderOmni();
 
   try {
+    const ctrl = new AbortController();
+    const tOut = setTimeout(() => ctrl.abort(), 8000);
     await fetch(SCRIPT_URL, {
       method: 'POST',
+      signal: ctrl.signal,
       body: JSON.stringify({
         modulo: 'registrarCartoes',
         pedidos: cartoes.map(p => ({
@@ -4823,6 +4833,7 @@ async function processarCartoes(pedidos) {
         })),
       }),
     });
+    clearTimeout(tOut);
     mostrarToast(`💳 ${cartoes.length} pedido${cartoes.length>1?'s':''} com cartão enviado${cartoes.length>1?'s':''} ao Financeiro.`, 'ok');
     // Recarregar autorizações do Sheets e re-renderizar tabela
     await carregarAutoriz();
