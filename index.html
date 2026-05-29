@@ -4757,10 +4757,11 @@ function flagCartao(codigoPedido) {
     if (auth.status === 'cancelado') {
       return `<span class="flag-cartao-canc" title="Cancelado: ${auth.motivo||'—'} · ${fmtDataHoraBrasilia(auth.dataHora)}">Cancelado</span>`;
     }
-    if (auth.status === 'em_revisao') {
-      return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">Cartão</span>`;
+    if (auth.status === 'autorizado' && auth.codigo) {
+      return `<span class="flag-cartao-ok" title="Autorizado em ${fmtDataHoraBrasilia(auth.dataHora)}">${auth.codigo}</span>`;
     }
-    return `<span class="flag-cartao-ok" title="Autorizado em ${fmtDataHoraBrasilia(auth.dataHora)}">${auth.codigo}</span>`;
+    // pendente ou em_revisao ou autorizado sem código = aguardando
+    return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">Cartão</span>`;
   }
   return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">Cartão</span>`;
 }
