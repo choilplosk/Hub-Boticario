@@ -804,13 +804,13 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 /* Flags na tabela expedição */
 .flag-cartao-pend { 
   display:inline-flex; align-items:center; gap:3px;
-  padding:1px 7px; border-radius:20px; font-size:10px; font-weight:700;
-  background:#ffe4e0; color:var(--accent); border:1px solid var(--accent-mid);
+  padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700;
+  background:#ffe4e0; color:#c0392b; border:1px solid #e74c3c;
   margin-left:4px; white-space:nowrap;
 }
 .flag-cartao-ok { 
   display:inline-flex; align-items:center; gap:3px;
-  padding:1px 7px; border-radius:20px; font-size:10px; font-weight:700;
+  padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700;
   background:var(--green-bg); color:var(--green); border:1px solid #9fd4b8;
   margin-left:4px; white-space:nowrap;
 }
@@ -1201,15 +1201,15 @@ function estatFinRender(ranking) {
 /* === Tags de cartão na expedição === */
 .flag-cartao-canc {
   display:inline-flex; align-items:center; gap:4px;
-  font-size:10.5px; font-weight:700; padding:2px 7px;
-  border-radius:20px; background:#fdf0f0; color:var(--accent);
-  border:1px solid var(--accent); margin-left:4px;
+  font-size:10.5px; font-weight:700; padding:2px 8px;
+  border-radius:20px; background:#e8f4fd; color:#2980b9;
+  border:1px solid #3498db; margin-left:4px;
 }
 .flag-cartao-rev {
   display:inline-flex; align-items:center; gap:4px;
-  font-size:10.5px; font-weight:700; padding:2px 7px;
-  border-radius:20px; background:var(--yellow-bg); color:#7a5c00;
-  border:1px solid var(--yellow); margin-left:4px;
+  font-size:10.5px; font-weight:700; padding:2px 8px;
+  border-radius:20px; background:#e8f4fd; color:#2980b9;
+  border:1px solid #3498db; margin-left:4px;
 }
 
 /* === Timeline do card de revisão === */
@@ -1549,17 +1549,31 @@ function estatFinRender(ranking) {
         </div>
       </div>
 
-      <!-- Distribuição por bairro -->
+      <!-- Distribuição por bairro VD+ -->
       <div class="ind-card">
         <div class="ind-card-head">
           <div>
-            <div class="ind-card-title">📍 Distribuição por Bairro</div>
-            <div class="ind-card-sub">2026 — ciclo selecionado</div>
+            <div class="ind-card-title">📍 Distribuição por Bairro — VD+/APP</div>
+            <div class="ind-card-sub">2026 — ciclo selecionado (sem Omni)</div>
           </div>
           <span id="ov-bairro-total" style="font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace"></span>
         </div>
         <div id="ov-bairros-body">
           <div class="ind-vazio"><span>🗺️</span>Selecione um ciclo acima</div>
+        </div>
+      </div>
+
+      <!-- Distribuição por bairro Omni -->
+      <div class="ind-card">
+        <div class="ind-card-head">
+          <div>
+            <div class="ind-card-title">🛒 Distribuição por Bairro — Omni</div>
+            <div class="ind-card-sub">2026 — ciclo selecionado</div>
+          </div>
+          <span id="ov-bairro-omni-total" style="font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace"></span>
+        </div>
+        <div id="ov-bairros-omni-body">
+          <div class="ind-vazio"><span>🛒</span>Selecione um ciclo acima</div>
         </div>
       </div>
 
@@ -1588,13 +1602,8 @@ function estatFinRender(ranking) {
     <div class="kpi-row" id="ov-comp-row"></div>
   </div>
 
-  <!-- Cards módulos -->
+  <!-- Cards módulos removidos -->
   <div class="ov-grid">
-    <div class="ov-card"><div class="ov-card-ico">📦</div><div class="ov-card-title">Expedição</div><div class="ov-card-desc"><span class="dot"></span>Ativo — carregue a planilha na aba Expedição.</div></div>
-    <div class="ov-card"><div class="ov-card-ico">⚙️</div><div class="ov-card-title">Produção</div><div class="ov-card-desc">Aguardando integração com WMS.</div></div>
-    <div class="ov-card"><div class="ov-card-ico">🚨</div><div class="ov-card-title">Avarias</div><div class="ov-card-desc"><span class="dot"></span>Ativo — Registro de avarias.</div></div>
-    <div class="ov-card"><div class="ov-card-ico">💰</div><div class="ov-card-title">Financeiro</div><div class="ov-card-desc">Em construção — Parte 3.</div></div>
-    <div class="ov-card"><div class="ov-card-ico">🚚</div><div class="ov-card-title">Fretes Especiais</div><div class="ov-card-desc"><span class="dot"></span>Ativo — Controle de fretes Madalena.</div></div>
 
     <!-- Card Armazenagem -->
     <div class="arm-card">
@@ -2814,8 +2823,10 @@ function ovRenderIndicadores(ciclo){
   // ── Pedidos entregues vs 2025 ──
   ovRenderEntregues(ciclo, pedCiclo);
 
-  // ── Distribuição por bairro ──
-  ovRenderBairros(pedCiclo);
+  // ── Distribuição por bairro (sem Omni) ──
+  const pedCicloVD   = pedCiclo.filter(r => r.MeioCaptacao !== 'Pedido Omnichannel');
+  const pedCicloOmni = pedCiclo.filter(r => r.MeioCaptacao === 'Pedido Omnichannel');
+  ovRenderBairros(pedCicloVD, pedCicloOmni);
 }
 
 function ovRenderEntregues(ciclo, pedidos){
@@ -2898,22 +2909,20 @@ function ovRenderEntregues(ciclo, pedidos){
   el.innerHTML = html;
 }
 
-function ovRenderBairros(pedidos){
+function ovRenderBairros(pedidos, pedidosOmni){
   const el    = document.getElementById('ov-bairros-body');
   const total = document.getElementById('ov-bairro-total');
 
   if(!pedidos.length){
     el.innerHTML = '<div class="ind-vazio"><span>🗺️</span>Sem dados para o ciclo</div>';
     total.textContent = '';
-    return;
-  }
-
-  // Agrupa por bairro
-  const mapa = {};
-  pedidos.forEach(r => {
-    const b = String(r.Bairro||'').trim().toUpperCase() || 'NÃO INFORMADO';
-    mapa[b] = (mapa[b]||0) + 1;
-  });
+  } else {
+    // Agrupa por bairro (somente VD+/APP, sem Omni)
+    const mapa = {};
+    pedidos.forEach(r => {
+      const b = String(r.Bairro||'').trim().toUpperCase() || 'NÃO INFORMADO';
+      mapa[b] = (mapa[b]||0) + 1;
+    });
 
   const sorted = Object.entries(mapa).sort((a,b)=>b[1]-a[1]);
   const tot = pedidos.length;
@@ -2944,8 +2953,37 @@ function ovRenderBairros(pedidos){
     `;
   });
 
-  html += '</div>';
-  el.innerHTML = html;
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  // ── Gráfico Omni separado ──
+  let elOmni = document.getElementById('ov-bairros-omni-body');
+  let totalOmni = document.getElementById('ov-bairro-omni-total');
+  if (elOmni) {
+    if (!pedidosOmni || !pedidosOmni.length) {
+      elOmni.innerHTML = '<div class="ind-vazio"><span>🛒</span>Sem pedidos Omni no ciclo</div>';
+      if (totalOmni) totalOmni.textContent = '';
+    } else {
+      const mapaO = {};
+      pedidosOmni.forEach(r => {
+        const b = String(r.Bairro||'').trim().toUpperCase() || 'NÃO INFORMADO';
+        mapaO[b] = (mapaO[b]||0) + 1;
+      });
+      const sortedO = Object.entries(mapaO).sort((a,b)=>b[1]-a[1]);
+      const totO = pedidosOmni.length;
+      const maxO = sortedO[0]?.[1] || 1;
+      if (totalOmni) totalOmni.textContent = totO.toLocaleString('pt-BR') + ' pedidos Omni';
+      let htmlO = `<div class="bairro-row-h"><span>Bairro</span><span style="text-align:right">Qtd</span><span style="text-align:right">%</span><span></span></div><div class="bairro-table-wrap">`;
+      sortedO.forEach(([bairro, qtd]) => {
+        const pct = (qtd/totO*100).toFixed(1);
+        const barW = Math.round(qtd/maxO*100);
+        htmlO += `<div class="bairro-row"><span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${bairro}">${bairro}</span><span class="bairro-right">${qtd.toLocaleString('pt-BR')}</span><span class="bairro-right">${pct}%</span><div class="bairro-bar-bg"><div class="bairro-bar-fill" style="width:${barW}%;background:var(--blue,#4a86e8)"></div></div></div>`;
+      });
+      htmlO += '</div>';
+      elOmni.innerHTML = htmlO;
+    }
+  }
 }
 
 /* Filtros Expedição */
@@ -3576,10 +3614,21 @@ function ovIniciar() {
   setTimeout(verificarAvisoOcupacao, 500);
 }
 
+function sortCiclos(arr) {
+  return arr.sort((a, b) => {
+    // Formato MM/AAAA - ordenar por ano desc, depois mês desc
+    const [ma, aa] = a.split('/').map(Number);
+    const [mb, ab] = b.split('/').map(Number);
+    if (aa !== ab) return ab - aa;
+    return mb - ma;
+  });
+}
+
 function ovPopularCiclos() {
-  const ciclos2026 = [...new Set([...S.vdRaw,...S.omniRaw].map(r=>normalizarCiclo(r.Ciclo)).filter(Boolean))].sort().reverse();
-  const ciclos2025 = [...new Set(OV.hist2025.map(r=>normalizarCiclo(r.ciclo)).filter(Boolean))].sort().reverse();
-  const todos = [...new Set([...ciclos2026,...ciclos2025])].sort().reverse();
+  const ciclos2026 = sortCiclos([...new Set([...S.vdRaw,...S.omniRaw].map(r=>normalizarCiclo(r.Ciclo)).filter(Boolean))]);
+  const ciclos2025 = sortCiclos([...new Set(OV.hist2025.map(r=>normalizarCiclo(r.ciclo)).filter(Boolean))]);
+  // 2026 sempre antes de 2025 no select
+  const todos = [...ciclos2026, ...ciclos2025.filter(c => !ciclos2026.includes(c))];
   const sel = document.getElementById('ov-sel-ciclo');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Selecione o ciclo...</option>';
@@ -3675,15 +3724,26 @@ function ovRenderGrafico() {
   leg.style.display = tem2025 ? 'flex' : 'none';
 
   const map2026 = {}, map2025 = {};
-  [...S.vdRaw,...S.omniRaw].forEach(r => { if(r.Ciclo) map2026[r.Ciclo] = (map2026[r.Ciclo]||0)+1; });
-  OV.hist2025.forEach(r => { if(r.ciclo) map2025[r.ciclo] = Number(r.total)||0; });
+  [...S.vdRaw,...S.omniRaw].forEach(r => {
+    const c = normalizarCiclo(r.Ciclo) || r.Ciclo;
+    if(c) map2026[c] = (map2026[c]||0)+1;
+  });
+  OV.hist2025.forEach(r => {
+    const c = normalizarCiclo(r.ciclo) || r.ciclo;
+    if(c) map2025[c] = Number(r.total)||0;
+  });
 
-  const maxVal = Math.max(...ciclos2026.map(c=>map2026[c]||0), ...ciclos2026.map(c=>map2025[c]||0), 1);
+  const todos2025ciclos = sortCiclos([...new Set(OV.hist2025.map(r=>normalizarCiclo(r.ciclo)||r.ciclo).filter(Boolean))]);
+  const maxVal = Math.max(...ciclos2026.map(c=>map2026[c]||0), ...ciclos2026.map(c=>map2025[c]||0), ...todos2025ciclos.map(c=>map2025[c]||0), 1);
   const BAR_H=22, BAR_GAP=4, GRP_GAP=14, GRP_H=tem2025?BAR_H*2+BAR_GAP:BAR_H;
   const LABEL_W=72, CHART_W=520, SVG_H=ciclos2026.length*(GRP_H+GRP_GAP)+10;
 
+  // Combinar ciclos: 2026 primeiro, depois ciclos de 2025 não presentes em 2026
+  const todosGraf = [...ciclos2026, ...todos2025ciclos.filter(c => !ciclos2026.includes(c))];
+  const SVG_H_corr = todosGraf.length*(GRP_H+GRP_GAP)+10;
+
   let bars = '';
-  ciclos2026.forEach((c,i)=>{
+  todosGraf.forEach((c,i)=>{
     const y=i*(GRP_H+GRP_GAP)+5, v26=map2026[c]||0, v25=map2025[c]||0;
     const w26=Math.round((v26/maxVal)*CHART_W), w25=Math.round((v25/maxVal)*CHART_W);
     const sel = document.getElementById('ov-sel-ciclo').value === c;
@@ -3703,7 +3763,7 @@ function ovRenderGrafico() {
   });
 
   document.getElementById('ov-grafico').innerHTML =
-    `<svg viewBox="0 0 ${LABEL_W+CHART_W+80} ${SVG_H}" style="width:100%;height:${SVG_H}px">${bars}</svg>`;
+    `<svg viewBox="0 0 ${LABEL_W+CHART_W+80} ${SVG_H_corr}" style="width:100%;height:${SVG_H_corr}px">${bars}</svg>`;
   wrap.style.display = 'block';
 }
 
@@ -3712,11 +3772,16 @@ function ovRenderComparativo() {
   // Mostra 2026 mesmo sem histórico 2025; oculta só se não houver dado algum
   if (!S.vdRaw.length && !S.omniRaw.length && !OV.hist2025ok) { wrap.style.display = 'none'; return; }
 
-  const tot2026  = [...S.vdRaw,...S.omniRaw].length;
+  // Filtrar somente pedidos de 2026 (ciclo contém "/2026")
+  const ped2026all = [...S.vdRaw,...S.omniRaw].filter(r => {
+    const c = normalizarCiclo(r.Ciclo) || String(r.Ciclo||'');
+    return c.includes('/2026') || c.endsWith('2026');
+  });
+  const tot2026  = ped2026all.length;
   const tot2025  = OV.hist2025.reduce((s,c)=>s+Number(c.total||0),0);
-  const entg2026 = [...S.vdRaw,...S.omniRaw].filter(r=>r.SituaçãoComercial==='Entregue').length;
+  const entg2026 = ped2026all.filter(r=>r.SituaçãoComercial==='Entregue').length;
   const entg2025 = OV.hist2025.reduce((s,c)=>s+Number(c.entregues||0),0);
-  const omni2026 = S.omniRaw.length;
+  const omni2026 = ped2026all.filter(r=>r.MeioCaptacao==='Pedido Omnichannel').length;
   const omni2025 = OV.hist2025.reduce((s,c)=>s+Number(c.omni||0),0);
   const avVal2026 = qRegistros.reduce((s,r)=>s+Number(r.valorTotal||0),0);
   const frVal2026 = FR.registros.reduce((s,r)=>s+Number(r.valorFrete||0),0);
@@ -4826,14 +4891,14 @@ function flagCartao(codigoPedido) {
   const auth = CARTOES_AUTORIZADOS[cod];
   if (auth) {
     if (auth.status === 'cancelado') {
-      return `<span class="flag-cartao-canc" title="Cancelado: ${auth.motivo||'—'} · ${fmtDataHoraBrasilia(auth.dataHora)}">✕ Cancelado</span>`;
+      return `<span class="flag-cartao-canc" title="Cancelado: ${auth.motivo||'—'} · ${fmtDataHoraBrasilia(auth.dataHora)}">Cancelado</span>`;
     }
     if (auth.status === 'em_revisao') {
-      return `<span class="flag-cartao-rev" title="Em revisão com ${auth.destinatario||'—'}">📤 Em Revisão</span>`;
+      return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">Cartão</span>`;
     }
-    return `<span class="flag-cartao-ok" title="Autorizado em ${fmtDataHoraBrasilia(auth.dataHora)}">✅ ${auth.codigo}</span>`;
+    return `<span class="flag-cartao-ok" title="Autorizado em ${fmtDataHoraBrasilia(auth.dataHora)}">${auth.codigo}</span>`;
   }
-  return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">🔴 Cartão</span>`;
+  return `<span class="flag-cartao-pend" title="Aguardando autorização do Financeiro">Cartão</span>`;
 }
 
 /* Carrega autorizações de cartão do Sheets */
@@ -5139,7 +5204,7 @@ function renderItemPend(item, tipo) {
           ${statusHtml}
         </div>
         <div class="pend-item-meta">
-          NF: ${item.notaFiscal||'—'} · Ciclo: ${normalizarCiclo(item.ciclo)||item.ciclo||'—'} · Aprovado: ${item.dataAprovacao ? fmtDataHoraBrasilia(item.dataAprovacao) : fmtDataHoraBrasilia(item.registradoEm)}
+          NF: ${item.notaFiscal||'—'} · Ciclo: ${normalizarCiclo(item.ciclo)||item.ciclo||'—'} · Aprovado: ${item.dataAprovacao ? fmtDataHoraBrasilia(item.dataAprovacao) : '—'}
           ${item.solicitadoPor ? ` · Por: ${item.solicitadoPor}` : ''}
         </div>
         ${item.motivo ? `<div class="pend-item-obs">${item.motivo}</div>` : ''}
@@ -6034,8 +6099,8 @@ function finRender() {
           ${pedCartao.map(p => {
             const auth = CARTOES_AUTORIZADOS[String(p.CodigoPedido)];
             const statusHtml = auth
-              ? `<span class="flag-cartao-ok">✅ ${auth.codigo}</span>`
-              : `<span class="flag-cartao-pend">🔴 Pendente</span>`;
+              ? `<span class="flag-cartao-ok">${auth.codigo}</span>`
+              : `<span class="flag-cartao-pend">Cartão</span>`;
             return `<tr>
               <td style="padding:8px 13px;border-bottom:1px solid var(--border)" class="mono">${p.CodigoPedido||'—'}</td>
               <td style="padding:8px 13px;border-bottom:1px solid var(--border);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.NomePessoa||'—'}</td>
