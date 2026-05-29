@@ -4844,8 +4844,11 @@ async function carregarAutoriz() {
     if (json.sucesso && json.autoriz) {
       json.autoriz.forEach(a => {
         CARTOES_AUTORIZADOS[String(a.codigoPedido)] = {
-          codigo:  a.codigoAutoriz,
-          dataHora: a.dataHora,
+          codigo:       a.codigoAutoriz,
+          dataHora:     a.dataHora,
+          status:       a.status || 'pendente',
+          motivo:       a.motivoCancelamento || '',
+          destinatario: a.destinatarioRevisao || '',
         };
       });
     }
@@ -4870,6 +4873,7 @@ async function processarCartoes(pedidos) {
           bairro:        p.Bairro          || '',
           valorLiquido:  p.ValorLiquido    || 0,
           dataAprovacao: p._dataAprovacaoRaw ? String(p._dataAprovacaoRaw) : '',
+          estrutura:     p.Estrutura || '',
           registradoEm:  agoraBrasilia().toISOString(),
         })),
       }),
@@ -4912,7 +4916,11 @@ async function pendCarregar() {
     if (jAutoriz.sucesso) {
       jAutoriz.autoriz.forEach(a => {
         CARTOES_AUTORIZADOS[String(a.codigoPedido)] = {
-          codigo: a.codigoAutoriz, dataHora: a.dataHora
+          codigo:       a.codigoAutoriz,
+          dataHora:     a.dataHora,
+          status:       a.status || 'pendente',
+          motivo:       a.motivoCancelamento || '',
+          destinatario: a.destinatarioRevisao || '',
         };
       });
     }
