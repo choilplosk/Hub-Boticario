@@ -2485,7 +2485,7 @@ const FR = {
 const REQUIRED = [
   'CodigoPedido','NomePessoa','Pessoa','SituaçãoComercial','MeioCaptacao',
   'NotaFiscal','PrevisãoEntrega','DataEntrega','Lote de separação',
-  'Ciclo Captação','Bairro','BairroEntregaRetirada','Estrutura',
+  'Ciclo Captação','Bairro','Estrutura',
   'PlanoPagamento','Tipo de Entrega','Cód Externo Pedido','Nome do Recebedor'
 ];
 
@@ -2581,7 +2581,7 @@ function processFile(file){
           DataFaturamento:   fmtDate(r[idx['DataFaturamento']]),
           Lote:              r[idx['Lote de separação']],
           Ciclo:             r[idx['Ciclo Captação']],
-          Bairro:            r[idx['BairroEntregaRetirada']]||r[idx['Bairro']],
+          Bairro:            r[idx['Bairro']],
           Estrutura:         r[idx['Estrutura']],
           Pagamento:         r[idx['PlanoPagamento']],
           TipoEntrega:       r[idx['Tipo de Entrega']],
