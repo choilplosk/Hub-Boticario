@@ -1046,7 +1046,7 @@ function finComRender(dados) {
             <div class="fincom-ico">💳</div>
             <div class="fincom-body">
               <div class="fincom-titulo">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'}</div>
-              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Aprovado: ${d.dataAprovacao ? fmtDataHoraBrasilia(d.dataAprovacao) : '—'} · ${d.status === 'em_revisao' ? '📤 Em revisão' : '⏳ Aguardando'}</div>
+              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Aprovado: ${d.dataAprovacao ? fmtDataHoraBrasilia(d.dataAprovacao) : '—'} · ${d.status === 'em_revisao' ? '<span class="flag-cartao-pend">Cartão</span>' : '<span class="flag-cartao-pend">Cartão</span>'}</div>
             </div>
           </div>`;
       });
@@ -3541,9 +3541,23 @@ function frFmtData(v){
 ═══════════════════════════════════════════════ */
 const OV = { hist2025: [], hist2025ok: false };
 
-function ovIniciar() {
+async function ovIniciar() {
   armIniciar();
   if (!OV.hist2025ok) ovCarregarHistSheets();
+
+  // Carregar fretes e avarias em background para KPIs
+  try {
+    const safe = async (url) => {
+      try { const r = await fetch(url); return await r.json(); } catch(e) { return { sucesso:false }; }
+    };
+    const [jFr, jAv] = await Promise.all([
+      FR.registros.length ? Promise.resolve(null) : safe(SCRIPT_URL + '?modulo=frete'),
+      qRegistros.length   ? Promise.resolve(null) : safe(SCRIPT_URL + '?modulo=avarias'),
+    ]);
+    if (jFr && jFr.sucesso) FR.registros = (jFr.registros||[]).map(r=>({...r, ciclo: normalizarCiclo(r.ciclo)||r.ciclo}));
+    if (jAv && jAv.sucesso) qRegistros   = (jAv.registros||[]).map(r=>({...r, ciclo: normalizarCiclo(r.ciclo)||r.ciclo}));
+  } catch(e) { console.warn('ovIniciar: erro ao carregar fretes/avarias', e); }
+
   ovPopularCiclos();
   ovRender();
   // Aviso diário de ocupação
@@ -5199,7 +5213,17 @@ function esc2(s) { return String(s||'').replace(/'/g,"\'").replace(/"/g,'&quot;'
 
 /* Atualiza badge no nav */
 function atualizarBadgePend() {
-  const pendentes = PEND.registros.filter(p => p.status === 'pendente').length;
+  const perfil = SESSAO.perfil || '';
+  let pendFiltrados = PEND.registros.filter(p => p.status === 'pendente');
+  // Comercial não vê cartões (são do financeiro)
+  if (['comercial_consultor','comercial_gerente'].includes(perfil)) {
+    pendFiltrados = pendFiltrados.filter(p => p.tipo !== 'cartao');
+  }
+  // Financeiro só vê cartões
+  if (perfil === 'financeiro') {
+    pendFiltrados = pendFiltrados.filter(p => p.tipo === 'cartao');
+  }
+  const pendentes = pendFiltrados.length;
   const badge = document.getElementById('nav-pend-badge');
   if (!badge) return;
   if (pendentes > 0) {
@@ -5600,7 +5624,7 @@ function finComRender(dados) {
             <div class="fincom-ico">💳</div>
             <div class="fincom-body">
               <div class="fincom-titulo">Pedido <span class="mono">${d.codigoPedido||'—'}</span> · ${d.nomePessoa||'—'}</div>
-              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Aprovado: ${d.dataAprovacao ? fmtDataHoraBrasilia(d.dataAprovacao) : '—'} · ${d.status === 'em_revisao' ? '📤 Em revisão' : '⏳ Aguardando'}</div>
+              <div class="fincom-meta">NF: ${d.notaFiscal||'—'} · Aprovado: ${d.dataAprovacao ? fmtDataHoraBrasilia(d.dataAprovacao) : '—'} · ${d.status === 'em_revisao' ? '<span class="flag-cartao-pend">Cartão</span>' : '<span class="flag-cartao-pend">Cartão</span>'}</div>
             </div>
           </div>`;
       });
@@ -6076,10 +6100,7 @@ function finRender() {
         </thead>
         <tbody>
           ${pedCartao.map(p => {
-            const auth = CARTOES_AUTORIZADOS[String(p.CodigoPedido)];
-            const statusHtml = auth
-              ? `<span class="flag-cartao-ok">${auth.codigo}</span>`
-              : `<span class="flag-cartao-pend">Cartão</span>`;
+            const statusHtml = flagCartao(p.CodigoPedido);
             return `<tr>
               <td style="padding:8px 13px;border-bottom:1px solid var(--border)" class="mono">${p.CodigoPedido||'—'}</td>
               <td style="padding:8px 13px;border-bottom:1px solid var(--border);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.NomePessoa||'—'}</td>
@@ -6110,7 +6131,7 @@ function finRender() {
   avLista.innerHTML = avCiclo.length
     ? avCiclo.map(r => `
         <div style="padding:9px 14px;border-bottom:1px solid var(--border);font-size:12.5px;display:flex;justify-content:space-between;align-items:center">
-          <span>${r.codigo||'—'} · ${r.tipoAvaria||'—'} · ${Number(r.quantidade||0)} un.</span>
+          <span>${fmtDate(r.data)||'—'} · ${r.tipoAvaria||'—'} · ${Number(r.quantidade||0)} un.</span>
           <span class="mono" style="font-weight:700;color:var(--accent)">${brl(Number(r.valorTotal||0))}</span>
         </div>`).join('')
     : '<div class="empty" style="padding:20px"><h3 style="font-size:13px;color:var(--text-3)">Nenhuma avaria no ciclo</h3></div>';
