@@ -734,6 +734,22 @@ tr.row-atencao:hover td { background:#ffe4e0 !important; }
 ═══════════════════════════════════════════════ */
 
 /* Badge contador no nav */
+/* Filtros de pendência */
+.pend-filters { display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+.pend-filter-btn {
+  padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+  border:1px solid var(--border-strong); background:var(--surface); color:var(--text-2);
+  cursor:pointer; transition:all .15s;
+}
+.pend-filter-btn:hover { background:var(--surface-2); }
+.pend-filter-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.pend-filter-count {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:18px; height:18px; border-radius:9px; font-size:10px; font-weight:700;
+  background:rgba(255,255,255,.25); margin-left:5px; padding:0 4px;
+}
+.pend-filter-btn:not(.active) .pend-filter-count { background:var(--border); color:var(--text-3); }
+
 .pend-badge {
   display:inline-flex; align-items:center; justify-content:center;
   min-width:18px; height:18px; padding:0 5px;
@@ -1306,13 +1322,13 @@ function estatFinRender(ranking) {
     <button class="nav-tab" data-perfis="admin,operador,financeiro,comercial_consultor,comercial_gerente" onclick="goPage('visao-geral',this)">◈ Visão Geral</button>
     <button class="nav-tab" data-perfis="admin,operador,financeiro,comercial_consultor,comercial_gerente" onclick="goPage('expedicao',this)">📦 Expedição</button>
     <button class="nav-tab" data-perfis="admin,operador" onclick="goPage('avarias',this)">🚨 Avarias</button>
-    <button class="nav-tab" data-perfis="admin,financeiro" onclick="goPage('financeiro',this)">💰 Financeiro</button>
+    <button class="nav-tab" data-perfis="admin,financeiro" onclick="goPage('financeiro',this)">💰 Resumo</button>
     <button class="nav-tab" data-perfis="admin,operador" onclick="goPage('fretes',this)">🚚 Fretes Especiais</button>
     <button class="nav-tab" id="nav-pendencias" data-perfis="admin,operador,financeiro,comercial_consultor,comercial_gerente" onclick="goPage('pendencias',this)">
       🔔 Pendências <span class="pend-badge" id="nav-pend-badge" style="display:none">0</span>
     </button>
-    <button class="nav-tab" data-perfis="admin,comercial_consultor,comercial_gerente" onclick="goPage('comercial',this)">🛒 Comercial</button>
-    <button class="nav-tab" data-perfis="comercial_consultor,comercial_gerente" onclick="goPage('fin-comercial',this)">💳 Financeiro</button>
+    <!-- Comercial integrado à Pendências -->
+    <button class="nav-tab" data-perfis="comercial_consultor,comercial_gerente" onclick="goPage('fin-comercial',this)">💳 Cartões</button>
     <button class="nav-tab" data-perfis="admin,financeiro" onclick="goPage('estatisticas-fin',this)">📊 Estatísticas</button>
   </div>
   <div class="nav-right" style="display:flex;align-items:center;gap:12px">
@@ -1466,7 +1482,7 @@ function estatFinRender(ranking) {
           <div class="ht-wrap">
             <div>
               <span class="ht-big" id="ov-ht-media">—</span>
-              <span class="ht-unit">dias em média</span>
+              <span class="ht-unit">em média</span>
             </div>
             <div class="ht-detail">
               <div class="ht-stat">
@@ -1926,7 +1942,7 @@ function estatFinRender(ranking) {
 ═══════════════════════════════════════════════ -->
 <div class="page" id="page-financeiro">
   <div class="ph">
-    <div><h1>💰 Financeiro</h1><p>Resumo financeiro por ciclo</p></div>
+    <div><h1>💰 Resumo</h1><p>Resumo financeiro por ciclo</p></div>
     <div style="display:flex;align-items:center;gap:10px">
       <button class="btn btn-ghost" style="font-size:12px" onclick="finCarregar()">↺ Atualizar</button>
       <select class="fsel" id="fin-sel-ciclo" onchange="finRender()" style="font-weight:600">
@@ -2151,6 +2167,12 @@ function estatFinRender(ranking) {
     <div style="margin-top:10px">Carregando pendências...</div>
   </div>
 
+  <div class="pend-filters" id="pend-filters" style="display:none">
+    <button class="pend-filter-btn active" onclick="pendFiltrar('todos',this)">Todos <span class="pend-filter-count" id="pf-todos">0</span></button>
+    <button class="pend-filter-btn" onclick="pendFiltrar('cartao',this)">💳 Cartões <span class="pend-filter-count" id="pf-cartao">0</span></button>
+    <button class="pend-filter-btn" onclick="pendFiltrar('cancelamento',this)">❌ Cancelamentos <span class="pend-filter-count" id="pf-cancelamento">0</span></button>
+    <button class="pend-filter-btn" onclick="pendFiltrar('devolucao',this)">↩ Devoluções <span class="pend-filter-count" id="pf-devolucao">0</span></button>
+  </div>
   <div class="pend-layout" id="pend-layout"></div>
 </div>
 
@@ -2362,7 +2384,7 @@ function estatFinRender(ranking) {
 <div class="page" id="page-fin-comercial">
   <div class="ph">
     <div>
-      <h1>💳 Financeiro</h1>
+      <h1>💳 Cartões</h1>
       <p>Cartões pendentes e cancelados por estrutura</p>
     </div>
     <button class="btn btn-ghost" style="font-size:12px" onclick="finComCarregar()">↺ Atualizar</button>
@@ -2630,6 +2652,10 @@ function processFile(file){
       if (['admin','operador'].includes(SESSAO.perfil)) {
         processarCartoes(S.allRaw);
       }
+      // Auto-sincroniza com Sheets para carregar automático na próxima vez
+      if (['admin','operador'].includes(SESSAO.perfil)) {
+        setTimeout(() => sincronizarExpedicao(true), 2000);
+      }
 
     } catch(err){
       setAlert('error','⚠️ Erro ao ler o arquivo. Verifique se é um .xlsx válido exportado do VD+.');
@@ -2673,9 +2699,27 @@ function diffDias(d1, d2){
 /* ═══ INDICADORES ═══ */
 
 /* Calcula Handling Time para um conjunto de pedidos */
+function diffHoras(d1, d2) {
+  if(!d1||!d2) return null;
+  const a = toDate(d1), b = toDate(d2);
+  if(!a||!b) return null;
+  const ms = b.getTime() - a.getTime();
+  return ms / 3600000; // retorna horas (pode ser decimal)
+}
+
+function fmtDiasHoras(horas) {
+  if (horas === null || horas === undefined) return '—';
+  const h = Math.abs(horas);
+  const d = Math.floor(h / 24);
+  const hr = Math.round(h % 24);
+  if (d === 0 && hr === 0) return '0d0h';
+  if (d === 0) return hr + 'h';
+  return d + 'd' + hr + 'h';
+}
+
 function calcHandlingTime(pedidos){
   const validos = pedidos
-    .map(r => diffDias(r._dataAprovacaoRaw || r.DataAprovacao, r._dataFaturamentoRaw || r.DataFaturamento))
+    .map(r => diffHoras(r._dataAprovacaoRaw || r.DataAprovacao, r._dataFaturamentoRaw || r.DataFaturamento))
     .filter(d => d !== null && d >= 0);
 
   if(!validos.length) return null;
@@ -2688,11 +2732,15 @@ function calcHandlingTime(pedidos){
     : validos[Math.floor(validos.length/2)];
 
   return {
-    media:   parseFloat(media.toFixed(1)),
-    mediana: parseFloat(mediana.toFixed(1)),
+    media:   media,
+    mediana: mediana,
     min:     validos[0],
     max:     validos[validos.length-1],
     n:       validos.length,
+    mediaFmt:   fmtDiasHoras(media),
+    medianaFmt: fmtDiasHoras(mediana),
+    minFmt:     fmtDiasHoras(validos[0]),
+    maxFmt:     fmtDiasHoras(validos[validos.length-1]),
   };
 }
 
@@ -2733,15 +2781,15 @@ function ovRenderIndicadores(ciclo){
   // ── Handling Time ──
   const ht = calcHandlingTime(pedCiclo);
   if(ht){
-    document.getElementById('ov-ht-media').textContent   = ht.media;
-    document.getElementById('ov-ht-mediana').textContent = ht.mediana + ' dias';
-    document.getElementById('ov-ht-minmax').textContent  = ht.min + ' / ' + ht.max + ' dias';
+    document.getElementById('ov-ht-media').textContent   = ht.mediaFmt;
+    document.getElementById('ov-ht-mediana').textContent = ht.medianaFmt;
+    document.getElementById('ov-ht-minmax').textContent  = ht.minFmt + ' / ' + ht.maxFmt;
     document.getElementById('ov-ht-n').textContent       = ht.n.toLocaleString('pt-BR') + ' pedidos';
 
     const badge = document.getElementById('ov-ht-badge');
-    if(ht.media <= 1){
+    if(ht.media <= 24){
       badge.style.background='var(--green-bg)'; badge.style.color='var(--green)'; badge.textContent='✅ Excelente';
-    } else if(ht.media <= 2){
+    } else if(ht.media <= 48){
       badge.style.background='var(--yellow-bg)'; badge.style.color='var(--yellow)'; badge.textContent='⚠️ Atenção';
     } else {
       badge.style.background='var(--accent-bg)'; badge.style.color='var(--accent)'; badge.textContent='🔴 Crítico';
@@ -3862,11 +3910,11 @@ const PERFIL_LABEL = {
 
 // Permissões por perfil: quais páginas pode acessar
 const PERFIL_PAGINAS = {
-  admin:               ['visao-geral','expedicao','avarias','financeiro','fretes','pendencias','comercial','fin-comercial','estatisticas-fin'],
+  admin:               ['visao-geral','expedicao','avarias','financeiro','fretes','pendencias','fin-comercial','estatisticas-fin'],
   operador:            ['visao-geral','expedicao','avarias','fretes','pendencias'],
   financeiro:          ['expedicao','financeiro','pendencias','estatisticas-fin'],
-  comercial_consultor: ['visao-geral','expedicao','pendencias','comercial','fin-comercial'],
-  comercial_gerente:   ['visao-geral','expedicao','pendencias','comercial','fin-comercial'],
+  comercial_consultor: ['visao-geral','expedicao','pendencias','fin-comercial'],
+  comercial_gerente:   ['visao-geral','expedicao','pendencias','fin-comercial'],
 };
 
 // Páginas somente leitura por perfil (sem upload, sem botões de ação)
@@ -4633,14 +4681,16 @@ async function expCarregarDoSheets() {
 }
 
 /* Sincroniza pedidos locais com o Sheets (merge incremental) */
-async function sincronizarExpedicao() {
+async function sincronizarExpedicao(silent) {
   if (EXP_SHEET.sincronizando) return;
-  if (S.allRaw.length === 0) { mostrarToast('Carregue uma planilha primeiro.', 'err'); return; }
+  if (S.allRaw.length === 0) { if(!silent) mostrarToast('Carregue uma planilha primeiro.', 'err'); return; }
 
   EXP_SHEET.sincronizando = true;
   const btn = document.getElementById('btn-sincronizar');
-  btn.classList.add('btn-sync-loading');
-  btn.innerHTML = '<span class="spin" style="border-top-color:var(--green)"></span> Sincronizando...';
+  if (btn && !silent) {
+    btn.classList.add('btn-sync-loading');
+    btn.innerHTML = '<span class="spin" style="border-top-color:var(--green)"></span> Sincronizando...';
+  }
 
   try {
     // Prepara payload — apenas os campos necessários
@@ -4675,7 +4725,7 @@ async function sincronizarExpedicao() {
       const msg = json.novos > 0
         ? `☁️ ${json.novos.toLocaleString('pt-BR')} pedidos novos sincronizados · ${json.total.toLocaleString('pt-BR')} total`
         : `☁️ Tudo atualizado — nenhum pedido novo`;
-      mostrarToast('✅ Sincronizado!', 'ok');
+      if(!silent) mostrarToast('✅ Sincronizado!', 'ok');
 
       // Atualiza banner
       const dataSync = new Date().toLocaleString('pt-BR');
@@ -4694,8 +4744,10 @@ async function sincronizarExpedicao() {
     console.error(err);
   } finally {
     EXP_SHEET.sincronizando = false;
-    btn.classList.remove('btn-sync-loading');
-    btn.innerHTML = '☁️ Sincronizar com Sheets';
+    if (btn && !silent) {
+      btn.classList.remove('btn-sync-loading');
+      btn.innerHTML = '☁️ Sincronizar com Sheets';
+    }
   }
 }
 
@@ -4917,14 +4969,44 @@ function filtrarCartoes(lista) {
   });
 }
 
+/* Filtro ativo de pendências */
+let PEND_FILTRO = 'todos';
+
+function pendFiltrar(tipo, btn) {
+  PEND_FILTRO = tipo;
+  document.querySelectorAll('.pend-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  pendRender();
+}
+
+function pendAtualizarContadores() {
+  const perfil = SESSAO.perfil;
+  const r = PEND.registros;
+  const cartoes = r.filter(p => p.tipo === 'cartao');
+  const cancs   = r.filter(p => p.tipo === 'cancelamento');
+  const devs    = r.filter(p => p.tipo === 'devolucao');
+
+  const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+  el('pf-todos', r.length);
+  el('pf-cartao', cartoes.length);
+  el('pf-cancelamento', cancs.length);
+  el('pf-devolucao', devs.length);
+
+  // Mostrar filtros
+  const fEl = document.getElementById('pend-filters');
+  if (fEl) fEl.style.display = 'flex';
+}
+
 /* Render das pendências conforme perfil */
 function pendRender() {
+  pendAtualizarContadores();
   const el = document.getElementById('pend-layout');
   const perfil = SESSAO.perfil;
+  const filtro = PEND_FILTRO;
   let html = '';
 
   // ── Cartões aguardando autorização (Financeiro + Admin + Operador vê status) ──
-  if (['admin','financeiro','operador'].includes(perfil)) {
+  if (['admin','financeiro','operador'].includes(perfil) && (filtro === 'todos' || filtro === 'cartao')) {
     const cartoesNaoAutorizados = filtrarCartoes(PEND.registros.filter(p =>
       p.tipo === 'cartao' && p.status === 'pendente'
     ));
@@ -4966,7 +5048,7 @@ function pendRender() {
   }
 
   // ── Cancelamentos (Operador atende / Gerente + Consultor vê status) ──
-  if (['admin','operador','comercial_gerente','comercial_consultor'].includes(perfil)) {
+  if (['admin','operador','comercial_gerente','comercial_consultor'].includes(perfil) && (filtro === 'todos' || filtro === 'cancelamento')) {
     const cancPendentes = PEND.registros.filter(p =>
       p.tipo === 'cancelamento' && p.status === 'pendente'
     );
@@ -4978,7 +5060,7 @@ function pendRender() {
   }
 
   // ── Devoluções (Gerente responde / Operador vê status) ──
-  if (['admin','operador','comercial_gerente','comercial_consultor'].includes(perfil)) {
+  if (['admin','operador','comercial_gerente','comercial_consultor'].includes(perfil) && (filtro === 'todos' || filtro === 'devolucao')) {
     const devPendentes = PEND.registros.filter(p =>
       p.tipo === 'devolucao' && p.status === 'pendente'
     );
