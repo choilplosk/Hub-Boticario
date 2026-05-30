@@ -2553,6 +2553,22 @@ function onDragLeave(){ document.getElementById('upload-zone').classList.remove(
 function onDrop(e){ e.preventDefault(); onDragLeave(); const f=e.dataTransfer.files[0]; if(f)processFile(f); }
 function onFileChange(e){ const f=e.target.files[0]; if(f)processFile(f); }
 
+/* Converte serial numérico do Excel para Date */
+function excelDateToStr(v) {
+  if (!v) return '';
+  // Se já é string (dd/mm/aaaa...), retorna direto
+  if (typeof v === 'string') return v.trim();
+  // Se é número (serial Excel)
+  if (typeof v === 'number') {
+    const d = new Date(Math.round((v - 25569) * 86400000));
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR');
+  }
+  // Se é Date object
+  if (v instanceof Date) return v.toLocaleString('pt-BR');
+  return String(v);
+}
+
 function resetUpload(){
   S.vdRaw=[];S.omniRaw=[];S.vdF=[];S.omniF=[];S.allRaw=[];
   document.getElementById('upload-zone').style.display='';
@@ -2569,7 +2585,7 @@ function processFile(file){
   const reader = new FileReader();
   reader.onload = function(e){
     try {
-      const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+      const wb = XLSX.read(e.target.result, {type:'array', cellDates:false});
       const ws = wb.Sheets[wb.SheetNames[0]];
       const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
 
@@ -2588,7 +2604,7 @@ function processFile(file){
       const all = [];
       for(let i=1; i<raw.length; i++){
         const r = raw[i];
-        if(!r || r.every(c => c===''||c===null||c===undefined)) continue;
+        if(!r || !r[idx['CodigoPedido']]) continue;
         all.push({
           CodigoPedido:      r[idx['CodigoPedido']],
           CodExterno:        r[idx['Cód Externo Pedido']],
@@ -2597,10 +2613,10 @@ function processFile(file){
           SituaçãoComercial: r[idx['SituaçãoComercial']],
           MeioCaptacao:      r[idx['MeioCaptacao']],
           NotaFiscal:        r[idx['NotaFiscal']],
-          PrevisaoEntrega:   fmtDate(r[idx['PrevisãoEntrega']]),
-          DataEntrega:       fmtDate(r[idx['DataEntrega']]),
-          DataAprovacao:     fmtDate(r[idx['Data Aprovação']]),
-          DataFaturamento:   fmtDate(r[idx['DataFaturamento']]),
+          PrevisaoEntrega:   fmtDate(excelDateToStr(r[idx['PrevisãoEntrega']])),
+          DataEntrega:       fmtDate(excelDateToStr(r[idx['DataEntrega']])),
+          DataAprovacao:     fmtDate(excelDateToStr(r[idx['Data Aprovação']])),
+          DataFaturamento:   fmtDate(excelDateToStr(r[idx['DataFaturamento']])),
           Lote:              r[idx['Lote de separação']],
           Ciclo:             r[idx['Ciclo Captação']],
           Bairro:            r[idx['Bairro']],
@@ -2610,9 +2626,9 @@ function processFile(file){
           Recebedor:         r[idx['Nome do Recebedor']],
           ValorLiquido:      parseFloat(r[idx['ValorLiquido']]||0) || 0,
           isMad:             MADALENA.has(String(r[idx['Pessoa']]||'').trim()),
-          _dataAprovacaoRaw: r[idx['Data Aprovação']],
-          _dataFaturamentoRaw: r[idx['DataFaturamento']],
-          _dataEntregaRaw:   r[idx['DataEntrega']],
+          _dataAprovacaoRaw: excelDateToStr(r[idx['Data Aprovação']]),
+          _dataFaturamentoRaw: excelDateToStr(r[idx['DataFaturamento']]),
+          _dataEntregaRaw:   excelDateToStr(r[idx['DataEntrega']]),
         });
       }
 
@@ -3545,18 +3561,22 @@ async function ovIniciar() {
   armIniciar();
   if (!OV.hist2025ok) ovCarregarHistSheets();
 
-  // Carregar fretes e avarias em background para KPIs
-  try {
-    const safe = async (url) => {
-      try { const r = await fetch(url); return await r.json(); } catch(e) { return { sucesso:false }; }
-    };
-    const [jFr, jAv] = await Promise.all([
-      FR.registros.length ? Promise.resolve(null) : safe(SCRIPT_URL + '?modulo=frete'),
-      qRegistros.length   ? Promise.resolve(null) : safe(SCRIPT_URL + '?modulo=avarias'),
-    ]);
-    if (jFr && jFr.sucesso) FR.registros = (jFr.registros||[]).map(r=>({...r, ciclo: normalizarCiclo(r.ciclo)||r.ciclo}));
-    if (jAv && jAv.sucesso) qRegistros   = (jAv.registros||[]).map(r=>({...r, ciclo: normalizarCiclo(r.ciclo)||r.ciclo}));
-  } catch(e) { console.warn('ovIniciar: erro ao carregar fretes/avarias', e); }
+  // Carregar fretes e avarias em background (com cache)
+  if (!FR.registros.length || !qRegistros.length) {
+    try {
+      const safe = async (url) => {
+        try { const r = await fetch(url); return await r.json(); } catch(e) { return { sucesso:false }; }
+      };
+      const fetches = [];
+      if (!FR.registros.length) fetches.push(safe(SCRIPT_URL + '?modulo=frete'));
+      else fetches.push(Promise.resolve(null));
+      if (!qRegistros.length) fetches.push(safe(SCRIPT_URL + '?modulo=avarias'));
+      else fetches.push(Promise.resolve(null));
+      const [jFr, jAv] = await Promise.all(fetches);
+      if (jFr && jFr.sucesso) FR.registros = (jFr.registros||[]).map(r=>({...r, ciclo: normalizarCiclo(r.ciclo)||r.ciclo}));
+      if (jAv && jAv.sucesso) qRegistros   = (jAv.registros||[]).map(r=>({...r, ciclo: normalizarCiclo(r.ciclo)||r.ciclo}));
+    } catch(e) { console.warn('ovIniciar: erro ao carregar fretes/avarias', e); }
+  }
 
   ovPopularCiclos();
   ovRender();
@@ -4041,18 +4061,18 @@ function entrarNoDashboard() {
   if (paginasPermitidas.includes('visao-geral')) ovIniciar();
   if (paginasPermitidas.includes('avarias'))    { /* lazy */ }
 
-  // Carrega códigos de atenção em background
-  carregarCodigosAtencaoInicial();
-  // Carrega autorizações de cartão em background
-  carregarAutoriz();
-  // Atualiza badge de pendências
-  setTimeout(async () => {
-    try {
-      const r = await fetch(SCRIPT_URL + '?modulo=getPendencias');
-      const j = await r.json();
-      if (j.sucesso) { PEND.registros = (j.pendencias || []).map(r=>({...r,ciclo:normalizarCiclo(r.ciclo)||r.ciclo})); atualizarBadgePend(); }
-    } catch(e) {}
-  }, 2000);
+  // Carrega tudo em paralelo (1 rodada de Promise.all em vez de 3 fetches separados)
+  Promise.all([
+    carregarCodigosAtencaoInicial(),
+    carregarAutoriz(),
+    (async () => {
+      try {
+        const r = await fetch(SCRIPT_URL + '?modulo=getPendencias');
+        const j = await r.json();
+        if (j.sucesso) { PEND.registros = (j.pendencias || []).map(r=>({...r,ciclo:normalizarCiclo(r.ciclo)||r.ciclo})); atualizarBadgePend(); }
+      } catch(e) {}
+    })(),
+  ]).catch(e => console.warn('Startup fetch error:', e));
 }
 
 /* ── Aplica visibilidade das abas por perfil ── */
@@ -4863,52 +4883,57 @@ async function processarCartoes(pedidos) {
   renderVD();
   renderOmni();
 
-  try {
-    const ctrl = new AbortController();
-    const tOut = setTimeout(() => ctrl.abort(), 8000);
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      signal: ctrl.signal,
-      body: JSON.stringify({
-        modulo: 'registrarCartoes',
-        pedidos: cartoes.map(p => ({
-          codigoPedido:  String(p.CodigoPedido),
-          nomePessoa:    p.NomePessoa      || '',
-          notaFiscal:    p.NotaFiscal      || '',
-          ciclo:         p.Ciclo           || '',
-          bairro:        p.Bairro          || '',
-          valorLiquido:  p.ValorLiquido    || 0,
-          dataAprovacao: (()=>{
-            const raw = p._dataAprovacaoRaw;
-            if (!raw) return '';
-            const dt = raw instanceof Date ? raw : parseDateBR(raw);
-            if (!dt || isNaN(dt)) return String(raw);
-            return dt.toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo',
-              day:'2-digit',month:'2-digit',year:'numeric',
-              hour:'2-digit',minute:'2-digit',second:'2-digit'});
-          })(),
-          estrutura:     p.Estrutura || '',
-          registradoEm:  agoraBrasilia().toISOString(),
-        })),
-      }),
-    });
-    clearTimeout(tOut);
-    mostrarToast(`💳 ${cartoes.length} pedido${cartoes.length>1?'s':''} com cartão enviado${cartoes.length>1?'s':''} ao Financeiro.`, 'ok');
-    // Recarregar autorizações do Sheets e re-renderizar tabela
+  // Enviar ao Sheets em lotes de 50 para evitar timeout
+  const BATCH = 50;
+  const lotes = [];
+  for (let i = 0; i < cartoes.length; i += BATCH) {
+    lotes.push(cartoes.slice(i, i + BATCH));
+  }
+
+  let enviados = 0;
+  for (const lote of lotes) {
+    try {
+      const ctrl = new AbortController();
+      const tOut = setTimeout(() => ctrl.abort(), 15000);
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        signal: ctrl.signal,
+        body: JSON.stringify({
+          modulo: 'registrarCartoes',
+          pedidos: lote.map(p => ({
+            codigoPedido:  String(p.CodigoPedido),
+            nomePessoa:    p.NomePessoa      || '',
+            notaFiscal:    p.NotaFiscal      || '',
+            ciclo:         p.Ciclo           || '',
+            bairro:        p.Bairro          || '',
+            valorLiquido:  p.ValorLiquido    || 0,
+            dataAprovacao: (()=>{
+              const raw = p._dataAprovacaoRaw;
+              if (!raw) return '';
+              const dt = raw instanceof Date ? raw : parseDateBR(raw);
+              if (!dt || isNaN(dt)) return String(raw);
+              return dt.toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo',
+                day:'2-digit',month:'2-digit',year:'numeric',
+                hour:'2-digit',minute:'2-digit',second:'2-digit'});
+            })(),
+            estrutura:     p.Estrutura       || '',
+            registradoEm:  new Date().toISOString(),
+          })),
+        }),
+      });
+      clearTimeout(tOut);
+      enviados += lote.length;
+    } catch(err) {
+      console.warn(`Lote de ${lote.length} cartões falhou:`, err.name);
+    }
+  }
+
+  if (enviados > 0) {
+    mostrarToast(`💳 ${enviados} pedido${enviados>1?'s':''} com cartão enviado${enviados>1?'s':''} ao Financeiro.`, 'ok');
     await carregarAutoriz();
-  } catch(err) {
-    console.error('Erro ao registrar cartões:', err);
-    // Mesmo com erro no Sheets, popular tags localmente
-    cartoes.forEach(p => {
-      const cod = String(p.CodigoPedido);
-      if (!CARTOES_AUTORIZADOS[cod]) {
-        CARTOES_AUTORIZADOS[cod] = { status: 'pendente' };
-      }
-    });
-    renderVD();
-    renderOmni();
   }
 }
+
 
 /* Inicializa aba pendências */
 async function pendIniciar() {
