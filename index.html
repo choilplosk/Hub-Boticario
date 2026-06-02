@@ -2626,13 +2626,20 @@ function processFile(file){
           Recebedor:         r[idx['Nome do Recebedor']],
           ValorLiquido:      parseFloat(r[idx['ValorLiquido']]||0) || 0,
           isMad:             MADALENA.has(String(r[idx['Pessoa']]||'').trim()),
+          CodCD:             String(r[idx['CodCD']]||'').trim(),
+          CanalDistribuicao: String(r[idx['CanalDistribuicao']]||'').trim(),
           _dataAprovacaoRaw: excelDateToStr(r[idx['Data Aprovação']]),
           _dataFaturamentoRaw: excelDateToStr(r[idx['DataFaturamento']]),
           _dataEntregaRaw:   excelDateToStr(r[idx['DataEntrega']]),
         });
       }
 
-      const ativos = all.filter(r => r.SituaçãoComercial !== 'Cancelado');
+      const cdFiltrado = all.filter(r => r.CodCD === '1462' && r.CanalDistribuicao.startsWith('23002'));
+      if(cdFiltrado.length === 0 && all.length > 0){
+        setAlert('error','⚠️ Nenhum pedido encontrado para o CD 1462 / Canal 23002. Verifique se a exportação está correta.');
+        return;
+      }
+      const ativos = cdFiltrado.filter(r => r.SituaçãoComercial !== 'Cancelado');
       const canc = all.length - ativos.length;
       S.allRaw  = ativos;
       S.vdRaw   = ativos.filter(r => r.MeioCaptacao !== 'Pedido Omnichannel');
