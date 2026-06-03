@@ -902,6 +902,7 @@ async function confirmarResponderRevisaoCartao() {
   try {
     const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
       modulo: 'responderRevisaoCartao',
+      codigoPedido: _respRevCartaoAtivo.codigoPedido,
       id: _respRevCartaoAtivo.id,
       resposta: txt,
       respondidoPor: SESSAO.nome,
@@ -5057,7 +5058,7 @@ function pendRender() {
       p.tipo === 'cartao' && p.status === 'pendente'
     ));
     const cartoesAutorizados = filtrarCartoes(PEND.registros.filter(p =>
-      p.tipo === 'cartao' && (p.status === 'autorizado' || p.status === 'em_revisao')
+      p.tipo === 'cartao' && p.status === 'autorizado'
     ));
     const cartoesCancelados = filtrarCartoes(PEND.registros.filter(p =>
       p.tipo === 'cartao' && p.status === 'cancelado'
@@ -5512,6 +5513,7 @@ async function confirmarResponderRevisaoCartao() {
   try {
     const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
       modulo: 'responderRevisaoCartao',
+      codigoPedido: _respRevCartaoAtivo.codigoPedido,
       id: _respRevCartaoAtivo.id,
       resposta: txt,
       respondidoPor: SESSAO.nome,
