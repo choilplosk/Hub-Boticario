@@ -2675,6 +2675,13 @@ function processFile(file){
       // Processa pedidos com cartão e envia ao Financeiro (em background)
       if (['admin','operador'].includes(SESSAO.perfil)) {
         processarCartoes(S.allRaw);
+        // Sincroniza cancelamentos do ERP com a aba Cartoes no Sheets
+        const canceladosERP = cdFiltrado
+          .filter(r => r.SituaçãoComercial === 'Cancelado')
+          .map(r => String(r.CodigoPedido));
+        if (canceladosERP.length > 0) {
+          sincronizarCancelados(canceladosERP);
+        }
       }
       // Auto-sincroniza com Sheets para carregar automático na próxima vez
       if (['admin','operador'].includes(SESSAO.perfil)) {
@@ -4942,6 +4949,23 @@ async function processarCartoes(pedidos) {
   }
 }
 
+
+/* Sincroniza pedidos cancelados no ERP com a aba Cartoes no Sheets */
+async function sincronizarCancelados(codigosPedido) {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        modulo: 'sincronizarCancelados',
+        codigosPedido,
+      }),
+    });
+    // Força recarga das pendências na próxima abertura da aba
+    PEND.iniciado = false;
+  } catch(err) {
+    console.warn('sincronizarCancelados falhou:', err.name);
+  }
+}
 
 /* Inicializa aba pendências */
 async function pendIniciar() {
