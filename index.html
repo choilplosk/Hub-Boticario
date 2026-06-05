@@ -2674,14 +2674,15 @@ function processFile(file){
       frRenderPendentes();
       // Processa pedidos com cartão e envia ao Financeiro (em background)
       if (['admin','operador'].includes(SESSAO.perfil)) {
-        processarCartoes(S.allRaw);
-        // Sincroniza cancelamentos do ERP com a aba Cartoes no Sheets
-        const canceladosERP = cdFiltrado
-          .filter(r => r.SituaçãoComercial === 'Cancelado')
-          .map(r => String(r.CodigoPedido));
-        if (canceladosERP.length > 0) {
-          sincronizarCancelados(canceladosERP);
-        }
+        // Aguarda cartões terminarem antes de sincronizar cancelados
+        processarCartoes(S.allRaw).then(() => {
+          const canceladosERP = cdFiltrado
+            .filter(r => r.SituaçãoComercial === 'Cancelado')
+            .map(r => String(r.CodigoPedido));
+          if (canceladosERP.length > 0) {
+            sincronizarCancelados(canceladosERP);
+          }
+        });
       }
       // Auto-sincroniza com Sheets para carregar automático na próxima vez
       if (['admin','operador'].includes(SESSAO.perfil)) {
@@ -4953,15 +4954,22 @@ async function processarCartoes(pedidos) {
 /* Sincroniza pedidos cancelados no ERP com a aba Cartoes no Sheets */
 async function sincronizarCancelados(codigosPedido) {
   try {
-    await fetch(SCRIPT_URL, {
+    const ctrl = new AbortController();
+    const tOut = setTimeout(() => ctrl.abort(), 30000);
+    const resp = await fetch(SCRIPT_URL, {
       method: 'POST',
+      signal: ctrl.signal,
       body: JSON.stringify({
         modulo: 'sincronizarCancelados',
         codigosPedido,
       }),
     });
-    // Força recarga das pendências na próxima abertura da aba
-    PEND.iniciado = false;
+    clearTimeout(tOut);
+    if (resp.ok) {
+      // Força recarga das pendências somente após confirmação
+      PEND.iniciado = false;
+      console.log('sincronizarCancelados: OK,', codigosPedido.length, 'pedidos sincronizados');
+    }
   } catch(err) {
     console.warn('sincronizarCancelados falhou:', err.name);
   }
