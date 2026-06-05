@@ -4966,9 +4966,12 @@ async function sincronizarCancelados(codigosPedido) {
     });
     clearTimeout(tOut);
     if (resp.ok) {
-      // Força recarga das pendências somente após confirmação
-      PEND.iniciado = false;
       console.log('sincronizarCancelados: OK,', codigosPedido.length, 'pedidos sincronizados');
+      PEND.iniciado = false;
+      // Se a aba pendências estiver visível, recarrega imediatamente
+      if (document.getElementById('page-pendencias').classList.contains('active')) {
+        pendCarregar();
+      }
     }
   } catch(err) {
     console.warn('sincronizarCancelados falhou:', err.name);
