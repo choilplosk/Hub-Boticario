@@ -4178,7 +4178,6 @@ async function verificarSessaoSalva() {
 async function tentarSSOAgreador() {
   const params = new URLSearchParams(window.location.search);
   const ssoToken = params.get('sso');
-  alert('DEBUG HUB ssoToken=' + (ssoToken ? ssoToken.slice(0,20) + '...' : 'null'));
   if (!ssoToken) return false;
 
   try {
@@ -4188,13 +4187,13 @@ async function tentarSSOAgreador() {
       body: JSON.stringify({ token: ssoToken, sistema: 'hub_boticario' })
     });
     const data = await resp.json();
-    alert('DEBUG HUB verify resposta=' + JSON.stringify(data));
     if (data.valid) {
       const sessao = {
         token: 'sso_' + ssoToken.slice(-16),
         perfil: 'admin',
         nome: data.name || data.email || 'SSO',
-        usuario: data.email || 'sso'
+        usuario: data.email || 'sso',
+        sso: true
       };
       localStorage.setItem(SESSAO_KEY, JSON.stringify(sessao));
       // Limpar ?sso= da URL sem recarregar
