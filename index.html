@@ -4173,8 +4173,43 @@ async function verificarSessaoSalva() {
 
 /* goPage já inclui verificação de permissão — não sobrescreve */
 
+
+/* ── SSO — Login automático via Agregador ── */
+async function tentarSSOAgreador() {
+  const params = new URLSearchParams(window.location.search);
+  const ssoToken = params.get('sso');
+  if (!ssoToken) return false;
+
+  try {
+    const resp = await fetch('https://agregador-boti.vercel.app/api/sso/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: ssoToken, sistema: 'hub_boticario' })
+    });
+    const data = await resp.json();
+    if (data.valid) {
+      const sessao = {
+        token: 'sso_' + ssoToken.slice(-16),
+        perfil: 'admin',
+        nome: data.name || data.email || 'SSO',
+        usuario: data.email || 'sso'
+      };
+      localStorage.setItem(SESSAO_KEY, JSON.stringify(sessao));
+      // Limpar ?sso= da URL sem recarregar
+      const url = new URL(window.location.href);
+      url.searchParams.delete('sso');
+      window.history.replaceState({}, '', url.toString());
+      return true;
+    }
+  } catch(e) {
+    console.warn('SSO falhou, seguindo para login normal.', e);
+  }
+  return false;
+}
+
 /* ── Inicialização ── */
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  await tentarSSOAgreador();
   verificarSessaoSalva();
 });
 
