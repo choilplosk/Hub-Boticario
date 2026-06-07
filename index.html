@@ -4145,8 +4145,19 @@ async function verificarSessaoSalva() {
   if (!salva) { mostrarTelaLogin(); return; }
 
   try {
-    const { token } = JSON.parse(salva);
+    const sessaoSalva = JSON.parse(salva);
+    const { token, sso } = sessaoSalva;
     if (!token) { mostrarTelaLogin(); return; }
+
+    // Se veio de SSO do Agregador, entra direto sem validar com GAS
+    if (sso) {
+      SESSAO.token   = token;
+      SESSAO.perfil  = sessaoSalva.perfil;
+      SESSAO.nome    = sessaoSalva.nome;
+      SESSAO.usuario = sessaoSalva.usuario || '';
+      entrarNoDashboard();
+      return;
+    }
 
     // Valida com o servidor
     const resp = await fetch(SCRIPT_URL + '?modulo=login&token=' + token);
