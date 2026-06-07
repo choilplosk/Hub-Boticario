@@ -4204,7 +4204,7 @@ async function tentarSSOAgreador() {
     if (data.valid) {
       const sessao = {
         token: 'sso_' + ssoToken.slice(-16),
-        perfil: 'admin',
+        perfil: data.perfil || 'comercial_consultor',
         nome: data.name || data.email || 'SSO',
         usuario: data.email || 'sso',
         sso: true
