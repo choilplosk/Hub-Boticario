@@ -1333,6 +1333,7 @@ function estatFinRender(ranking) {
     </button>
     <!-- Comercial integrado à Pendências -->
     <button class="nav-tab" data-perfis="comercial_consultor,comercial_gerente" onclick="goPage('fin-comercial',this)">💳 Cartões</button>
+    <button class="nav-tab" data-perfis="admin,comercial_consultor,comercial_gerente" onclick="goPage('comercial',this)">🛒 Comercial</button>
     <button class="nav-tab" data-perfis="admin,financeiro" onclick="goPage('estatisticas-fin',this)">📊 Estatísticas</button>
   </div>
   <div class="nav-right" style="display:flex;align-items:center;gap:12px">
@@ -3972,8 +3973,8 @@ const PERFIL_PAGINAS = {
   admin:               ['visao-geral','expedicao','avarias','financeiro','fretes','pendencias','fin-comercial','estatisticas-fin'],
   operador:            ['visao-geral','expedicao','avarias','fretes','pendencias'],
   financeiro:          ['expedicao','financeiro','pendencias','estatisticas-fin'],
-  comercial_consultor: ['visao-geral','expedicao','pendencias','fin-comercial'],
-  comercial_gerente:   ['visao-geral','expedicao','pendencias','fin-comercial'],
+  comercial_consultor: ['visao-geral','expedicao','pendencias','fin-comercial','comercial'],
+  comercial_gerente:   ['visao-geral','expedicao','pendencias','fin-comercial','comercial'],
 };
 
 // Páginas somente leitura por perfil (sem upload, sem botões de ação)
