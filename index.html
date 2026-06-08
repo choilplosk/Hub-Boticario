@@ -2303,7 +2303,10 @@ function estatFinRender(ranking) {
       <div class="tcard">
         <div class="tcard-head">
           <span class="tcard-title">↩ Aguardando sua resposta</span>
-          <span class="tcard-count" id="com-dev-pend-count">—</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="tcard-count" id="com-dev-pend-count">—</span>
+            <span id="com-dev-btn-wrap"></span>
+          </div>
         </div>
         <div id="com-dev-pend-list" style="max-height:520px;overflow-y:auto">
           <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
@@ -2331,7 +2334,10 @@ function estatFinRender(ranking) {
       <div class="tcard">
         <div class="tcard-head">
           <span class="tcard-title">❌ Aguardando operador</span>
-          <span class="tcard-count" id="com-canc-pend-count">—</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="tcard-count" id="com-canc-pend-count">—</span>
+            <span id="com-canc-btn-wrap"></span>
+          </div>
         </div>
         <div id="com-canc-pend-list" style="max-height:520px;overflow-y:auto">
           <div class="empty"><div class="empty-ico">📋</div><h3>Carregando...</h3></div>
@@ -5935,6 +5941,13 @@ function comRender() {
   const devResp = devs.filter(p => p.status !== 'pendente');
 
   document.getElementById('com-dev-pend-count').textContent = devPend.length + ' pendente' + (devPend.length!==1?'s':'');
+  // Botão nova devolução para gerente/admin
+  const wrapDev = document.getElementById('com-dev-btn-wrap');
+  if (wrapDev) {
+    wrapDev.innerHTML = ['comercial_gerente','admin'].includes(SESSAO.perfil)
+      ? `<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="abrirModalDevolucao()">+ Nova devolução</button>`
+      : '';
+  }
   document.getElementById('com-dev-resp-count').textContent = devResp.length + ' respondida' + (devResp.length!==1?'s':'');
   document.getElementById('com-dev-pend-list').innerHTML = devPend.length
     ? devPend.map(d => comRenderDevItem(d, true)).join('')
@@ -5948,6 +5961,13 @@ function comRender() {
   const cancResp = cancs.filter(p => p.status !== 'pendente');
 
   document.getElementById('com-canc-pend-count').textContent = cancPend.length + ' pendente' + (cancPend.length!==1?'s':'');
+  // Botão novo cancelamento para gerente/admin
+  const wrapCanc = document.getElementById('com-canc-btn-wrap');
+  if (wrapCanc) {
+    wrapCanc.innerHTML = ['comercial_gerente','admin'].includes(SESSAO.perfil)
+      ? `<button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="abrirModalCancelamento('','')">+ Novo cancelamento</button>`
+      : '';
+  }
   document.getElementById('com-canc-resp-count').textContent = cancResp.length + ' respondido' + (cancResp.length!==1?'s':'');
   document.getElementById('com-canc-pend-list').innerHTML = cancPend.length
     ? cancPend.map(c => comRenderCancItem(c)).join('')
@@ -6319,3 +6339,4 @@ function finRenderConsolidado() {
 </script>
 </body>
 </html>
+
