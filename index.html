@@ -5298,15 +5298,15 @@ function renderItemPend(item, tipo) {
   } else if (tipo === 'cancelamento_pend') {
     ico = '❌';
     if (['operador','admin'].includes(perfil)) {
-      acoes = `<button class="btn-pend ok"  onclick="abrirModalResposta('${item.id}','cancelamento','Cancelamento — Pedido ${item.codigoPedido}','${esc2(item.nomePessoa)}','${esc2(item.motivo)}')">✅ Aprovar</button>
-               <button class="btn-pend nok" onclick="abrirModalRespostaRejeitar('${item.id}','cancelamento','Cancelamento — Pedido ${item.codigoPedido}','${esc2(item.nomePessoa)}','${esc2(item.motivo)}')">✕ Rejeitar</button>`;
+      acoes = `<button class="btn-pend ok"  data-pend-id="${item.id}" data-pend-tipo="cancelamento" data-pend-cod="${esc2(item.codigoPedido)}" data-pend-nome="${esc2(item.nomePessoa)}" data-pend-motivo="${esc2(item.motivo)}" onclick="pendBtnAprovar(this)">✅ Aprovar</button>
+               <button class="btn-pend nok" data-pend-id="${item.id}" data-pend-tipo="cancelamento" data-pend-cod="${esc2(item.codigoPedido)}" data-pend-nome="${esc2(item.nomePessoa)}" data-pend-motivo="${esc2(item.motivo)}" onclick="pendBtnRejeitar(this)">✕ Rejeitar</button>`;
     }
   } else if (tipo === 'cancelamento_hist') {
     ico = item.status === 'aprovado' ? '✅' : '✕';
   } else if (tipo === 'devolucao_pend') {
     ico = '↩';
     if (['comercial_gerente','admin'].includes(perfil)) {
-      acoes = `<button class="btn-pend ok" onclick="abrirModalResposta('${item.id}','devolucao','Devolução — Pedido ${item.codigoPedido}','${esc2(item.nomePessoa)}','${esc2(item.motivo)}')">✅ Responder</button>`;
+      acoes = `<button class="btn-pend ok" data-pend-id="${item.id}" data-pend-tipo="devolucao" data-pend-cod="${esc2(item.codigoPedido)}" data-pend-nome="${esc2(item.nomePessoa)}" data-pend-motivo="${esc2(item.motivo)}" onclick="pendBtnAprovar(this)">✅ Responder</button>`;
     }
   } else if (tipo === 'devolucao_hist') {
     ico = '📋';
@@ -5502,12 +5502,34 @@ async function confirmarDevolucao() {
 
 // Resposta a cancelamento/devolução
 let _respostaItem = null;
+function pendBtnAprovar(btn) {
+  const id    = btn.dataset.pendId;
+  const tipo  = btn.dataset.pendTipo;
+  const cod   = btn.dataset.pendCod;
+  const nome  = btn.dataset.pendNome;
+  const motivo = btn.dataset.pendMotivo;
+  const titulo = tipo === 'cancelamento'
+    ? 'Cancelamento — Pedido ' + cod
+    : 'Devolução — Pedido ' + cod;
+  abrirModalResposta(id, tipo, titulo, nome, motivo);
+}
+function pendBtnRejeitar(btn) {
+  const id    = btn.dataset.pendId;
+  const tipo  = btn.dataset.pendTipo;
+  const cod   = btn.dataset.pendCod;
+  const nome  = btn.dataset.pendNome;
+  const motivo = btn.dataset.pendMotivo;
+  const titulo = 'Cancelamento — Pedido ' + cod;
+  abrirModalResposta(id, tipo, titulo, nome, motivo);
+  // marca que a decisão será rejeitar ao confirmar
+  _respostaItem._decisaoForce = 'rejeitado';
+}
+
 function abrirModalResposta(id, tipo, titulo, nome, motivo) {
   _respostaItem = { id, tipo };
   document.getElementById('modal-resp-titulo').textContent = titulo;
-  document.getElementById('modal-resp-info').textContent   = `${nome} — ${motivo}`;
+  document.getElementById('modal-resp-info').textContent   = (nome || '—') + ' — ' + (motivo || '—');
   document.getElementById('modal-resp-obs').value = '';
-  // Para devolução, só tem "Responder" (sem rejeitar)
   document.getElementById('modal-resp-btn-nok').style.display = tipo === 'devolucao' ? 'none' : '';
   document.getElementById('modal-resp-btn-ok').textContent = tipo === 'devolucao' ? '✅ Responder' : '✅ Aprovar';
   document.getElementById('modal-resposta').classList.add('visible');
