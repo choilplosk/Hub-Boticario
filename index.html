@@ -2236,6 +2236,26 @@ function estatFinRender(ranking) {
     </div>
     <div class="resp-modal-body">
       <div id="modal-canc-info" style="font-size:12.5px;color:var(--text-2);padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm)"></div>
+      <div id="modal-canc-campos-extras" style="display:none;display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <div>
+          <label class="flabel">Nº do Pedido</label>
+          <input class="finput-q" type="text" id="modal-canc-pedido-manual" placeholder="Ex: 515212523">
+        </div>
+        <div>
+          <label class="flabel">Nome do Revendedor</label>
+          <input class="finput-q" type="text" id="modal-canc-nome-manual" placeholder="Nome completo">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label class="flabel">NF</label>
+            <input class="finput-q" type="text" id="modal-canc-nf-manual" placeholder="Nota fiscal">
+          </div>
+          <div>
+            <label class="flabel">Ciclo</label>
+            <input class="finput-q" type="text" id="modal-canc-ciclo-manual" placeholder="Ex: 2026/10">
+          </div>
+        </div>
+      </div>
       <div>
         <label class="flabel">Motivo do cancelamento</label>
         <textarea class="finput-q" id="modal-canc-motivo" rows="3" placeholder="Descreva o motivo..."></textarea>
@@ -5365,9 +5385,23 @@ function atualizarBadgePend() {
 let _cancPedidoAtivo = null;
 function abrirModalCancelamento(codigoPedido, nomePessoa) {
   _cancPedidoAtivo = { codigoPedido, nomePessoa };
-  document.getElementById('modal-canc-info').textContent =
-    `Pedido: ${codigoPedido} · ${nomePessoa}`;
+  const extras = document.getElementById('modal-canc-campos-extras');
+  const info   = document.getElementById('modal-canc-info');
   document.getElementById('modal-canc-motivo').value = '';
+
+  if (!codigoPedido) {
+    // Modo manual: operador digita os dados
+    info.textContent = 'Preencha os dados do pedido abaixo:';
+    extras.style.display = 'flex';
+    document.getElementById('modal-canc-pedido-manual').value = '';
+    document.getElementById('modal-canc-nome-manual').value   = '';
+    document.getElementById('modal-canc-nf-manual').value     = '';
+    document.getElementById('modal-canc-ciclo-manual').value  = '';
+  } else {
+    // Modo automático: pedido vem da tabela
+    info.textContent = `Pedido: ${codigoPedido} · ${nomePessoa}`;
+    extras.style.display = 'none';
+  }
   document.getElementById('modal-cancelamento').classList.add('visible');
 }
 function fecharModalCancelamento() {
@@ -5378,33 +5412,56 @@ async function confirmarSolicitacaoCancelamento() {
   if (!_cancPedidoAtivo) return;
   const motivo = document.getElementById('modal-canc-motivo').value.trim();
   if (!motivo) { mostrarToast('Informe o motivo.','err'); return; }
+
+  // Modo manual: lê campos extras
+  let codigoPedido = _cancPedidoAtivo.codigoPedido;
+  let nomePessoa   = _cancPedidoAtivo.nomePessoa;
+  if (!codigoPedido) {
+    codigoPedido = document.getElementById('modal-canc-pedido-manual').value.trim();
+    nomePessoa   = document.getElementById('modal-canc-nome-manual').value.trim();
+    if (!codigoPedido) { mostrarToast('Informe o número do pedido.','err'); return; }
+  }
+
+  // Busca dados em allRaw (VD+ e Omni), com fallback nos campos manuais
+  const ped = S.allRaw.find(p => String(p.CodigoPedido) === String(codigoPedido));
+  const notaFiscal = ped?.NotaFiscal || document.getElementById('modal-canc-nf-manual')?.value.trim()    || '';
+  const ciclo      = ped?.Ciclo      || document.getElementById('modal-canc-ciclo-manual')?.value.trim() || '';
+  const bairro     = ped?.Bairro     || '';
+
   const btn = document.getElementById('modal-canc-btn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Enviando...';
 
-  // Busca dados do pedido na lista local
-  const ped = S.vdRaw.find(p => String(p.CodigoPedido) === String(_cancPedidoAtivo.codigoPedido));
-
   try {
-    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
-      modulo:       'registrarPendencia',
-      tipo:         'cancelamento',
-      codigoPedido: String(_cancPedidoAtivo.codigoPedido),
-      nomePessoa:   _cancPedidoAtivo.nomePessoa,
-      notaFiscal:   ped?.NotaFiscal   || '',
-      ciclo:        ped?.Ciclo        || '',
-      bairro:       ped?.Bairro       || '',
-      motivo,
-      solicitadoPor: SESSAO.nome,
-      registradoEm: agoraBrasilia().toISOString(),
-    })});
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      signal: controller.signal,
+      body: JSON.stringify({
+        modulo:       'registrarPendencia',
+        tipo:         'cancelamento',
+        codigoPedido: String(codigoPedido),
+        nomePessoa:   nomePessoa,
+        notaFiscal,
+        ciclo,
+        bairro,
+        motivo,
+        solicitadoPor: SESSAO.nome,
+        registradoEm: agoraBrasilia().toISOString(),
+      })
+    });
+    clearTimeout(timeout);
     const json = await resp.json();
     if (json.sucesso) {
       mostrarToast('✅ Solicitação enviada ao Operador!','ok');
       fecharModalCancelamento();
       PEND.iniciado = false;
       if (document.getElementById('page-pendencias').classList.contains('active')) pendCarregar();
-    } else { mostrarToast(json.erro||'Erro.','err'); }
-  } catch(err) { mostrarToast('Falha na conexão.','err'); }
+    } else { mostrarToast('Erro: ' + (json.erro || 'Falha ao registrar.'),'err'); }
+  } catch(err) {
+    if (err.name === 'AbortError') mostrarToast('Tempo esgotado. Tente novamente.','err');
+    else mostrarToast('Falha na conexão.','err');
+  }
   finally { btn.disabled=false; btn.innerHTML='Enviar solicitação'; }
 }
 
@@ -5465,28 +5522,45 @@ function fecharModalResposta() {
 async function confirmarResposta(decisao) {
   if (!_respostaItem) return;
   const obs = document.getElementById('modal-resp-obs').value.trim();
-  const btn = decisao === 'aprovado'
-    ? document.getElementById('modal-resp-btn-ok')
-    : document.getElementById('modal-resp-btn-nok');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  const btnOk  = document.getElementById('modal-resp-btn-ok');
+  const btnNok = document.getElementById('modal-resp-btn-nok');
+  const btn = decisao === 'aprovado' ? btnOk : btnNok;
+  btnOk.disabled=true; btnNok.disabled=true;
+  btn.innerHTML='<span class="spin"></span>';
+
   try {
-    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
-      modulo:    'responderPendencia',
-      id:        _respostaItem.id,
-      status:    decisao,
-      resposta:  obs,
-      respondidoPor: SESSAO.nome,
-      respondidoEm:  agoraBrasilia().toISOString(),
-    })});
-    const json = await resp.json();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      signal: controller.signal,
+      body: JSON.stringify({
+        modulo:       'responderPendencia',
+        id:           _respostaItem.id,
+        status:       decisao,
+        resposta:     obs,
+        respondidoPor: SESSAO.nome,
+        respondidoEm:  agoraBrasilia().toISOString(),
+      })
+    });
+    clearTimeout(timeout);
+    let json;
+    try { json = await resp.json(); } catch(e) { throw new Error('Resposta inválida do servidor.'); }
     if (json.sucesso) {
       mostrarToast(`✅ Respondido: ${decisao}!`,'ok');
       fecharModalResposta();
       PEND.iniciado = false;
       pendCarregar();
-    } else { mostrarToast(json.erro||'Erro.','err'); }
-  } catch(err) { mostrarToast('Falha na conexão.','err'); }
-  finally { btn.disabled=false; btn.innerHTML = decisao==='aprovado'?'✅ Aprovar':'✕ Rejeitar'; }
+    } else {
+      mostrarToast('Erro: ' + (json.erro || 'Falha ao salvar resposta.'),'err');
+    }
+  } catch(err) {
+    if (err.name === 'AbortError') mostrarToast('Tempo esgotado. Tente novamente.','err');
+    else mostrarToast('Falha: ' + (err.message || 'Conexão indisponível.'),'err');
+  } finally {
+    btnOk.disabled=false; btnNok.disabled=false;
+    btnOk.innerHTML='✅ Aprovar'; btnNok.innerHTML='✕ Rejeitar';
+  }
 }
 
 // Autorização cartão
