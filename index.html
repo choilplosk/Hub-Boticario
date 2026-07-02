@@ -3275,7 +3275,7 @@ function qLimparForm(){
 
 async function qCarregar(){
   try {
-    const resp = await fetch(AVARIAS_URL);
+    const resp = await fetch(AVARIAS_URL + '?modulo=avarias');
     const json = await resp.json();
     if(json.sucesso){ qRegistros = (json.registros || []).map(r => ({...r, ciclo: normalizarCiclo(r.ciclo) || r.ciclo})); qPopularCiclos(); qRender(); }
   } catch(err){ console.error('Erro ao carregar avarias:', err); }
