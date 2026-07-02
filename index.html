@@ -3246,6 +3246,7 @@ async function qRegistrar(){
   btn.innerHTML = '<span class="spin"></span> Registrando...';
 
   const payload = {
+    modulo:        'registrarAvaria',
     data:          document.getElementById('q-data').value,
     ciclo:         document.getElementById('q-ciclo').value.trim(),
     codigo:        document.getElementById('q-codigo').value.trim(),
