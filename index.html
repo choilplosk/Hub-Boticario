@@ -2514,7 +2514,7 @@ function estatFinRender(ranking) {
 // ============================================================
 // URLs Apps Script
 // ============================================================
-const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbzRimTy_2a-9lJCk1bZ79LwGYj6Jsk0TfQ5w8R6RrgNH1WJaiFS_x-HlT_oet5uJaDcBA/exec";
+const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbyHMJnpF-PLaVMX8Sbjjz40RsCGOBdzBVSf1pztU6APsILhXFlSnWdujTDLL84a4jwkDQ/exec";
 const AVARIAS_URL     = SCRIPT_URL;
 const FRETES_URL      = SCRIPT_URL;
 const ARMAZENAGEM_URL = SCRIPT_URL;
@@ -3246,7 +3246,7 @@ async function qRegistrar(){
   btn.innerHTML = '<span class="spin"></span> Registrando...';
 
   const payload = {
-    modulo:        'registrarAvaria',
+    modulo:        'avaria',
     data:          document.getElementById('q-data').value,
     ciclo:         document.getElementById('q-ciclo').value.trim(),
     codigo:        document.getElementById('q-codigo').value.trim(),
