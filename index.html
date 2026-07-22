@@ -1965,7 +1965,7 @@ function estatFinRender(ranking) {
     <!-- Cartões do ciclo -->
     <div class="tcard">
       <div class="tcard-head">
-        <span class="tcard-title">💳 Cartões — Pagamento na Central</span>
+        <span class="tcard-title">💳 Cartões — Autorização Central</span>
         <span class="tcard-count" id="fin-cartao-count">—</span>
       </div>
       <div id="fin-cartao-lista" style="max-height:400px;overflow-y:auto">
@@ -2545,6 +2545,23 @@ const REQUIRED = [
 const MADALENA = new Set(['349129','731858']);
 const CARTAO_CENTRAL = 'Cartão - Pagamento na Central';
 
+/* Formas de pagamento que exigem autorizacao do Financeiro.
+   O VD+ mudou a nomenclatura de "Cartao - Pagamento na Central" para
+   "Cartao de Debito". A regra abaixo aceita as duas (e variacoes de
+   acento/caixa) e exclui explicitamente cartao de CREDITO on-line,
+   que ja vem pago e nao gera pendencia. */
+function normPag(v) {
+  return String(v || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/\s+/g, ' ').trim();
+}
+function ehCartaoCentral(v) {
+  const t = normPag(v);
+  if (!t) return false;
+  if (t.indexOf('credito') !== -1) return false;
+  return t.indexOf('pagamento na central') !== -1 || t.indexOf('debito') !== -1;
+}
+
 // Cache de autorizações de cartão: { CodigoPedido: { codigo, dataHora } }
 const CARTOES_AUTORIZADOS = {};
 
@@ -2694,7 +2711,7 @@ function processFile(file){
 
       // Popular tags de cartão ANTES de renderizar a tabela
       S.allRaw.forEach(p => {
-        if (p.Pagamento === CARTAO_CENTRAL && !CARTOES_AUTORIZADOS[String(p.CodigoPedido)]) {
+        if (ehCartaoCentral(p.Pagamento) && !CARTOES_AUTORIZADOS[String(p.CodigoPedido)]) {
           CARTOES_AUTORIZADOS[String(p.CodigoPedido)] = { status: 'pendente' };
         }
       });
@@ -3097,7 +3114,7 @@ function renderVD(){
     <td class="mono">${r.NotaFiscal||'—'}</td>
     <td class="trunc" title="${esc(r.NomePessoa)}">${r.NomePessoa||'—'}</td>
     <td class="mono">${r.Pessoa||'—'}</td>
-    <td>${sBadge(r.SituaçãoComercial)}${r.Pagamento===CARTAO_CENTRAL?flagCartao(r.CodigoPedido):''}</td>
+    <td>${sBadge(r.SituaçãoComercial)}${ehCartaoCentral(r.Pagamento)?flagCartao(r.CodigoPedido):''}</td>
     <td class="mono">${r.PrevisaoEntrega||'—'}</td>
     <td class="mono">${r.DataEntrega||'—'}</td>
     <td class="mono">${r.Lote||'—'}</td>
@@ -3127,7 +3144,7 @@ function renderOmni(){
     <td class="mono">${r.CodExterno||'—'}</td>
     <td class="mono">${r.NotaFiscal||'—'}</td>
     <td class="trunc" title="${esc(r.NomePessoa)}">${r.NomePessoa||'—'}</td>
-    <td>${sBadge(r.SituaçãoComercial)}${r.Pagamento===CARTAO_CENTRAL?flagCartao(r.CodigoPedido):''}</td>
+    <td>${sBadge(r.SituaçãoComercial)}${ehCartaoCentral(r.Pagamento)?flagCartao(r.CodigoPedido):''}</td>
     <td class="mono">${r.PrevisaoEntrega||'—'}</td>
     <td class="mono">${r.DataEntrega||'—'}</td>
     <td class="mono">${r.Lote||'—'}</td>
@@ -4964,7 +4981,7 @@ async function carregarAutoriz() {
 
 /* Detecta pedidos cartão ao processar planilha e envia para Sheets */
 async function processarCartoes(pedidos) {
-  const cartoes = pedidos.filter(p => p.Pagamento === CARTAO_CENTRAL);
+  const cartoes = pedidos.filter(p => ehCartaoCentral(p.Pagamento));
   if (!cartoes.length) return;
 
   // Popular tags imediatamente (antes do fetch) para exibição instantânea
@@ -6264,7 +6281,7 @@ function finRender() {
   const avCiclo     = qRegistros.filter(r => r.ciclo === ciclo);
 
   // Pedidos cartão — upload local tem ValorLiquido; cartões do Sheets são cruzados
-  const pedCartaoLocal = pedCiclo.filter(r => r.Pagamento === CARTAO_CENTRAL);
+  const pedCartaoLocal = pedCiclo.filter(r => ehCartaoCentral(r.Pagamento));
   // Cartões do Sheets que não estão no upload: gera objeto sintético
   const codsLocal = new Set(pedCartaoLocal.map(p=>String(p.CodigoPedido)));
   const cartaoSemUpload = cartCiclo
@@ -6409,7 +6426,7 @@ function finRenderConsolidado() {
 
   const linhas = todosCiclos.map(ciclo => {
     const pedCiclo  = [...S.vdRaw,...S.omniRaw].filter(r => r.Ciclo === ciclo);
-    const pedCart   = pedCiclo.filter(r => r.Pagamento === CARTAO_CENTRAL);
+    const pedCart   = pedCiclo.filter(r => ehCartaoCentral(r.Pagamento));
     const valCart   = pedCart.reduce((s,r) => s + (r.ValorLiquido||0), 0);
     const cartSheets= FIN.cartoes.filter(c => c.ciclo === ciclo);
     const autorizados = cartSheets.filter(c => c.status === 'autorizado').length;
