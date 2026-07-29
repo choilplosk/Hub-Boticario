@@ -2649,11 +2649,25 @@ function processFile(file){
       const idx = {};
       headers.forEach((h,i) => idx[h] = i);
 
-      const all = [];
+      // Filtro barato (CD 1462 / canal 23002) ANTES do processamento pesado de datas —
+      // evita formatar/converter datas de linhas que serão descartadas de qualquer forma.
+      let totalComPedido = 0;
+      const cdFiltrado = [];
       for(let i=1; i<raw.length; i++){
         const r = raw[i];
         if(!r || !r[idx['CodigoPedido']]) continue;
-        all.push({
+        totalComPedido++;
+
+        const codCD = String(r[idx['CodCD']]||'').trim();
+        const canal = String(r[idx['CanalDistribuicao']]||'').trim();
+        if(codCD !== '1462' || !canal.startsWith('23002')) continue;
+
+        // Cada data é convertida uma única vez e reaproveitada (evita reprocessar a mesma célula duas vezes)
+        const dtAprovacao   = excelDateToStr(r[idx['Data Aprovação']]);
+        const dtFaturamento = excelDateToStr(r[idx['DataFaturamento']]);
+        const dtEntrega     = excelDateToStr(r[idx['DataEntrega']]);
+
+        cdFiltrado.push({
           CodigoPedido:      r[idx['CodigoPedido']],
           CodExterno:        r[idx['Cód Externo Pedido']],
           NomePessoa:        r[idx['NomePessoa']],
@@ -2662,9 +2676,9 @@ function processFile(file){
           MeioCaptacao:      r[idx['MeioCaptacao']],
           NotaFiscal:        r[idx['NotaFiscal']],
           PrevisaoEntrega:   fmtDate(excelDateToStr(r[idx['PrevisãoEntrega']])),
-          DataEntrega:       fmtDate(excelDateToStr(r[idx['DataEntrega']])),
-          DataAprovacao:     fmtDate(excelDateToStr(r[idx['Data Aprovação']])),
-          DataFaturamento:   fmtDate(excelDateToStr(r[idx['DataFaturamento']])),
+          DataEntrega:       fmtDate(dtEntrega),
+          DataAprovacao:     fmtDate(dtAprovacao),
+          DataFaturamento:   fmtDate(dtFaturamento),
           Lote:              r[idx['Lote de separação']],
           Ciclo:             r[idx['Ciclo Captação']],
           Bairro:            r[idx['Bairro']],
@@ -2674,21 +2688,20 @@ function processFile(file){
           Recebedor:         r[idx['Nome do Recebedor']],
           ValorLiquido:      parseFloat(r[idx['ValorLiquido']]||0) || 0,
           isMad:             MADALENA.has(String(r[idx['Pessoa']]||'').trim()),
-          CodCD:             String(r[idx['CodCD']]||'').trim(),
-          CanalDistribuicao: String(r[idx['CanalDistribuicao']]||'').trim(),
-          _dataAprovacaoRaw: excelDateToStr(r[idx['Data Aprovação']]),
-          _dataFaturamentoRaw: excelDateToStr(r[idx['DataFaturamento']]),
-          _dataEntregaRaw:   excelDateToStr(r[idx['DataEntrega']]),
+          CodCD:             codCD,
+          CanalDistribuicao: canal,
+          _dataAprovacaoRaw: dtAprovacao,
+          _dataFaturamentoRaw: dtFaturamento,
+          _dataEntregaRaw:   dtEntrega,
         });
       }
 
-      const cdFiltrado = all.filter(r => r.CodCD === '1462' && r.CanalDistribuicao.startsWith('23002'));
-      if(cdFiltrado.length === 0 && all.length > 0){
+      if(cdFiltrado.length === 0 && totalComPedido > 0){
         setAlert('error','⚠️ Nenhum pedido encontrado para o CD 1462 / Canal 23002. Verifique se a exportação está correta.');
         return;
       }
       const ativos = cdFiltrado.filter(r => r.SituaçãoComercial !== 'Cancelado');
-      const canc = all.length - ativos.length;
+      const canc = totalComPedido - ativos.length;
       S.allRaw  = ativos;
       S.vdRaw   = ativos.filter(r => r.MeioCaptacao !== 'Pedido Omnichannel');
       S.omniRaw = ativos.filter(r => r.MeioCaptacao === 'Pedido Omnichannel');
@@ -3587,7 +3600,7 @@ function frRenderHist(dados){
     <td class="mono">${frFmtData(r.dataEnvio)}</td>
     <td style="font-weight:600">${r.ciclo||'—'}</td>
     <td class="mono" style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.pedidos)}">${r.pedidos||'—'}</td>
-    <td class="mono" style="max-width:160px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.nfs)}">${r.nfs||'—'}</td>
+    <td class="mono" style="min-width:140px">${frFmtNfsList(r.nfs)}</td>
     <td style="text-align:right">${Number(r.totalPedidos||0).toLocaleString('pt-BR')}</td>
     <td style="text-align:right">${Number(r.nFretes||0).toLocaleString('pt-BR')}</td>
     <td style="text-align:right" class="mono">${Number(r.valorFrete||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
@@ -3604,6 +3617,13 @@ function frRenderHist(dados){
       </tr></thead>
       <tbody>${linhas}</tbody>
     </table></div>`;
+}
+
+/* Lista vertical rolável das NFs de um frete — evita texto cortado quando há muitas notas agrupadas */
+function frFmtNfsList(nfsStr){
+  const nfs = String(nfsStr||'').split(',').map(s=>s.trim()).filter(Boolean);
+  if(!nfs.length) return '—';
+  return `<div style="max-height:76px;overflow-y:auto;line-height:1.7">${nfs.map(n=>`<div>${esc(n)}</div>`).join('')}</div>`;
 }
 
 function frFmtData(v){
